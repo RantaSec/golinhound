@@ -80,7 +80,7 @@
           "kind": "SSHUser"
         },
         "properties": {
-          "Comment": "ansible-master@zodadminprod",
+          "Comment": "ansible-master@srv1",
           "FilePath": "/home/ansible/.ssh/authorized_keys"
         }
       },
