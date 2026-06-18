@@ -65,27 +65,37 @@ func NewLinhoundCollector() *LinhoundCollector {
 	return &c
 }
 
-// loadSSHDConfig parses the current SSHD config from "sshd -T"
+// hasSSHD reports whether this host runs an SSH server. Server-side artifacts
+// (authorized_keys consumed by sshd, forwarded-agent sockets created by inbound
+// sshd sessions) only exist on hosts where sshd is installed.
+func (l LinhoundCollector) hasSSHD() bool {
+	return l.sshdConfig != nil
+}
+
+// loadSSHDConfig parses the current SSHD config from "sshd -T". Returns nil
+// when sshd is not installed or the command fails, signalling that the
+// collector is running on an SSH-client-only system.
 func loadSSHDConfig() map[string]string {
 	logVerbose("loadSSHDConfig()\n")
 	// create context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), SSHDExecTimeout)
 	defer cancel()
 
-	// retrieve effective sshd config
+	// retrieve effective sshd config; if sshd is not installed or the command
+	// fails, treat this host as SSH client only and skip server-side routines
 	cmd := exec.CommandContext(ctx, "sshd", "-T")
 	var out strings.Builder
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {
-		log.Fatalf("[ERROR] command 'sshd -T' could not be executed: %v", err)
+		logVerbose("loadSSHDConfig(): 'sshd -T' failed (%v); treating host as SSH client only\n", err)
+		return nil
 	}
 
-	// store effective sshd config in map
+	// store effective sshd config in map (key -> value, without the key prefix)
 	sshdConfig := make(map[string]string)
-	lines := strings.Split(out.String(), "\n")
-	for _, line := range lines {
-		config := strings.Split(line, " ")[0]
-		sshdConfig[config] = line
+	for line := range strings.SplitSeq(out.String(), "\n") {
+		key, value, _ := strings.Cut(line, " ")
+		sshdConfig[key] = value
 	}
 	return sshdConfig
 }
@@ -300,7 +310,7 @@ func (l LinhoundCollector) privateKeysFiles(userDir string) []string {
 // authorizedKeysFiles retrieve all authorized keys files for a given user
 func (l LinhoundCollector) authorizedKeysFiles(userName string, userDir string) []string {
 	logVerbose("authorizedKeysFiles(userName=%s, userDir=%s)\n", userName, userDir)
-	configValues := strings.Split(l.sshdConfig["authorizedkeysfile"], " ")[1:]
+	configValues := strings.Fields(l.sshdConfig["authorizedkeysfile"])
 
 	var authKeysFiles []string
 	for _, authKeyFile := range configValues {
@@ -394,8 +404,7 @@ func isInteractiveShell(shell string) bool {
 
 // isRootLoginAllowed returns true, if the root user is allowed to login to the current computer with an SSH keypair.
 func (l LinhoundCollector) isRootLoginAllowed() bool {
-	configValue := strings.Split(l.sshdConfig["permitrootlogin"], " ")[1]
-	switch configValue {
+	switch l.sshdConfig["permitrootlogin"] {
 	case "yes", "without-password", "prohibit-password":
 		return true
 	default:
@@ -639,7 +648,7 @@ func (l LinhoundCollector) ForwardedKeys(duration int) []*ForwardedKey {
 		}
 
 		// the output of 'ssh-add -L' contains one public key per line
-		for _, line := range strings.Split(strings.TrimSpace(string(stdOut)), "\n") {
+		for line := range strings.SplitSeq(strings.TrimSpace(string(stdOut)), "\n") {
 			publicKey, _ := l.parsePublicKey(line)
 			forwardedKeys = append(forwardedKeys, NewForwardedKey(*l.computer, sshdUser, *publicKey, socket, loginTimeZulu, loginIp))
 		}
@@ -941,8 +950,6 @@ func (l LinhoundCollector) CollectArtifacts(duration int) ([]*Sudoer, []*Private
 	if err != nil {
 		log.Fatalf("[ERROR] /etc/passwd could not be read")
 	}
-	passwdLines := strings.Split(string(passwdBytes), "\n")
-
 	// prepare slices for return values
 	var fwdKeys []*ForwardedKey
 	var authKeys []*AuthorizedKey
@@ -952,13 +959,19 @@ func (l LinhoundCollector) CollectArtifacts(duration int) ([]*Sudoer, []*Private
 	var tgts []*TGT
 	var azvms []*AZVM
 
-	// always query Azure IMDS, keytabs, TGTs and forwarded keys
+	// always query Azure IMDS, keytabs and TGTs (independent of sshd)
 	azvms = l.AzureVM()
 	keytabs = l.Keytabs()
 	tgts = l.TGTs()
-	fwdKeys = l.ForwardedKeys(duration)
 
-	for _, passwdLine := range passwdLines {
+	// forwarded-agent sockets only exist for inbound sshd sessions
+	if l.hasSSHD() {
+		fwdKeys = l.ForwardedKeys(duration)
+	} else {
+		logVerbose("CollectArtifacts: sshd not installed, skipping ForwardedKeys collection\n")
+	}
+
+	for passwdLine := range strings.SplitSeq(string(passwdBytes), "\n") {
 		passwdEntry := strings.Split(passwdLine, ":")
 		// skip comments and invalid lines
 		if strings.HasPrefix(passwdLine, "#") || len(passwdEntry) != 7 {
@@ -972,6 +985,11 @@ func (l LinhoundCollector) CollectArtifacts(duration int) ([]*Sudoer, []*Private
 		sudoers = append(sudoers, l.Sudoer(pwName)...)
 		privKeys = append(privKeys, l.PrivateKeys(pwName)...)
 
+		// authorized_keys are consumed by sshd, so they are only meaningful on
+		// hosts that actually run an SSH server
+		if !l.hasSSHD() {
+			continue
+		}
 		// skip authorized keys if user doesn't have interactive shell
 		if !isInteractiveShell(pwShell) {
 			continue
