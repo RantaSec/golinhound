@@ -70,16 +70,14 @@ func openGraphBaseGraph(obj LinhoundObject) ([]*openGraphNode, []*openGraphEdge)
 	userId := fmt.Sprintf("%s@%s", obj.GetUserName(), computerId)
 	userName := fmt.Sprintf("%s@%s", obj.GetUserName(), computerName)
 
-	// flatten computer struct, add required fields, remove unnecessary fields
-	props, _ := structToMap(obj.GetComputer())
-	props["name"] = computerName
-	delete(props, "RootName")
-	delete(props, "UniqueId")
 	// create Computer
 	nodes = append(nodes, &openGraphNode{
-		Kinds:      []string{"SSHComputer"},
-		ID:         computerId,
-		Properties: props,
+		Kinds: []string{"SSHComputer"},
+		ID:    computerId,
+		Properties: map[string]interface{}{
+			"name": computerName,
+			"FQDN": obj.GetComputer().FQDN,
+		},
 	})
 
 	// create Root
@@ -123,20 +121,18 @@ func openGraphBaseGraph(obj LinhoundObject) ([]*openGraphNode, []*openGraphEdge)
 
 // openGraphKeypair transforms a LinhoundKey into an OpenGraph node
 func openGraphKeypair(key LinhoundKey) *openGraphNode {
-	// define unique identifier and display name:
-	uniqueId := key.GetPublicKey().FingerprintSHA256
-	displayName := key.GetPublicKey().FingerprintSHA256
-
-	// flatten struct, add required fields, remove unnecessary fields
-	props, _ := structToMap(key.GetPublicKey())
-	props["name"] = displayName
-	delete(props, "Comment")
-
-	// create OpenGraphNode
+	pk := key.GetPublicKey()
 	return &openGraphNode{
-		Kinds:      []string{"SSHKeyPair"},
-		ID:         uniqueId,
-		Properties: props,
+		Kinds: []string{"SSHKeyPair"},
+		ID:    pk.FingerprintSHA256,
+		Properties: map[string]interface{}{
+			"name":              pk.FingerprintSHA256,
+			"Base64":            pk.Base64,
+			"Algorithm":         pk.Algorithm,
+			"FingerprintSHA256": pk.FingerprintSHA256,
+			"FingerprintMD5":    pk.FingerprintMD5,
+			"FIDO2":             pk.FIDO2,
+		},
 	}
 }
 
@@ -172,59 +168,63 @@ func LinhoundToOpenGraphObjects(obj LinhoundObject) ([]*openGraphNode, []*openGr
 
 	if objType.Name() == "AuthorizedKey" {
 		// create (k)->(u)
-		props, _ := structToMap(obj.(AuthorizedKey))
-		props["Comment"] = obj.(AuthorizedKey).PublicKey.Comment
-		delete(props, "Computer")
-		delete(props, "UserName")
-		delete(props, "PublicKey")
+		ak := obj.(AuthorizedKey)
 		edges = append(edges, newOpenGraphEdge(
 			"CanSSH",
-			obj.(AuthorizedKey).PublicKey.FingerprintSHA256, "SSHKeyPair",
-			fmt.Sprintf("%s@%s", obj.(AuthorizedKey).UserName, obj.(AuthorizedKey).Computer.UniqueId), "SSHUser",
-			props,
+			ak.PublicKey.FingerprintSHA256, "SSHKeyPair",
+			fmt.Sprintf("%s@%s", ak.UserName, ak.Computer.UniqueId), "SSHUser",
+			map[string]interface{}{
+				"FilePath": ak.FilePath,
+				"Comment":  ak.PublicKey.Comment,
+			},
 		))
 	}
 
 	if objType.Name() == "PrivateKey" {
 		// create (u)->(k)
-		props, _ := structToMap(obj.(PrivateKey))
-		props["Comment"] = obj.(PrivateKey).PublicKey.Comment
-		delete(props, "Computer")
-		delete(props, "UserName")
-		delete(props, "PublicKey")
+		pk := obj.(PrivateKey)
 		edges = append(edges, newOpenGraphEdge(
 			"HasPrivateKey",
-			fmt.Sprintf("%s@%s", obj.(PrivateKey).UserName, obj.(PrivateKey).Computer.UniqueId), "SSHUser",
-			obj.(PrivateKey).PublicKey.FingerprintSHA256, "SSHKeyPair",
-			props,
+			fmt.Sprintf("%s@%s", pk.UserName, pk.Computer.UniqueId), "SSHUser",
+			pk.PublicKey.FingerprintSHA256, "SSHKeyPair",
+			map[string]interface{}{
+				"FilePath":  pk.FilePath,
+				"KeyFormat": pk.KeyFormat,
+				"KDF":       pk.KDF,
+				"Cipher":    pk.Cipher,
+				"Encrypted": pk.Encrypted,
+				"Comment":   pk.PublicKey.Comment,
+			},
 		))
 	}
 
 	if objType.Name() == "ForwardedKey" {
 		// create (u)->(k)
-		props, _ := structToMap(obj.(ForwardedKey))
-		props["Comment"] = obj.(ForwardedKey).PublicKey.Comment
-		delete(props, "Computer")
-		delete(props, "UserName")
-		delete(props, "PublicKey")
+		fk := obj.(ForwardedKey)
 		edges = append(edges, newOpenGraphEdge(
 			"ForwardsKey",
-			fmt.Sprintf("%s@%s", obj.(ForwardedKey).UserName, obj.(ForwardedKey).Computer.UniqueId), "SSHUser",
-			obj.(ForwardedKey).PublicKey.FingerprintSHA256, "SSHKeyPair",
-			props,
+			fmt.Sprintf("%s@%s", fk.UserName, fk.Computer.UniqueId), "SSHUser",
+			fk.PublicKey.FingerprintSHA256, "SSHKeyPair",
+			map[string]interface{}{
+				"LastLoginSocket": fk.LastLoginSocket,
+				"LastLoginTime":   fk.LastLoginTime,
+				"LastLoginIP":     fk.LastLoginIP,
+				"Comment":         fk.PublicKey.Comment,
+			},
 		))
 	}
 
 	if objType.Name() == "Sudoer" {
 		// create (u)->(c)
-		props, _ := structToMap(obj.(Sudoer))
-		delete(props, "Computer")
-		delete(props, "UserName")
+		s := obj.(Sudoer)
 		edges = append(edges, newOpenGraphEdge(
 			"CanSudo",
-			fmt.Sprintf("%s@%s", obj.(Sudoer).UserName, obj.(Sudoer).Computer.UniqueId), "SSHUser",
-			obj.(Sudoer).Computer.UniqueId, "SSHComputer",
-			props,
+			fmt.Sprintf("%s@%s", s.UserName, s.Computer.UniqueId), "SSHUser",
+			s.Computer.UniqueId, "SSHComputer",
+			map[string]interface{}{
+				"PasswordRequired": s.PasswordRequired,
+				"Commands":         s.Commands,
+			},
 		))
 	}
 
@@ -345,19 +345,6 @@ func AZVMToOpenGraph(obj AZVM) ([]*openGraphNode, []*openGraphEdge) {
 	))
 	// create
 	return nodes, edges
-}
-
-// structToMap takes any struct and transforms it into key value pairs
-func structToMap(v any) (map[string]interface{}, error) {
-	data, err := json.Marshal(v)
-	if err != nil {
-		return nil, err
-	}
-	var m map[string]interface{}
-	if err := json.Unmarshal(data, &m); err != nil {
-		return nil, err
-	}
-	return m, nil
 }
 
 // MergeOpenGraphJSONs reads OpenGraph JSON objects from stdin and merges them
