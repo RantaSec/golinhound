@@ -541,8 +541,8 @@
         "kind": "HasKeytab",
         "start": {
           "match_by": "id",
-          "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHComputer"
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
         },
         "end": {
           "match_by": "property",
@@ -557,8 +557,8 @@
         "kind": "HasKeytab",
         "start": {
           "match_by": "id",
-          "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHComputer"
+          "value": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
         },
         "end": {
           "match_by": "property",

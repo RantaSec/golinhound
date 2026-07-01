@@ -75,15 +75,21 @@ func emitKeytabs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) {
 	}
 }
 
-// emitHasKeytabEdge emits one HasKeytab edge from the local SSHComputer
-// to the principal (resolved to a BloodHound node name). The end node
-// kind is User for principals containing "@", Computer otherwise.
-// Principals that don't fit a known shape (see PrincipalToBloodhoundName)
-// are debug-logged and dropped.
+// emitHasKeytabEdge emits one HasKeytab edge from the SSHUser that
+// owns the keytab file to the principal (resolved to a BloodHound
+// node name). The end node kind is User for principals containing
+// "@", Computer otherwise. Principals that don't fit a known shape
+// (see PrincipalToBloodhoundName) and files whose uid doesn't map to
+// any Host.Users entry (see Host.fileOwner) are debug-logged and
+// dropped.
 func emitHasKeytabEdge(h *Host, b *opengraph.GraphBuilder, filePath, principal, realm string) {
 	name, err := PrincipalToBloodhoundName(principal, realm)
 	if err != nil {
 		slog.Debug("emitHasKeytabEdge: PrincipalToBloodhoundName failed", "err", err)
+		return
+	}
+	owner := h.fileOwner(filePath)
+	if owner == nil {
 		return
 	}
 	endKind := "User"
@@ -91,7 +97,7 @@ func emitHasKeytabEdge(h *Host, b *opengraph.GraphBuilder, filePath, principal, 
 		endKind = "Computer"
 	}
 	b.AddEdge("HasKeytab",
-		opengraph.ByID("SSHComputer", h.ComputerID()),
+		opengraph.ByID("SSHUser", h.ReferenceUser(owner.UID)),
 		opengraph.ByProperty(endKind, opengraph.PropEq("name", name)),
 		map[string]any{"KeytabFile": filePath})
 }
@@ -181,10 +187,12 @@ func emitTGTs(h *Host, b *opengraph.GraphBuilder) {
 	}
 }
 
-// emitHasTGTEdge emits one HasTGT edge from the local SSHComputer to
-// the client principal of creds (resolved via PrincipalToBloodhoundName).
-// Edge properties carry the ticket's StartTime/EndTime/RenewTime in
-// RFC3339.
+// emitHasTGTEdge emits one HasTGT edge from the SSHUser that owns
+// the ccache file to the client principal of creds (resolved via
+// PrincipalToBloodhoundName). Edge properties carry the ticket's
+// StartTime/EndTime/RenewTime in RFC3339. Ccaches whose uid doesn't
+// map to any Host.Users entry (see Host.fileOwner) are debug-logged
+// and dropped.
 func emitHasTGTEdge(h *Host, b *opengraph.GraphBuilder, filePath string, creds *credentials.Credential) {
 	principal := creds.Client.PrincipalName.PrincipalNameString()
 	realm := creds.Client.Realm
@@ -193,12 +201,16 @@ func emitHasTGTEdge(h *Host, b *opengraph.GraphBuilder, filePath string, creds *
 		slog.Debug("emitHasTGTEdge: PrincipalToBloodhoundName failed", "err", err)
 		return
 	}
+	owner := h.fileOwner(filePath)
+	if owner == nil {
+		return
+	}
 	endKind := "User"
 	if !strings.Contains(name, "@") {
 		endKind = "Computer"
 	}
 	b.AddEdge("HasTGT",
-		opengraph.ByID("SSHComputer", h.ComputerID()),
+		opengraph.ByID("SSHUser", h.ReferenceUser(owner.UID)),
 		opengraph.ByProperty(endKind, opengraph.PropEq("name", name)),
 		map[string]any{
 			"TicketCacheFile": filePath,

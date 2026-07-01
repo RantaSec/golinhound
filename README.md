@@ -201,7 +201,9 @@ az vm run-command invoke \
 
 ![](res/img/data_model_ad.png)
 
-This edge indicates that credentials for an Active Directory user are stored in a keytab file on an SSHComputer.
+#### HasKeytab
+
+This edge indicates that an SSHUser holds credentials for an Active Directory user in a keytab file owned by that SSHUser.
 
 Extract Kerberos encryption keys from the keytab:
 ```bash
@@ -209,7 +211,7 @@ klist -eKkt /home/alice/svc_custom.keytab
 ```
 
 #### HasTGT
-This edge indicates that cached Ticket Granting Tickets (TGTs) for an Active Directory user exist on an SSHComputer, typically in `/tmp/krb5cc_*` files.
+This edge indicates that an SSHUser holds cached Ticket Granting Tickets (TGTs) for an Active Directory user in a `/tmp/krb5cc_*` file owned by that SSHUser.
 
 Export and use the credential cache:
 ``` bash
@@ -312,26 +314,26 @@ RETURN p
 
 ### Active Directory Domain Breakout
 
-This query shows non-AD attack paths from a computer in one domain to a computer in another domain.
+This query shows non-AD attack paths from an Active Directory principal in one domain to a principal in another domain.
 
 ```sql
-MATCH p1=(c1:SSHComputer)-[:HasKeytab|:HasTGT]->(ad1)
-MATCH p2=(c2:SSHComputer)-[:HasKeytab|:HasTGT]->(ad2)
-WHERE c1 <> c2 AND ad1.domain <> ad2.domain
-MATCH p=allShortestPaths((c1)-[*..]->(c2))
+MATCH p1=(u1:SSHUser)-[:HasKeytab|:HasTGT]->(ad1)
+MATCH p2=(u2:SSHUser)-[:HasKeytab|:HasTGT]->(ad2)
+WHERE u1 <> u2 AND ad1.domain <> ad2.domain
+MATCH p=allShortestPaths((u1)-[*..]->(u2))
 RETURN p1, p, p2
 ```
 
 
 ### Active Directory Principal Breakout
 
-This query shows non-AD attack paths from a computer with access to one AD principal to a computer with another AD principal.
+This query shows non-AD attack paths from a user with access to one Active Directory principal to another principal.
 
 ```sql
-MATCH p1=(c1:SSHComputer)-[:HasKeytab|:HasTGT]->(ad1)
-MATCH p2=(c2:SSHComputer)-[:HasKeytab|:HasTGT]->(ad2)
-WHERE c1 <> c2 AND ad1 <> ad2
-MATCH p=allShortestPaths((c1)-[*..]->(c2))
+MATCH p1=(u1:SSHUser)-[:HasKeytab|:HasTGT]->(ad1)
+MATCH p2=(u2:SSHUser)-[:HasKeytab|:HasTGT]->(ad2)
+WHERE u1 <> u2 AND ad1 <> ad2
+MATCH p=allShortestPaths((u1)-[*..]->(u2))
 RETURN p1, p, p2
 ```
 

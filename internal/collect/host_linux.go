@@ -103,6 +103,32 @@ func (h *Host) ReferenceUser(uid string) string {
 	return uid + "@" + h.uniqueId
 }
 
+// fileOwner returns the *User that owns the given file, resolved via
+// os.Stat + h.Users lookup. Returns nil (and logs at Debug) when the
+// file's owning uid has no matching entry — e.g. userns-remapped uids,
+// container-only uids not present in /etc/passwd, or uids the local
+// system doesn't know about. Callers treat nil as "skip — can't
+// attribute to any local user."
+func (h *Host) fileOwner(path string) *User {
+	fi, err := os.Stat(path)
+	if err != nil {
+		slog.Debug("fileOwner: stat failed", "path", path, "err", err)
+		return nil
+	}
+	stat, ok := fi.Sys().(*syscall.Stat_t)
+	if !ok {
+		slog.Debug("fileOwner: syscall.Stat_t unavailable", "path", path)
+		return nil
+	}
+	uid := strconv.FormatUint(uint64(stat.Uid), 10)
+	u, ok := h.Users[uid]
+	if !ok {
+		slog.Debug("fileOwner: uid not in Host.Users", "path", path, "uid", uid)
+		return nil
+	}
+	return u
+}
+
 // enumerateUsers reads /etc/passwd into a UID-keyed map, then
 // enriches it with SSSD-backed accounts via enrichFromJournal
 // (recent logind SESSION_START records -> getent) and
