@@ -7,6 +7,7 @@ require (
 	github.com/jcmturner/gokrb5/v8 v8.4.4
 	github.com/shirou/gopsutil/v4 v4.26.4
 	golang.org/x/crypto v0.51.0
+	golang.org/x/sys v0.44.0
 	golang.org/x/term v0.43.0
 )
 
@@ -21,5 +22,4 @@ require (
 	github.com/tklauser/go-sysconf v0.4.0 // indirect
 	github.com/tklauser/numcpus v0.12.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
-	golang.org/x/sys v0.44.0 // indirect
 )
