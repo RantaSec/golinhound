@@ -44,7 +44,7 @@
         "kinds": [
           "SSHUser"
         ],
-        "id": "charlie@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
+        "id": "1000@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
         "properties": {
           "name": "charlie@srv3"
         }
@@ -53,7 +53,7 @@
         "kinds": [
           "SSHUser"
         ],
-        "id": "bob@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
+        "id": "1001@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
         "properties": {
           "name": "bob@srv3"
         }
@@ -86,7 +86,7 @@
         "kinds": [
           "SSHUser"
         ],
-        "id": "david@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
+        "id": "1002@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
         "properties": {
           "name": "david@srv4"
         }
@@ -95,7 +95,7 @@
         "kinds": [
           "SSHUser"
         ],
-        "id": "charlie@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
+        "id": "1000@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
         "properties": {
           "name": "charlie@srv4"
         }
@@ -114,7 +114,7 @@
         "kinds": [
           "SSHUser"
         ],
-        "id": "david@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
+        "id": "1002@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
         "properties": {
           "name": "david@srv2"
         }
@@ -123,7 +123,7 @@
         "kinds": [
           "SSHUser"
         ],
-        "id": "bob@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
+        "id": "1001@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
         "properties": {
           "name": "bob@srv2"
         }
@@ -139,16 +139,15 @@
         },
         "end": {
           "match_by": "id",
-          "value": "charlie@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
+          "value": "1000@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
           "kind": "SSHUser"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "CanSudo",
         "start": {
           "match_by": "id",
-          "value": "charlie@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
+          "value": "1000@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
           "kind": "SSHUser"
         },
         "end": {
@@ -170,16 +169,15 @@
         },
         "end": {
           "match_by": "id",
-          "value": "bob@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
+          "value": "1001@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
           "kind": "SSHUser"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "CanSudo",
         "start": {
           "match_by": "id",
-          "value": "bob@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
+          "value": "1001@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
           "kind": "SSHUser"
         },
         "end": {
@@ -196,7 +194,7 @@
         "kind": "HasPrivateKey",
         "start": {
           "match_by": "id",
-          "value": "bob@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
+          "value": "1001@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
           "kind": "SSHUser"
         },
         "end": {
@@ -217,7 +215,7 @@
         "kind": "ForwardsKey",
         "start": {
           "match_by": "id",
-          "value": "charlie@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
+          "value": "1000@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
           "kind": "SSHUser"
         },
         "end": {
@@ -241,7 +239,7 @@
         },
         "end": {
           "match_by": "id",
-          "value": "bob@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
+          "value": "1001@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
           "kind": "SSHUser"
         },
         "properties": {
@@ -258,7 +256,7 @@
         },
         "end": {
           "match_by": "id",
-          "value": "bob@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
+          "value": "1001@zvgbNU6xQbsK0tTcVKsKfTnZfqDJz5Bbr1D0iOQQMM0",
           "kind": "SSHUser"
         },
         "properties": {
@@ -275,16 +273,15 @@
         },
         "end": {
           "match_by": "id",
-          "value": "david@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
+          "value": "1002@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
           "kind": "SSHUser"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "CanSudo",
         "start": {
           "match_by": "id",
-          "value": "david@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
+          "value": "1002@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
           "kind": "SSHUser"
         },
         "end": {
@@ -306,16 +303,15 @@
         },
         "end": {
           "match_by": "id",
-          "value": "charlie@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
+          "value": "1000@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
           "kind": "SSHUser"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "CanSudo",
         "start": {
           "match_by": "id",
-          "value": "charlie@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
+          "value": "1000@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
           "kind": "SSHUser"
         },
         "end": {
@@ -332,7 +328,7 @@
         "kind": "ForwardsKey",
         "start": {
           "match_by": "id",
-          "value": "david@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
+          "value": "1002@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
           "kind": "SSHUser"
         },
         "end": {
@@ -356,7 +352,7 @@
         },
         "end": {
           "match_by": "id",
-          "value": "david@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
+          "value": "1002@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
           "kind": "SSHUser"
         },
         "properties": {
@@ -373,7 +369,7 @@
         },
         "end": {
           "match_by": "id",
-          "value": "charlie@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
+          "value": "1000@iAfRMZ4J3DO8WwkYOgIZCQJ2KHTEmIMc2O1566BWSmI",
           "kind": "SSHUser"
         },
         "properties": {
@@ -390,16 +386,15 @@
         },
         "end": {
           "match_by": "id",
-          "value": "david@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
+          "value": "1002@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
           "kind": "SSHUser"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "CanSudo",
         "start": {
           "match_by": "id",
-          "value": "david@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
+          "value": "1002@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
           "kind": "SSHUser"
         },
         "end": {
@@ -421,16 +416,15 @@
         },
         "end": {
           "match_by": "id",
-          "value": "bob@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
+          "value": "1001@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
           "kind": "SSHUser"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "HasPrivateKey",
         "start": {
           "match_by": "id",
-          "value": "bob@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
+          "value": "1001@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
           "kind": "SSHUser"
         },
         "end": {
@@ -456,7 +450,7 @@
         },
         "end": {
           "match_by": "id",
-          "value": "david@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
+          "value": "1002@MWDYsqsGlvFAltQM7WyGIhz3P463/G2kpxNvZV/sJh4",
           "kind": "SSHUser"
         },
         "properties": {

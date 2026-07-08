@@ -16,7 +16,7 @@
         "kinds": [
           "SSHUser"
         ],
-        "id": "eve@zfVhtOQPoXYkKWVBLQUROHEXXPkI9l94Yvp4hX88C4M",
+        "id": "1000@zfVhtOQPoXYkKWVBLQUROHEXXPkI9l94Yvp4hX88C4M",
         "properties": {
           "name": "eve@server-prod"
         }
@@ -49,7 +49,7 @@
         "kinds": [
           "SSHUser"
         ],
-        "id": "eve@q6KCcbVsv18U1VxQtwL+sHmf+ruJ409uZ6K7+aSlhX0",
+        "id": "1000@q6KCcbVsv18U1VxQtwL+sHmf+ruJ409uZ6K7+aSlhX0",
         "properties": {
           "name": "eve@server-test"
         }
@@ -65,10 +65,9 @@
         },
         "end": {
           "match_by": "id",
-          "value": "eve@zfVhtOQPoXYkKWVBLQUROHEXXPkI9l94Yvp4hX88C4M",
+          "value": "1000@zfVhtOQPoXYkKWVBLQUROHEXXPkI9l94Yvp4hX88C4M",
           "kind": "SSHUser"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "CanSSH",
@@ -79,7 +78,7 @@
         },
         "end": {
           "match_by": "id",
-          "value": "eve@zfVhtOQPoXYkKWVBLQUROHEXXPkI9l94Yvp4hX88C4M",
+          "value": "1000@zfVhtOQPoXYkKWVBLQUROHEXXPkI9l94Yvp4hX88C4M",
           "kind": "SSHUser"
         },
         "properties": {
@@ -96,16 +95,15 @@
         },
         "end": {
           "match_by": "id",
-          "value": "eve@q6KCcbVsv18U1VxQtwL+sHmf+ruJ409uZ6K7+aSlhX0",
+          "value": "1000@q6KCcbVsv18U1VxQtwL+sHmf+ruJ409uZ6K7+aSlhX0",
           "kind": "SSHUser"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "ForwardsKey",
         "start": {
           "match_by": "id",
-          "value": "eve@q6KCcbVsv18U1VxQtwL+sHmf+ruJ409uZ6K7+aSlhX0",
+          "value": "1000@q6KCcbVsv18U1VxQtwL+sHmf+ruJ409uZ6K7+aSlhX0",
           "kind": "SSHUser"
         },
         "end": {
@@ -129,7 +127,7 @@
         },
         "end": {
           "match_by": "id",
-          "value": "eve@q6KCcbVsv18U1VxQtwL+sHmf+ruJ409uZ6K7+aSlhX0",
+          "value": "1000@q6KCcbVsv18U1VxQtwL+sHmf+ruJ409uZ6K7+aSlhX0",
           "kind": "SSHUser"
         },
         "properties": {
@@ -141,7 +139,7 @@
         "kind": "CanSudo",
         "start": {
           "match_by": "id",
-          "value": "eve@zfVhtOQPoXYkKWVBLQUROHEXXPkI9l94Yvp4hX88C4M",
+          "value": "1000@zfVhtOQPoXYkKWVBLQUROHEXXPkI9l94Yvp4hX88C4M",
           "kind": "SSHUser"
         },
         "end": {

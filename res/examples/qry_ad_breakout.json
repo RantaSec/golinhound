@@ -52,7 +52,7 @@
         "kinds": [
           "SSHUser"
         ],
-        "id": "ansible@NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
+        "id": "998@NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
         "properties": {
           "name": "ansible@srv7"
         }
@@ -71,7 +71,7 @@
         "kinds": [
           "SSHUser"
         ],
-        "id": "app@e7khdDjZrauN4SyCs6QJUuZD9qV5GuhvZP9FQqYU+CU",
+        "id": "1000@e7khdDjZrauN4SyCs6QJUuZD9qV5GuhvZP9FQqYU+CU",
         "properties": {
           "name": "app@srv06"
         }
@@ -87,16 +87,15 @@
         },
         "end": {
           "match_by": "id",
-          "value": "ansible@NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
+          "value": "998@NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
           "kind": "SSHUser"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "CanSudo",
         "start": {
           "match_by": "id",
-          "value": "ansible@NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
+          "value": "998@NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
           "kind": "SSHUser"
         },
         "end": {
@@ -118,7 +117,7 @@
         },
         "end": {
           "match_by": "id",
-          "value": "ansible@NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
+          "value": "998@NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
           "kind": "SSHUser"
         },
         "properties": {
@@ -135,16 +134,15 @@
         },
         "end": {
           "match_by": "id",
-          "value": "app@e7khdDjZrauN4SyCs6QJUuZD9qV5GuhvZP9FQqYU+CU",
+          "value": "1000@e7khdDjZrauN4SyCs6QJUuZD9qV5GuhvZP9FQqYU+CU",
           "kind": "SSHUser"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "HasPrivateKey",
         "start": {
           "match_by": "id",
-          "value": "app@e7khdDjZrauN4SyCs6QJUuZD9qV5GuhvZP9FQqYU+CU",
+          "value": "1000@e7khdDjZrauN4SyCs6QJUuZD9qV5GuhvZP9FQqYU+CU",
           "kind": "SSHUser"
         },
         "end": {

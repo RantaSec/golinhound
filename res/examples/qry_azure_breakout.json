@@ -16,7 +16,7 @@
         "kinds": [
           "SSHUser"
         ],
-        "id": "appadmin@/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
+        "id": "1000@/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
         "properties": {
           "name": "appadmin@srv5"
         }
@@ -61,7 +61,7 @@
         "kinds": [
           "SSHUser"
         ],
-        "id": "appadmin@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
+        "id": "1000@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
         "properties": {
           "name": "appadmin@srv6"
         }
@@ -89,16 +89,15 @@
         },
         "end": {
           "match_by": "id",
-          "value": "appadmin@/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
+          "value": "1000@/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
           "kind": "SSHUser"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "CanSudo",
         "start": {
           "match_by": "id",
-          "value": "appadmin@/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
+          "value": "1000@/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
           "kind": "SSHUser"
         },
         "end": {
@@ -115,7 +114,7 @@
         "kind": "HasPrivateKey",
         "start": {
           "match_by": "id",
-          "value": "appadmin@/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
+          "value": "1000@/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
           "kind": "SSHUser"
         },
         "end": {
@@ -143,8 +142,7 @@
           "match_by": "id",
           "value": "/SUBSCRIPTIONS/E3CC8B7B-4A14-457D-AC44-CAFC2A77183D/RESOURCEGROUPS/APP/PROVIDERS/MICROSOFT.COMPUTE/VIRTUALMACHINES/srv5",
           "kind": "AZVM"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "SameMachine",
@@ -157,8 +155,7 @@
           "match_by": "id",
           "value": "/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
           "kind": "SSHComputer"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "CanImpersonate",
@@ -169,16 +166,15 @@
         },
         "end": {
           "match_by": "id",
-          "value": "appadmin@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
+          "value": "1000@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
           "kind": "SSHUser"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "CanSudo",
         "start": {
           "match_by": "id",
-          "value": "appadmin@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
+          "value": "1000@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
           "kind": "SSHUser"
         },
         "end": {
@@ -195,7 +191,7 @@
         "kind": "HasPrivateKey",
         "start": {
           "match_by": "id",
-          "value": "appadmin@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
+          "value": "1000@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
           "kind": "SSHUser"
         },
         "end": {
@@ -221,7 +217,7 @@
         },
         "end": {
           "match_by": "id",
-          "value": "appadmin@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
+          "value": "1000@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
           "kind": "SSHUser"
         },
         "properties": {
@@ -238,7 +234,7 @@
         },
         "end": {
           "match_by": "id",
-          "value": "appadmin@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
+          "value": "1000@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
           "kind": "SSHUser"
         },
         "properties": {
@@ -257,8 +253,7 @@
           "match_by": "id",
           "value": "/SUBSCRIPTIONS/22D22B53-1083-461B-8352-8F11A23E602B/RESOURCEGROUPS/APP2/PROVIDERS/MICROSOFT.COMPUTE/VIRTUALMACHINES/srv6",
           "kind": "AZVM"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "SameMachine",
@@ -271,8 +266,7 @@
           "match_by": "id",
           "value": "/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
           "kind": "SSHComputer"
-        },
-        "properties": {}
+        }
       }
     ]
   }

@@ -20,6 +20,7 @@
         "id": "/SUBSCRIPTIONS/986760D0-AB73-4398-B930-EAC85CDCBB2C/RESOURCEGROUPS/APP/PROVIDERS/MICROSOFT.COMPUTE/VIRTUALMACHINES/srv8",
         "properties": {
           "name": "srv8",
+          "operatingsystem": "Linux",
           "tenantid": "6FD99F8E-9B62-429E-9213-515323EAF732"
         }
       },
@@ -58,8 +59,7 @@
           "match_by": "id",
           "value": "/SUBSCRIPTIONS/986760D0-AB73-4398-B930-EAC85CDCBB2C/RESOURCEGROUPS/APP/PROVIDERS/MICROSOFT.COMPUTE/VIRTUALMACHINES/srv8",
           "kind": "AZVM"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "AZManagedIdentity",
@@ -72,8 +72,7 @@
           "match_by": "id",
           "value": "3250CDDA-EE1D-49F6-8B5C-1C34C184167B",
           "kind": "AZServicePrincipal"
-        },
-        "properties": {}
+        }
       },
       {
         "kind": "AZGetSecrets",
@@ -86,8 +85,7 @@
           "match_by": "id",
           "value": "/SUBSCRIPTIONS/51E42161-0C6F-49BC-9F4D-B277610C5F49/RESOURCEGROUPS/APP/PROVIDERS/MICROSOFT.KEYVAULT/VAULTS/KV-DEMO",
           "kind": "AZKeyVault"
-        },
-        "properties": {}
+        }
       }
     ]
   }

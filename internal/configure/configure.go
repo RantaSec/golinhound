@@ -1,4 +1,4 @@
-package golinhound
+package configure
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-//go:embed res/custom-nodes.json
+//go:embed custom-nodes.json
 var customNodesJSON []byte
 
 const configureHTTPTimeout = 30 * time.Second
@@ -29,10 +29,10 @@ type loginResponse struct {
 	} `json:"data"`
 }
 
-// Configure logs into BloodHound at baseURL with the given credentials and
+// Run logs into BloodHound at baseURL with the given credentials and
 // uploads the embedded custom-nodes.json. If insecure is true, TLS verification
 // is skipped (for self-signed BloodHound deployments).
-func Configure(baseURL, username, password string, insecure bool) error {
+func Run(baseURL, username, password string, insecure bool) error {
 	baseURL = strings.TrimRight(baseURL, "/")
 
 	client := &http.Client{
@@ -52,8 +52,8 @@ func Configure(baseURL, username, password string, insecure bool) error {
 	return nil
 }
 
-// bloodhoundLogin authenticates against POST /api/v2/login with the secret
-// login method and returns the JWT session token from the response.
+// bloodhoundLogin authenticates against POST /api/v2/login and returns
+// the JWT session token from the response.
 func bloodhoundLogin(client *http.Client, baseURL, user, pass string) (string, error) {
 	body, err := json.Marshal(loginRequest{LoginMethod: "secret", Username: user, Secret: pass})
 	if err != nil {

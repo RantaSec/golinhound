@@ -16,7 +16,7 @@
                 "kinds": [
                     "SSHUser"
                 ],
-                "id": "root@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                "id": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                 "properties": {
                     "name": "root@52170a57403b"
                 }
@@ -25,7 +25,7 @@
                 "kinds": [
                     "SSHUser"
                 ],
-                "id": "alice_adm@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                "id": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                 "properties": {
                     "name": "alice_adm@52170a57403b"
                 }
@@ -34,7 +34,7 @@
                 "kinds": [
                     "SSHUser"
                 ],
-                "id": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                "id": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                 "properties": {
                     "name": "alice@52170a57403b"
                 }
@@ -129,15 +129,14 @@
                 "kind": "IsRoot",
                 "start": {
                     "match_by": "id",
-                    "value": "root@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "end": {
                     "match_by": "id",
                     "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHComputer"
-                },
-                "properties": {}
+                }
             },
             {
                 "kind": "CanImpersonate",
@@ -148,10 +147,9 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "root@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
-                },
-                "properties": {}
+                }
             },
             {
                 "kind": "CanImpersonate",
@@ -162,16 +160,15 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice_adm@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
-                },
-                "properties": {}
+                }
             },
             {
                 "kind": "CanSudo",
                 "start": {
                     "match_by": "id",
-                    "value": "alice_adm@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "end": {
@@ -193,16 +190,15 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
-                },
-                "properties": {}
+                }
             },
             {
                 "kind": "HasPrivateKey",
                 "start": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "end": {
@@ -223,7 +219,7 @@
                 "kind": "HasPrivateKey",
                 "start": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "end": {
@@ -244,7 +240,7 @@
                 "kind": "HasPrivateKey",
                 "start": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "end": {
@@ -265,7 +261,7 @@
                 "kind": "HasPrivateKey",
                 "start": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "end": {
@@ -286,7 +282,7 @@
                 "kind": "HasPrivateKey",
                 "start": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "end": {
@@ -307,7 +303,7 @@
                 "kind": "HasPrivateKey",
                 "start": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "end": {
@@ -328,7 +324,7 @@
                 "kind": "ForwardsKey",
                 "start": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "end": {
@@ -352,7 +348,7 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "properties": {
@@ -369,7 +365,7 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "properties": {
@@ -386,7 +382,7 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "properties": {
@@ -403,7 +399,7 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "properties": {
@@ -420,7 +416,7 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "properties": {
@@ -437,7 +433,7 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "properties": {
@@ -454,7 +450,7 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice_adm@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "properties": {
@@ -471,7 +467,7 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice_adm@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "properties": {
@@ -488,7 +484,7 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice_adm@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "properties": {
@@ -505,7 +501,7 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice_adm@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "properties": {
@@ -522,7 +518,7 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice_adm@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "properties": {
@@ -539,7 +535,7 @@
                 },
                 "end": {
                     "match_by": "id",
-                    "value": "alice_adm@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
                     "kind": "SSHUser"
                 },
                 "properties": {
@@ -555,9 +551,9 @@
                     "kind": "SSHComputer"
                 },
                 "end": {
-                    "match_by": "name",
-                    "value": "SVC_CUSTOM@DEMO.LOCAL",
-                    "kind": "User"
+                    "match_by": "property",
+                    "kind": "User",
+                    "property_matchers": [{"key": "name", "operator": "equals", "value": "SVC_CUSTOM@DEMO.LOCAL"}]
                 },
                 "properties": {
                     "FilePath": "/home/alice/svc_custom.keytab"
@@ -571,9 +567,9 @@
                     "kind": "SSHComputer"
                 },
                 "end": {
-                    "match_by": "name",
-                    "value": "SERVER.DEMO.LOCAL",
-                    "kind": "Computer"
+                    "match_by": "property",
+                    "kind": "Computer",
+                    "property_matchers": [{"key": "name", "operator": "equals", "value": "SERVER.DEMO.LOCAL"}]
                 },
                 "properties": {
                     "FilePath": "/etc/krb5.keytab"

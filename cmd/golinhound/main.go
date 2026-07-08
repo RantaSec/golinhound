@@ -1,17 +1,29 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 
-	lh "github.com/RantaSec/golinhound"
+	"github.com/RantaSec/golinhound/internal/collect"
+	"github.com/RantaSec/golinhound/internal/configure"
+	"github.com/RantaSec/golinhound/internal/opengraph"
 	"golang.org/x/term"
 )
 
+// installLogger sets the default slog logger to JSON-on-stderr; verbose enables Debug.
+func installLogger(verbose bool) {
+	level := slog.LevelInfo
+	if verbose {
+		level = slog.LevelDebug
+	}
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: level})))
+}
+
 func main() {
-	// define subcommands
 	collectCmd := flag.NewFlagSet("collect", flag.ExitOnError)
 	collectDuration := collectCmd.Int("wait-for-keys", 0, "Time in minutes to wait for new forwarded SSH keys (0 = no wait)")
 	collectVerbose := collectCmd.Bool("verbose", false, "Enable verbose output")
@@ -22,24 +34,32 @@ func main() {
 	configureUser := configureCmd.String("user", "", "BloodHound username")
 	configureInsecure := configureCmd.Bool("insecure", false, "Skip TLS certificate verification")
 
-	// make sure a subcommand has been specified
 	if len(os.Args) < 2 {
 		printCommandUsage()
 		os.Exit(1)
 	}
 
-	// switch between subcommands
 	switch os.Args[1] {
 	case "collect":
 		collectCmd.Parse(os.Args[2:])
-		lh.Verbose = *collectVerbose
-		result := lh.NewLinhoundCollector().CollectArtifactsOpenGraph(*collectDuration)
+		installLogger(*collectVerbose)
+		result, err := collect.Run(context.Background(), collect.Options{
+			WaitForKeysDuration: *collectDuration,
+		})
+		if err != nil {
+			slog.Error("collect failed", "err", err)
+			os.Exit(1)
+		}
 		fmt.Println(result)
 	case "merge":
 		mergeCmd.Parse(os.Args[2:])
-		lh.Verbose = *mergeVerbose
-		result := lh.MergeOpenGraphJSONs()
-		fmt.Println(result)
+		installLogger(*mergeVerbose)
+		result, err := opengraph.MergeOpenGraphJSONs(os.Stdin)
+		if err != nil {
+			slog.Error("merge failed", "err", err)
+			os.Exit(1)
+		}
+		fmt.Println(string(result))
 	case "configure":
 		configureCmd.Parse(os.Args[2:])
 		if *configureURL == "" || *configureUser == "" {
@@ -66,7 +86,7 @@ func runConfigure(url, user string, insecure bool) error {
 	if err != nil {
 		return fmt.Errorf("failed to read password: %w", err)
 	}
-	if err := lh.Configure(url, user, string(pw), insecure); err != nil {
+	if err := configure.Run(url, user, string(pw), insecure); err != nil {
 		return err
 	}
 	fmt.Println("BloodHound configured: custom node icons uploaded.")
