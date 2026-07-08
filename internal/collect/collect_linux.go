@@ -24,7 +24,7 @@ func Run(ctx context.Context, opts Options) (string, error) {
 	collectors := []Collector{
 		&AzureCollector{},
 		&ADCollector{},
-		&SSHClientCollector{},
+		&SSHClientCollector{CollectExpiredCertificates: opts.CollectExpiredCertificates},
 		&SSHServerCollector{WaitForKeysDuration: opts.WaitForKeysDuration},
 	}
 	for _, c := range collectors {

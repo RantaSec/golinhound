@@ -25,14 +25,13 @@
         "kinds": [
           "SSHKeyPair"
         ],
-        "id": "kbmKzK62mtXX4xrdubYxNzKZhj0FsQq3OS88gys1CWA",
+        "id": "c2+3xw987nQ6kuUIGJOQE0pAgd5VrXNUKVskrIZWkjw",
         "properties": {
           "Algorithm": "ssh-rsa",
-          "Base64": "AAAAB3NzaC1yc2EAAAADAQABAAABgQDhhSwJ5tNuhFkqYmd8MJco5za7K6udO/73AF0I1gHjtik8Tdg09z75scgQ0PZLkaAEibuS8mPLbBioz+TeEdOsFtRaET08imheZWOJI9g0o0QL4qyHTu3pkOF2cf+e3qUNmcoV7BDMw3f5sa4nH93yEaBNCT38onxuh3qDhC+iuWGGjogQZlfLPiL5JXnCo8MVM4XSF61woOl3hdHg2YLRxy4Qt6T/nE40wz3nSAIdl+YxNZdmO0HgSE/NOjz2zTh8+d3zYxZuJmSNnRGE94hv1Xwy9mQTfbRg1Vx7QJIDGLlRFxQRuOg02O2dwH9FbJ1FCEUn5Yil4KofN4qDqhnX5qxuY+PvKcSMcaudMszowhAYnkukQ637AJEwiz1L0rb3Tp5XMImToUtnV9IcNPkPc0Gp8JsCDOOteIs5kte51MFrtYfKIENZyoB+zoh21hHAkf4WBeSdbzXtyeCgqpmWYwrJHcjSkaHRY195Uun6/3VH4mf6cDg0rKnjqxUsyE8=",
           "FIDO2": false,
-          "FingerprintMD5": "36:09:69:9f:2e:46:e4:f9:2e:b1:fc:52:0e:73:b2:fb",
-          "FingerprintSHA256": "kbmKzK62mtXX4xrdubYxNzKZhj0FsQq3OS88gys1CWA",
-          "name": "kbmKzK62mtXX4xrdubYxNzKZhj0FsQq3OS88gys1CWA"
+          "FingerprintMD5": "2d:7d:a9:f6:e5:ec:79:56:ed:48:ee:d9:5e:71:f3:3e",
+          "FingerprintSHA256": "c2+3xw987nQ6kuUIGJOQE0pAgd5VrXNUKVskrIZWkjw",
+          "name": "c2+3xw987nQ6kuUIGJOQE0pAgd5VrXNUKVskrIZWkjw"
         }
       },
       {
@@ -119,16 +118,16 @@
         },
         "end": {
           "match_by": "id",
-          "value": "kbmKzK62mtXX4xrdubYxNzKZhj0FsQq3OS88gys1CWA",
+          "value": "c2+3xw987nQ6kuUIGJOQE0pAgd5VrXNUKVskrIZWkjw",
           "kind": "SSHKeyPair"
         },
         "properties": {
           "Cipher": "none",
           "Comment": "",
           "Encrypted": false,
-          "FilePath": "/home/appadmin/.ssh/id_rsa",
           "KDF": "none",
-          "KeyFormat": "openssh-key-v1"
+          "KeyFormat": "openssh-key-v1",
+          "PrivateKeyFile": "/home/appadmin/.ssh/id_rsa"
         }
       },
       {
@@ -196,23 +195,23 @@
         },
         "end": {
           "match_by": "id",
-          "value": "kbmKzK62mtXX4xrdubYxNzKZhj0FsQq3OS88gys1CWA",
+          "value": "c2+3xw987nQ6kuUIGJOQE0pAgd5VrXNUKVskrIZWkjw",
           "kind": "SSHKeyPair"
         },
         "properties": {
           "Cipher": "none",
           "Comment": "",
           "Encrypted": false,
-          "FilePath": "/home/appadmin/.ssh/id_rsa",
           "KDF": "none",
-          "KeyFormat": "openssh-key-v1"
+          "KeyFormat": "openssh-key-v1",
+          "PrivateKeyFile": "/home/appadmin/.ssh/id_rsa"
         }
       },
       {
         "kind": "CanSSH",
         "start": {
           "match_by": "id",
-          "value": "kbmKzK62mtXX4xrdubYxNzKZhj0FsQq3OS88gys1CWA",
+          "value": "c2+3xw987nQ6kuUIGJOQE0pAgd5VrXNUKVskrIZWkjw",
           "kind": "SSHKeyPair"
         },
         "end": {
@@ -222,14 +221,14 @@
         },
         "properties": {
           "Comment": "appadmin",
-          "FilePath": "/home/appadmin/.ssh/authorized_keys"
+          "AuthorizedKeysFile": "/home/appadmin/.ssh/authorized_keys"
         }
       },
       {
         "kind": "CanSSH",
         "start": {
           "match_by": "id",
-          "value": "kbmKzK62mtXX4xrdubYxNzKZhj0FsQq3OS88gys1CWA",
+          "value": "c2+3xw987nQ6kuUIGJOQE0pAgd5VrXNUKVskrIZWkjw",
           "kind": "SSHKeyPair"
         },
         "end": {
@@ -239,7 +238,7 @@
         },
         "properties": {
           "Comment": "appadmin",
-          "FilePath": "/home/appadmin/.ssh/authorized_keys"
+          "AuthorizedKeysFile": "/home/appadmin/.ssh/authorized_keys"
         }
       },
       {

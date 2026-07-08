@@ -1,0 +1,591 @@
+{
+  "metadata": {},
+  "graph": {
+    "nodes": [
+      {
+        "kinds": [
+          "SSHComputer"
+        ],
+        "id": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "FQDN": "eternal-host",
+          "name": "eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "0@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "root@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1000@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "daemon@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1001@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "bin@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1002@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "sys@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1003@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "sync@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1004@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "games@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1005@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "man@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1006@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "lp@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1007@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "mail@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1008@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "news@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1009@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "uucp@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1010@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "proxy@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1011@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "www-data@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1012@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "backup@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1013@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "list@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1014@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "irc@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1015@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "_apt@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1016@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "nobody@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1017@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "systemd-network@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "998@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "sshd@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1018@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+        "properties": {
+          "name": "bob@eternal-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHKeyPair"
+        ],
+        "id": "uuTFm7pgC8cFKQaLr8TWK/435qotFXbnCIWuJl0CUnY",
+        "properties": {
+          "Algorithm": "ssh-ed25519",
+          "FIDO2": false,
+          "FingerprintMD5": "90:1d:37:d9:60:4e:29:64:d8:77:5a:2e:cf:bd:d3:cc",
+          "FingerprintSHA256": "uuTFm7pgC8cFKQaLr8TWK/435qotFXbnCIWuJl0CUnY",
+          "name": "uuTFm7pgC8cFKQaLr8TWK/435qotFXbnCIWuJl0CUnY"
+        }
+      },
+      {
+        "kinds": [
+          "SSHCertificate"
+        ],
+        "id": "bob@ipelscqBj/R9lJyS8ClNwNmsoTn/g9dLALF+5YV5Un4",
+        "properties": {
+          "CAFingerprintSHA256": "qcpBOoidur+fWiXCgbNq6iRG3ZSfAvHaXaAjeqyO3qo",
+          "CertFingerprintSHA256": "ipelscqBj/R9lJyS8ClNwNmsoTn/g9dLALF+5YV5Un4",
+          "Extension_permit-pty": "",
+          "KeyId": "bob-eternal",
+          "Principal": "bob",
+          "Serial": "0",
+          "SubjectAlgorithm": "ssh-ed25519",
+          "SubjectFIDO2": false,
+          "SubjectFingerprintMD5": "90:1d:37:d9:60:4e:29:64:d8:77:5a:2e:cf:bd:d3:cc",
+          "SubjectFingerprintSHA256": "uuTFm7pgC8cFKQaLr8TWK/435qotFXbnCIWuJl0CUnY",
+          "ValidAfter": "1970-01-01T00:00:00Z",
+          "ValidBefore": "9999-12-31T23:59:59Z",
+          "WildcardPrincipal": false,
+          "name": "bob@ipelscqBj/R9lJyS8ClNwNmsoTn/g9dLALF+5YV5Un4",
+          "CertFingerprintMD5": "31:b3:a1:03:fc:f4:69:9f:b4:d4:56:a4:57:b1:73:6a",
+          "CAFingerprintMD5": "ef:b0:10:a8:9e:24:1d:eb:98:d3:f8:a0:d0:6f:b6:77"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "0@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "IsRoot",
+        "start": {
+          "match_by": "id",
+          "value": "0@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1000@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1001@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1002@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1003@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1004@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1005@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1006@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1007@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1008@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1009@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1010@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1011@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1012@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1013@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1014@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1015@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1016@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1017@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "998@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1018@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanSudo",
+        "start": {
+          "match_by": "id",
+          "value": "1018@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHComputer"
+        },
+        "properties": {
+          "Commands": "(ALL) NOPASSWD: ALL",
+          "PasswordRequired": false
+        }
+      },
+      {
+        "kind": "HasPrivateKey",
+        "start": {
+          "match_by": "id",
+          "value": "1018@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "uuTFm7pgC8cFKQaLr8TWK/435qotFXbnCIWuJl0CUnY",
+          "kind": "SSHKeyPair"
+        },
+        "properties": {
+          "Cipher": "none",
+          "Comment": "",
+          "Encrypted": false,
+          "KDF": "none",
+          "KeyFormat": "openssh-key-v1",
+          "PrivateKeyFile": "/home/bob/.ssh/id_ed25519"
+        }
+      },
+      {
+        "kind": "HasCertificate",
+        "start": {
+          "match_by": "id",
+          "value": "1018@XKXOCmC5R2ZQLUxOJwV9bLgm2PBr5lgYB/lkGumHVTc",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "bob@ipelscqBj/R9lJyS8ClNwNmsoTn/g9dLALF+5YV5Un4",
+          "kind": "SSHCertificate"
+        },
+        "properties": {
+          "Cipher": "none",
+          "Comment": "",
+          "Encrypted": false,
+          "KDF": "none",
+          "KeyFormat": "openssh-key-v1",
+          "CertificateFile": "/home/bob/.ssh/id_ed25519-cert.pub",
+          "PrivateKeyFile": "/home/bob/.ssh/id_ed25519"
+        }
+      }
+    ]
+  }
+}

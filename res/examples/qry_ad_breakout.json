@@ -28,14 +28,13 @@
         "kinds": [
           "SSHKeyPair"
         ],
-        "id": "+YLZF6nBD+OalpWlz56nVyc8IL9Xjwofj42bccvsDEA",
+        "id": "ql14VsTinmQAHIhhGkLy02c2bCAks1HmB2sQVAVbukk",
         "properties": {
           "Algorithm": "ssh-rsa",
-          "Base64": "AAAAB3NzaC1yc2EAAAADAQABAAABgQCmMaz8UML8GKDSemomAPebbYq5NQJfxiPatIXEmh1RBkF6Q+mhauHyAQm4hW3Xyk0n0xvlZec2mG1agW6YTFyR0453f4onHqHNC2YnCXY3EHixGAGqWalO7n/DJQB9bE7qULctoAO7XdtgO8Z+lN+1E4wAJHnTHadtxP8IlBY6skm+U27BlqEQxG5KRti+p63vxzudVpMLXJhLLB8uV5wSLnZSIhxEcEG4x+HAh+/5oXaK9cit21DfmfSpEk0USxWdQenq3eESieMq3BHxQh+nHxDVmDp4gm7f2vDWndAhP1zwFIGy2LnYHtMND0O0txMi5WZk4Z08oWD/uBazJPQhV3CX91un8apnPM/xuG//iEa3ylXata28xXcy2adaP8F0a02Fz/uldRir1bjat6dd2MZMXnCsxvUnzwQ03MTw+biGjQGSGKyGMd6d8XKxVHkETb5p7a2AU992lKVHcol8TC+ZUhVrzAVW/uBrSH1crnuSXw4Iz5cWwYI99m/2/Gc=",
           "FIDO2": false,
-          "FingerprintMD5": "ed:c2:58:24:02:17:c7:bc:91:9d:2f:3f:3b:81:64:39",
-          "FingerprintSHA256": "+YLZF6nBD+OalpWlz56nVyc8IL9Xjwofj42bccvsDEA",
-          "name": "+YLZF6nBD+OalpWlz56nVyc8IL9Xjwofj42bccvsDEA"
+          "FingerprintMD5": "bd:a0:9f:f0:9a:3c:48:c9:30:c4:00:b9:5b:5a:54:8d",
+          "FingerprintSHA256": "ql14VsTinmQAHIhhGkLy02c2bCAks1HmB2sQVAVbukk",
+          "name": "ql14VsTinmQAHIhhGkLy02c2bCAks1HmB2sQVAVbukk"
         }
       },
       {
@@ -112,7 +111,7 @@
         "kind": "CanSSH",
         "start": {
           "match_by": "id",
-          "value": "+YLZF6nBD+OalpWlz56nVyc8IL9Xjwofj42bccvsDEA",
+          "value": "ql14VsTinmQAHIhhGkLy02c2bCAks1HmB2sQVAVbukk",
           "kind": "SSHKeyPair"
         },
         "end": {
@@ -122,7 +121,7 @@
         },
         "properties": {
           "Comment": "ansible",
-          "FilePath": "/home/ansible/.ssh/authorized_keys"
+          "AuthorizedKeysFile": "/home/ansible/.ssh/authorized_keys"
         }
       },
       {
@@ -147,16 +146,16 @@
         },
         "end": {
           "match_by": "id",
-          "value": "+YLZF6nBD+OalpWlz56nVyc8IL9Xjwofj42bccvsDEA",
+          "value": "ql14VsTinmQAHIhhGkLy02c2bCAks1HmB2sQVAVbukk",
           "kind": "SSHKeyPair"
         },
         "properties": {
           "Cipher": "none",
           "Comment": "",
           "Encrypted": false,
-          "FilePath": "/var/lib/app/.ssh/id_rsa",
           "KDF": "none",
-          "KeyFormat": "PEM"
+          "KeyFormat": "PEM",
+          "PrivateKeyFile": "/var/lib/app/.ssh/id_rsa"
         }
       },
       {
@@ -172,7 +171,7 @@
           "kind": "User"
         },
         "properties": {
-          "FilePath": "/etc/app.keytab"
+          "KeytabFile": "/etc/app.keytab"
         }
       },
       {
@@ -188,10 +187,10 @@
           "kind": "User"
         },
         "properties": {
-          "FilePath": "/tmp/krb5cc_47476363",
           "StartTime": "2026-02-03T14:22:02Z",
           "RenewTime": "2026-02-10T14:22:02Z",
-          "EndTime": "2026-02-04T00:22:02Z"
+          "EndTime": "2026-02-04T00:22:02Z",
+          "TicketCacheFile": "/tmp/krb5cc_47476363"
         }
       }
     ]

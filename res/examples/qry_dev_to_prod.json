@@ -25,14 +25,13 @@
         "kinds": [
           "SSHKeyPair"
         ],
-        "id": "8iwWkQeTkzwiPVXTrjhJPp5Z5sg4+LB5gJMEPyPpE80",
+        "id": "l1Q4uedURsp4x7tZ9aKm6yD+cqeGBA0vqwm6HFJu+Iw",
         "properties": {
           "Algorithm": "ssh-rsa",
-          "Base64": "AAAAB3NzaC1yc2EAAAADAQABAAABgQC2I/kNQlY3XFXi3oQtlbb4jSoOexs9wr+SX+M6doiYk/Qhf8lnRMln7HXHBo2YPj+YvxoucFKchFopGUtd3j2HJh393IaGNeWIavRlGOYsMixfI79u7kLZBzkjUjlzZ0fYSw40kSwqcSovxSdXsjnC4NRyd1yey8J/JP11HRS1V7tj7JRGndql3l4dtXtD0XPfM3ee+BipZhenyF2xQ0NqoCgNgiK5iF1j5Kua40FNH1EottQQKOYxk1ccEYS7PeFmVm+xZm0YOXYMz5+OSVSuTVLTmRaovRSMYmFCuX6dVPKxFpK9efFsCs0uHkIStlXPVwYR43RHFxRjqISx/WBpX/Uc2SD6mJ5gLx0lvaxwLAgOKpDCYt3DhiqdekdcdtDG9XbvubeYDfSQt8KTvVghYSmYNe4e26jO6awFuCSEoQcIZztm2s+KfIBaer4MMOgYy7tFo81DWHvFF4hH6G0BoWPfns7TwJc62BRBy6rpinbv4Sa6V2o6CnMNwTfduPs=",
           "FIDO2": false,
-          "FingerprintMD5": "0f:06:8b:4f:81:ef:69:91:f5:e9:4f:22:61:be:e1:c7",
-          "FingerprintSHA256": "8iwWkQeTkzwiPVXTrjhJPp5Z5sg4+LB5gJMEPyPpE80",
-          "name": "8iwWkQeTkzwiPVXTrjhJPp5Z5sg4+LB5gJMEPyPpE80"
+          "FingerprintMD5": "c7:a4:de:3f:f7:93:d0:2c:55:b9:37:2b:4a:b6:c7:65",
+          "FingerprintSHA256": "l1Q4uedURsp4x7tZ9aKm6yD+cqeGBA0vqwm6HFJu+Iw",
+          "name": "l1Q4uedURsp4x7tZ9aKm6yD+cqeGBA0vqwm6HFJu+Iw"
         }
       },
       {
@@ -73,7 +72,7 @@
         "kind": "CanSSH",
         "start": {
           "match_by": "id",
-          "value": "8iwWkQeTkzwiPVXTrjhJPp5Z5sg4+LB5gJMEPyPpE80",
+          "value": "l1Q4uedURsp4x7tZ9aKm6yD+cqeGBA0vqwm6HFJu+Iw",
           "kind": "SSHKeyPair"
         },
         "end": {
@@ -83,7 +82,7 @@
         },
         "properties": {
           "Comment": "eve",
-          "FilePath": "/etc/ssh/authkeys/authorized_keys.eve"
+          "AuthorizedKeysFile": "/etc/ssh/authkeys/authorized_keys.eve"
         }
       },
       {
@@ -108,7 +107,7 @@
         },
         "end": {
           "match_by": "id",
-          "value": "8iwWkQeTkzwiPVXTrjhJPp5Z5sg4+LB5gJMEPyPpE80",
+          "value": "l1Q4uedURsp4x7tZ9aKm6yD+cqeGBA0vqwm6HFJu+Iw",
           "kind": "SSHKeyPair"
         },
         "properties": {
@@ -122,7 +121,7 @@
         "kind": "CanSSH",
         "start": {
           "match_by": "id",
-          "value": "8iwWkQeTkzwiPVXTrjhJPp5Z5sg4+LB5gJMEPyPpE80",
+          "value": "l1Q4uedURsp4x7tZ9aKm6yD+cqeGBA0vqwm6HFJu+Iw",
           "kind": "SSHKeyPair"
         },
         "end": {
@@ -132,7 +131,7 @@
         },
         "properties": {
           "Comment": "eve",
-          "FilePath": "/etc/ssh/authkeys/authorized_keys.eve"
+          "AuthorizedKeysFile": "/etc/ssh/authkeys/authorized_keys.eve"
         }
       },
       {

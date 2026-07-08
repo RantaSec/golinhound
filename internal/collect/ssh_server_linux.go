@@ -33,13 +33,19 @@ type SSHServerCollector struct {
 	WaitForKeysDuration int // minutes
 }
 
-// Collect emits CanSSH edges from authorized_keys and ForwardsKey edges
-// from forwarded agent sockets. Returns an error when sshd isn't
-// installed (or `sshd -T` failed).
+// Collect emits CanSSH edges from authorized_keys, CanIssueCertificate
+// and CanCertSSH edges from TrustedUserCAKeys + AuthorizedPrincipalsFile,
+// and ForwardsKey edges from forwarded agent sockets. Returns an error
+// when sshd isn't installed (or `sshd -T` failed).
 func (s *SSHServerCollector) Collect(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 	sshdConfig := loadSSHDConfig()
 	if sshdConfig == nil {
 		return errors.New("sshd not installed")
+	}
+
+	cas, caFile := trustedUserCAKeys(sshdConfig)
+	for _, ca := range cas {
+		emitKeypairNode(b, ca)
 	}
 
 	for _, u := range h.Users {
@@ -52,6 +58,8 @@ func (s *SSHServerCollector) Collect(ctx context.Context, h *Host, b *opengraph.
 			continue
 		}
 		emitAuthorizedKeys(h, u, sshdConfig, b)
+		emitCanIssueCertificates(h, u, sshdConfig, cas, caFile, b)
+		emitCanCertSSH(h, u, sshdConfig, cas, b)
 	}
 
 	emitForwardedKeys(ctx, h, s.WaitForKeysDuration, b)
@@ -126,8 +134,8 @@ func emitAuthorizedKeys(h *Host, u *User, sshdConfig map[string]string, b *openg
 				opengraph.ByID("SSHKeyPair", pubKey.FingerprintSHA256),
 				opengraph.ByID("SSHUser", h.ReferenceUser(u.UID)),
 				map[string]any{
-					"FilePath": file,
-					"Comment":  pubKey.Comment,
+					"AuthorizedKeysFile": file,
+					"Comment":            pubKey.Comment,
 				})
 		}
 	}
@@ -309,5 +317,163 @@ func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.
 				"LastLoginIP":     loginIp,
 				"Comment":         pubKey.Comment,
 			})
+	}
+}
+
+// trustedUserCAKeys returns the CA pubkeys listed in sshd's
+// TrustedUserCAKeys file and that file's path, or (nil, "") if the
+// directive is unset/unreadable.
+func trustedUserCAKeys(sshdConfig map[string]string) (cas []publicKey, file string) {
+	slog.Debug("trustedUserCAKeys")
+	file = sshdConfig["trustedusercakeys"]
+	if file == "" || file == "none" {
+		return nil, ""
+	}
+	data, err := os.ReadFile(file)
+	if err != nil {
+		slog.Debug("trustedUserCAKeys: TrustedUserCAKeys file could not be read", "file", file, "err", err)
+		return nil, ""
+	}
+
+	for len(data) > 0 {
+		pub, comment, _, rest, err := ssh.ParseAuthorizedKey(data)
+		if err != nil {
+			if errors.Unwrap(err) != nil {
+				slog.Debug("trustedUserCAKeys: malformed line(s) ignored", "file", file, "err", err)
+			}
+			break
+		}
+		data = rest
+		cas = append(cas, *newPublicKey(pub, comment))
+	}
+	return cas, file
+}
+
+// authorizedPrincipalsFor resolves a user's allowed principals from
+// AuthorizedPrincipalsFile. With the directive unset, returns [username]
+// (sshd's username-fallback rule). An empty principals slice means sshd
+// would deny cert auth. This happens if the directive is set but the
+// file is missing/unreadable or empty after parsing.
+func authorizedPrincipalsFor(sshdConfig map[string]string, u *User) (principals []string, file string) {
+	rawFile, ok := sshdConfig["authorizedprincipalsfile"]
+	if !ok {
+		slog.Warn("authorizedPrincipalsFor: authorizedprincipalsfile missing from sshd -T output; suppressing cert-auth edges", "userName", u.UserName)
+		return nil, ""
+	}
+	// sshd username-fallback
+	if rawFile == "none" {
+		return []string{u.UserName}, ""
+	}
+
+	file = strings.ReplaceAll(rawFile, "%u", u.UserName)
+	file = strings.ReplaceAll(file, "%U", u.UID)
+	file = strings.ReplaceAll(file, "%h", u.HomeDir)
+	data, err := os.ReadFile(file)
+	// sshd denies cert auth if AuthorizedPrincipalsFile unreadable
+	if err != nil {
+		slog.Debug("authorizedPrincipalsFor: AuthorizedPrincipalsFile unreadable; sshd would deny", "userName", u.UserName, "file", file, "err", err)
+		return nil, file
+	}
+	return parsePrincipalsFile(data), file
+}
+
+// parsePrincipalsFile returns the principal names from one
+// AuthorizedPrincipalsFile. Per sshd(8): one principal per line, blank
+// lines and #-comments ignored. Lines may begin with authorized_keys
+// options (command=, principals=, etc.) — we strip those by taking the
+// last whitespace-separated field on each non-comment line.
+func parsePrincipalsFile(data []byte) []string {
+	var out []string
+	for line := range strings.SplitSeq(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		fields := strings.Fields(line)
+		out = append(out, fields[len(fields)-1])
+	}
+	return out
+}
+
+// emitCanIssueCertificates emits one CanIssueCertificate edge per
+// (CA, user) pair. Edges omit AuthorizedPrincipalsFile under sshd's
+// username-fallback rule.
+func emitCanIssueCertificates(h *Host, u *User, sshdConfig map[string]string, cas []publicKey, caFile string, b *opengraph.GraphBuilder) {
+	if len(cas) == 0 {
+		return
+	}
+	principals, file := authorizedPrincipalsFor(sshdConfig, u)
+	if len(principals) == 0 {
+		return
+	}
+
+	props := map[string]any{
+		"AuthorizedPrincipals":  principals,
+		"TrustedUserCAKeysFile": caFile,
+	}
+	if file != "" {
+		props["AuthorizedPrincipalsFile"] = file
+	}
+	for _, ca := range cas {
+		b.AddEdge("CanIssueCertificate",
+			opengraph.ByID("SSHKeyPair", ca.FingerprintSHA256),
+			opengraph.ByID("SSHUser", h.ReferenceUser(u.UID)),
+			props)
+	}
+}
+
+// emitCanCertSSH emits CanCertSSH edges from SSHCertificate nodes to a
+// local SSHUser. Two flavors per (CA, user):
+//
+//  1. Per-principal edges: one per principal in the user's
+//     AuthorizedPrincipalsFile (or [username] under sshd's
+//     username-fallback rule). Selector is ByProperty(SSHCertificate,
+//     CAFingerprintSHA256 + Principal=<name>) - matches the per-principal
+//     split nodes ssh_client.go::emitSSHCertificateNodes produces.
+//     The Principal scalar is the BloodHound match-equals workaround
+//     for list-contains, see emitSSHCertificateNodes for full context.
+//
+//  2. One wildcard edge per CA: selector is ByProperty(SSHCertificate,
+//     CAFingerprintSHA256 + WildcardPrincipal=true). This matches the
+//     lone split node minted for a zero-principal cert (per
+//     PROTOCOL.certkeys: "a zero-length valid principals field means
+//     the certificate is valid for any principal of the specified
+//     type").
+func emitCanCertSSH(h *Host, u *User, sshdConfig map[string]string, cas []publicKey, b *opengraph.GraphBuilder) {
+	if len(cas) == 0 {
+		return
+	}
+	principals, file := authorizedPrincipalsFor(sshdConfig, u)
+	if len(principals) == 0 {
+		return
+	}
+
+	// AuthorizedPrincipals is redundant while the per-principal split gives
+	// each edge its own concrete principal via the ByProperty(Principal=...)
+	// selector. Re-enable once BloodHound gains a list-contains matcher and
+	// the split can collapse.
+	// props := map[string]any{"AuthorizedPrincipals": principals}
+	props := map[string]any{}
+	if file != "" {
+		props["AuthorizedPrincipalsFile"] = file
+	}
+
+	end := opengraph.ByID("SSHUser", h.ReferenceUser(u.UID))
+	for _, ca := range cas {
+		for _, principal := range principals {
+			b.AddEdge("CanCertSSH",
+				opengraph.ByProperty("SSHCertificate",
+					opengraph.PropEq("CAFingerprintSHA256", ca.FingerprintSHA256),
+					opengraph.PropEq("Principal", principal)),
+				end,
+				props)
+		}
+		// Wildcard edge
+		b.AddEdge("CanCertSSH",
+			opengraph.ByProperty("SSHCertificate",
+				opengraph.PropEq("CAFingerprintSHA256", ca.FingerprintSHA256),
+				opengraph.PropEq("WildcardPrincipal", true)),
+			end,
+			props)
 	}
 }

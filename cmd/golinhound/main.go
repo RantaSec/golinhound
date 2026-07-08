@@ -26,6 +26,7 @@ func installLogger(verbose bool) {
 func main() {
 	collectCmd := flag.NewFlagSet("collect", flag.ExitOnError)
 	collectDuration := collectCmd.Int("wait-for-keys", 0, "Time in minutes to wait for new forwarded SSH keys (0 = no wait)")
+	collectExpiredCerts := collectCmd.Bool("include-expired-certs", false, "Also collect SSH certificates whose ValidBefore is in the past")
 	collectVerbose := collectCmd.Bool("verbose", false, "Enable verbose output")
 	mergeCmd := flag.NewFlagSet("merge", flag.ExitOnError)
 	mergeVerbose := mergeCmd.Bool("verbose", false, "Enable verbose output")
@@ -44,7 +45,8 @@ func main() {
 		collectCmd.Parse(os.Args[2:])
 		installLogger(*collectVerbose)
 		result, err := collect.Run(context.Background(), collect.Options{
-			WaitForKeysDuration: *collectDuration,
+			WaitForKeysDuration:        *collectDuration,
+			CollectExpiredCertificates: *collectExpiredCerts,
 		})
 		if err != nil {
 			slog.Error("collect failed", "err", err)

@@ -20,6 +20,13 @@
         "name": "key",
         "color": "#ffe100"
       }
+    },
+    "SSHCertificate": {
+      "icon": {
+        "type": "font-awesome",
+        "name": "id-card",
+        "color": "#ffe100"
+      }
     }
   }
 }

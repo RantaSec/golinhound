@@ -93,7 +93,7 @@ func emitHasKeytabEdge(h *Host, b *opengraph.GraphBuilder, filePath, principal, 
 	b.AddEdge("HasKeytab",
 		opengraph.ByID("SSHComputer", h.ComputerID()),
 		opengraph.ByProperty(endKind, opengraph.PropEq("name", name)),
-		map[string]any{"FilePath": filePath})
+		map[string]any{"KeytabFile": filePath})
 }
 
 // findKeytabFiles walks rootDir up to maxDepth levels, sending every
@@ -201,10 +201,10 @@ func emitHasTGTEdge(h *Host, b *opengraph.GraphBuilder, filePath string, creds *
 		opengraph.ByID("SSHComputer", h.ComputerID()),
 		opengraph.ByProperty(endKind, opengraph.PropEq("name", name)),
 		map[string]any{
-			"FilePath":  filePath,
-			"StartTime": creds.StartTime.UTC().Format(time.RFC3339),
-			"EndTime":   creds.EndTime.UTC().Format(time.RFC3339),
-			"RenewTime": creds.RenewTill.UTC().Format(time.RFC3339),
+			"TicketCacheFile": filePath,
+			"StartTime":       creds.StartTime.UTC().Format(time.RFC3339),
+			"EndTime":         creds.EndTime.UTC().Format(time.RFC3339),
+			"RenewTime":       creds.RenewTill.UTC().Format(time.RFC3339),
 		})
 }
 

@@ -18,4 +18,8 @@ type Options struct {
 	// watches /tmp/ for new agent sockets, in minutes. Zero means
 	// "do a one-shot glob and return".
 	WaitForKeysDuration int
+	// CollectExpiredCertificates: when true, SSHCertificate nodes are
+	// emitted even when the cert's ValidBefore is in the past. When
+	// false (default) expired certs are silently skipped at emission.
+	CollectExpiredCertificates bool
 }

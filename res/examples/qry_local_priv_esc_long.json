@@ -6,28 +6,26 @@
         "kinds": [
           "SSHKeyPair"
         ],
-        "id": "OL1xybbmuXVdH37s5tVFwjzRLEkTvaJdjWt95Jk2Jas",
+        "id": "PD9NsMaslIL3vyPxc8cjsUiBDt4G3jvWtvM9uVRs+YA",
         "properties": {
           "Algorithm": "ssh-rsa",
-          "Base64": "AAAAB3NzaC1yc2EAAAADAQABAAABgQDSPZHYzbnsOQqBLktLgwzE0V35O2CPHzsCm7QwkfNsMj8xfZZiy7KxGwj13sEUCFNlJWnfUlghHwIOMKGsLq8zGHGXA53Ix2TGaT1WwkSIJEm+u+4yhT2mb+RBPfNfd2fa5XC1/qGR0qYX+FWMW2bWA+0IkkR9X1S2EOsbpuBX7U+IZZiegLp5L1giAIU4pylBWpwF+4Zv5jx3NgY8q5JdadEkCE3gM+CNzJCS+LzqenjEXugXK56BRmHMfSkFRrFRfEQ5v6ARK9Wd1OKC2oy1K9f4/MD6k9CY8BZDxlX2Ngi855hgWWf8Xy9zAxiFFbJTWHVRRt8JrgMCa8AeLxks5NAqqu+ZZejZahH5Ev902JeWxd2XN87XI8kwJWUE4ZuXwkeu1fIXNGGpUf32px0JFS56qyvbHPVYp5Qr2Fje43kHT55D7EhxkHfm9rJg1w1+7jZwep6gbQL0e4B2+s+MuuECP4Cvb5eT3buhxXaxoy4/l+6ib+Ib0I+/Npoj1jU=",
           "FIDO2": false,
-          "FingerprintMD5": "99:9b:e0:fc:c4:b0:d5:98:63:f7:9d:4e:be:77:be:5f",
-          "FingerprintSHA256": "OL1xybbmuXVdH37s5tVFwjzRLEkTvaJdjWt95Jk2Jas",
-          "name": "OL1xybbmuXVdH37s5tVFwjzRLEkTvaJdjWt95Jk2Jas"
+          "FingerprintMD5": "85:49:49:70:54:a8:7d:13:a4:bd:91:b7:96:bb:67:1e",
+          "FingerprintSHA256": "PD9NsMaslIL3vyPxc8cjsUiBDt4G3jvWtvM9uVRs+YA",
+          "name": "PD9NsMaslIL3vyPxc8cjsUiBDt4G3jvWtvM9uVRs+YA"
         }
       },
       {
         "kinds": [
           "SSHKeyPair"
         ],
-        "id": "7oDAfvG1nHa+I57yt2rb8J8OmzmBDDTfgjqujn+JTSY",
+        "id": "4BCG+zSZsbzAqL2BaFH7xwR832tNT+vrBk1uU0flSGA",
         "properties": {
           "Algorithm": "ssh-rsa",
-          "Base64": "AAAAB3NzaC1yc2EAAAADAQABAAABgQDlNZyOke5GmMT+U8yTg5sa07Y9qXarq7hBJhqEU4WfUsJ9ZBFdceGziTL+OZUxumFuhEKZi0ae6DovrcT32un97jZHdhRZjs0t74IzJLJNrIlx/tQBO8FXDNaEYe1a0tQNKuy/VW/tGkCnugRc3W/u1N4CpHFVBS57Q9kAYmlLdMdk9qy+rMQ7ohuoS64KLa+DxW5/hZGpZ2UOYBvxDzCblk3LNOu4lxBpBXr8FKd0GGsN9HMgOYwObWJlfq95zBG2Giqc8/Ef9XaGuaOSveFI8wBc+0KwdLqDGL1gaosYyNuwM0vLHtqHuzRuNInuIGxHqwcYJKEbCojr/vZhT9npj+KGFd3/BAjbEuX32LtDWjPweAIgPo3H/7Ly03GGUXMCMxgo1FQvjpVAD8mqmRlQot8Dv1YlnkEFOGy5l5UjRghIaezMNaZKCUXGH+ejoamRn9+Myyq+yYJFhXnNggO1QC+o7nT04wpOZcOn5vzHroTtajfIybcjD0/44snfbAs=",
           "FIDO2": false,
-          "FingerprintMD5": "2a:dc:f6:4e:c9:98:83:80:ae:94:be:ad:2d:b4:c3:5e",
-          "FingerprintSHA256": "7oDAfvG1nHa+I57yt2rb8J8OmzmBDDTfgjqujn+JTSY",
-          "name": "7oDAfvG1nHa+I57yt2rb8J8OmzmBDDTfgjqujn+JTSY"
+          "FingerprintMD5": "b7:a1:cc:27:a0:ce:cb:00:20:bb:ba:28:54:48:3f:47",
+          "FingerprintSHA256": "4BCG+zSZsbzAqL2BaFH7xwR832tNT+vrBk1uU0flSGA",
+          "name": "4BCG+zSZsbzAqL2BaFH7xwR832tNT+vrBk1uU0flSGA"
         }
       },
       {
@@ -62,14 +60,13 @@
         "kinds": [
           "SSHKeyPair"
         ],
-        "id": "3MgldVTeoDFrRmSfvcTrKHCvntYgm0AUdUkMyl3G/u0",
+        "id": "7GmvAUVMMs3jb7WNV7OKK9kWFUJSETYLVi4ThfF7za4",
         "properties": {
           "Algorithm": "ssh-rsa",
-          "Base64": "AAAAB3NzaC1yc2EAAAADAQABAAABgQC6CF4m+lKDr4MjEdGHQfy+nFvhdPsmBDeOit0n/ge5t/IZ81DSdK9kZHysZi7a1bZD+B7BPT9y6ra/ZF3K5P0hzRkxsBIPoI2VhClhQ20DViAFP3T2kZWw76aTco5Z882psWEQQYe+6EjEOoYbIEzm/gyX/5WCnckTZLxDMNcw8HE/bdrvYM4Dv340/mqYjKwt4X4bIqaKhI6RGSACzL7pc98XL11+5JBim1lgjEFqoTMvpVT4D8UL3UQPATUwEh2n7M5JcGKO4xAIoRaykL8RG7z5OjyfEwUlunFnUhQemiWbQ9AROEyAnNG/u6gA4MdEiNdG3eEaW1g1JhN/2PU/irQFeN6axRXvtrH1Wt5VD/zOeAAnOPnGssbYaRKy1ezl4HIi/FuBswNXIl9az0TuMRBi+WviunmHM3/9IFPU6lmHqqhIpKA76Ox4Yn7b+fhtmA3Wbt3MrqNG631MluWYc/CESOHzdnXNGtu3h7T9B8K2qL6AqkQtymxMQCALLlU=",
           "FIDO2": false,
-          "FingerprintMD5": "5d:71:f3:29:48:12:c3:7f:d2:9d:bc:fe:21:5d:6b:5b",
-          "FingerprintSHA256": "3MgldVTeoDFrRmSfvcTrKHCvntYgm0AUdUkMyl3G/u0",
-          "name": "3MgldVTeoDFrRmSfvcTrKHCvntYgm0AUdUkMyl3G/u0"
+          "FingerprintMD5": "59:3a:5a:cd:ed:6a:0d:4c:c2:71:9d:5c:b1:ce:72:a2",
+          "FingerprintSHA256": "7GmvAUVMMs3jb7WNV7OKK9kWFUJSETYLVi4ThfF7za4",
+          "name": "7GmvAUVMMs3jb7WNV7OKK9kWFUJSETYLVi4ThfF7za4"
         }
       },
       {
@@ -199,16 +196,16 @@
         },
         "end": {
           "match_by": "id",
-          "value": "OL1xybbmuXVdH37s5tVFwjzRLEkTvaJdjWt95Jk2Jas",
+          "value": "PD9NsMaslIL3vyPxc8cjsUiBDt4G3jvWtvM9uVRs+YA",
           "kind": "SSHKeyPair"
         },
         "properties": {
           "Cipher": "none",
           "Comment": "",
           "Encrypted": false,
-          "FilePath": "/home/bob/.ssh/id_rsa",
           "KDF": "none",
-          "KeyFormat": "openssh-key-v1"
+          "KeyFormat": "openssh-key-v1",
+          "PrivateKeyFile": "/home/bob/.ssh/id_rsa"
         }
       },
       {
@@ -220,7 +217,7 @@
         },
         "end": {
           "match_by": "id",
-          "value": "3MgldVTeoDFrRmSfvcTrKHCvntYgm0AUdUkMyl3G/u0",
+          "value": "7GmvAUVMMs3jb7WNV7OKK9kWFUJSETYLVi4ThfF7za4",
           "kind": "SSHKeyPair"
         },
         "properties": {
@@ -234,7 +231,7 @@
         "kind": "CanSSH",
         "start": {
           "match_by": "id",
-          "value": "OL1xybbmuXVdH37s5tVFwjzRLEkTvaJdjWt95Jk2Jas",
+          "value": "PD9NsMaslIL3vyPxc8cjsUiBDt4G3jvWtvM9uVRs+YA",
           "kind": "SSHKeyPair"
         },
         "end": {
@@ -244,14 +241,14 @@
         },
         "properties": {
           "Comment": "bob@srv2",
-          "FilePath": "/home/bob/.ssh/authorized_keys"
+          "AuthorizedKeysFile": "/home/bob/.ssh/authorized_keys"
         }
       },
       {
         "kind": "CanSSH",
         "start": {
           "match_by": "id",
-          "value": "OL1xybbmuXVdH37s5tVFwjzRLEkTvaJdjWt95Jk2Jas",
+          "value": "PD9NsMaslIL3vyPxc8cjsUiBDt4G3jvWtvM9uVRs+YA",
           "kind": "SSHKeyPair"
         },
         "end": {
@@ -261,7 +258,7 @@
         },
         "properties": {
           "Comment": "bob",
-          "FilePath": "/home/bob/.ssh/authorized_keys"
+          "AuthorizedKeysFile": "/home/bob/.ssh/authorized_keys"
         }
       },
       {
@@ -333,7 +330,7 @@
         },
         "end": {
           "match_by": "id",
-          "value": "7oDAfvG1nHa+I57yt2rb8J8OmzmBDDTfgjqujn+JTSY",
+          "value": "4BCG+zSZsbzAqL2BaFH7xwR832tNT+vrBk1uU0flSGA",
           "kind": "SSHKeyPair"
         },
         "properties": {
@@ -347,7 +344,7 @@
         "kind": "CanSSH",
         "start": {
           "match_by": "id",
-          "value": "7oDAfvG1nHa+I57yt2rb8J8OmzmBDDTfgjqujn+JTSY",
+          "value": "4BCG+zSZsbzAqL2BaFH7xwR832tNT+vrBk1uU0flSGA",
           "kind": "SSHKeyPair"
         },
         "end": {
@@ -357,14 +354,14 @@
         },
         "properties": {
           "Comment": "",
-          "FilePath": "/home/david/.ssh/authorized_keys"
+          "AuthorizedKeysFile": "/home/david/.ssh/authorized_keys"
         }
       },
       {
         "kind": "CanSSH",
         "start": {
           "match_by": "id",
-          "value": "3MgldVTeoDFrRmSfvcTrKHCvntYgm0AUdUkMyl3G/u0",
+          "value": "7GmvAUVMMs3jb7WNV7OKK9kWFUJSETYLVi4ThfF7za4",
           "kind": "SSHKeyPair"
         },
         "end": {
@@ -374,7 +371,7 @@
         },
         "properties": {
           "Comment": "charlie",
-          "FilePath": "/home/charlie/.ssh/authorized_keys"
+          "AuthorizedKeysFile": "/home/charlie/.ssh/authorized_keys"
         }
       },
       {
@@ -429,23 +426,23 @@
         },
         "end": {
           "match_by": "id",
-          "value": "OL1xybbmuXVdH37s5tVFwjzRLEkTvaJdjWt95Jk2Jas",
+          "value": "PD9NsMaslIL3vyPxc8cjsUiBDt4G3jvWtvM9uVRs+YA",
           "kind": "SSHKeyPair"
         },
         "properties": {
           "Cipher": "none",
           "Comment": "",
           "Encrypted": false,
-          "FilePath": "/home/bob/.ssh/id_rsa",
           "KDF": "none",
-          "KeyFormat": "openssh-key-v1"
+          "KeyFormat": "openssh-key-v1",
+          "PrivateKeyFile": "/home/bob/.ssh/id_rsa"
         }
       },
       {
         "kind": "CanSSH",
         "start": {
           "match_by": "id",
-          "value": "7oDAfvG1nHa+I57yt2rb8J8OmzmBDDTfgjqujn+JTSY",
+          "value": "4BCG+zSZsbzAqL2BaFH7xwR832tNT+vrBk1uU0flSGA",
           "kind": "SSHKeyPair"
         },
         "end": {
@@ -455,7 +452,7 @@
         },
         "properties": {
           "Comment": "",
-          "FilePath": "/home/david/.ssh/authorized_keys"
+          "AuthorizedKeysFile": "/home/david/.ssh/authorized_keys"
         }
       }
     ]

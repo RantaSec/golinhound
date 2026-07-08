@@ -25,6 +25,10 @@ Outputs [OpenGraph](https://bloodhound.specterops.io/opengraph/schema) JSON and 
   - [Unprotected Private Keys](#unprotected-private-keys)
   - [Private Keys with Weak Encryption](#private-keys-with-weak-encryption)
   - [Agent Forwarding](#agent-forwarding)
+  - [Hosts that allow root logins](#hosts-that-allow-root-logins)
+  - [CA Private Key used for Key-Based Authentication](#ca-private-key-used-for-key-based-authentication)
+  - [Wildcard Certificates](#wildcard-certificates)
+  - [Certificates without Expiration Date](#certificates-without-expiration-date)
 - [Large-Scale Deployment](#large-scale-deployment)
 - [Author & License](#author--license)
 - [Acknowledgements](#acknowledgements)
@@ -57,9 +61,9 @@ cat *.json | ./bin/golinhound-linux-amd64 merge > merged.json
 
 This section describes the edges collected by GoLinHound and provides examples how they can be abused.
 
-### SSH
+### SSH: Key-Based Authentication
 
-![](res/img/data_model_ssh.png)
+![](res/img/data_model_ssh_kba.png)
 
 #### HasPrivateKey
 
@@ -106,6 +110,41 @@ Use the forwarded authentication socket to authenticate to other hosts:
 export SSH_AUTH_SOCK="/tmp/ssh-IbF2XDIsRI/agent.9869"
 ssh user@host
 ```
+
+
+### SSH: Certificate-Based Authentication
+
+![](res/img/data_model_ssh_cba.png)
+
+#### HasCertificate
+
+Collected by parsing all `*-cert.pub` sibling files next to private keys in `$HOME/.ssh/` directories. This edge indicates that a user holds an OpenSSH certificate paired with a local private key.
+
+Inspect the certificate to see which CA signed it, which principals it authorizes, and how long it's valid:
+```bash
+ssh-keygen -L -f <priv_key>-cert.pub
+```
+
+If the paired private key is password-protected, see [HasPrivateKey](#hasprivatekey) for capturing the passphrase.
+
+#### CanCertSSH
+Collected by parsing sshd's `TrustedUserCAKeys` and `AuthorizedPrincipalsFile`. This edge indicates that a SSHCertificate can be used to authenticate via SSH to an SSHComputer as a specific SSHUser.
+
+Connect using the private key; `ssh` automatically picks up the sibling `<priv_key>-cert.pub`:
+```bash
+ssh -i <priv_key> user@host
+```
+
+#### CanIssueCertificate
+Collected by parsing sshd's `TrustedUserCAKeys` and `AuthorizedPrincipalsFile`. This edge indicates that a SSHKeyPair is trusted as a certificate authority: anyone with the corresponding private key can issue a certificate for one of the listed principals and authenticate to an SSHComputer.
+
+Generate a throwaway keypair, sign a certificate for a listed principal, and connect using it:
+```bash
+ssh-keygen -t ed25519 -N "" -f user_key
+ssh-keygen -s <ca_priv> -I backup_admin_a3f9c2 -n <principal> user_key.pub
+ssh -i user_key user@host
+```
+
 
 ### Linux
 ![](res/img/data_model_linux.png)
@@ -353,6 +392,42 @@ This query returns hosts that allow the root user to login.
 
 ```sql
 MATCH p=(:SSHKeyPair)-[:CanSSH]->(:SSHUser)-[:IsRoot]->(:SSHComputer)
+RETURN p
+```
+
+
+### CA Private Key used for Key-Based Authentication
+
+This query surfaces SSH keypairs that are simultaneously trusted as a certificate authority (via `TrustedUserCAKeys` on some host) AND listed as a plain public key in someone's `authorized_keys`. It also shows who has access to the private key, if the information is available.
+
+```sql
+// find keypairs that are trusted as CA and in authorized keys
+MATCH pk = (k:SSHKeyPair)-[:CanSSH]->(:SSHUser)
+MATCH pc = (k)-[:CanIssueCertificate]->(:SSHUser)
+// find out who has the respective private key
+OPTIONAL MATCH p0 = (:SSHUser)-[:HasPrivateKey]->(k)
+RETURN p0, pk, pc
+```
+
+
+### Wildcard Certificates
+
+This query returns SSH certificates that authorize login as ANY principal.
+
+```sql
+MATCH p=(:SSHUser)-[:HasCertificate]->(c:SSHCertificate)
+WHERE c.WildcardPrincipal = true
+RETURN p
+```
+
+
+### Certificates without Expiration Date
+
+This query returns SSH certificates that have no expiration date.
+
+```sql
+MATCH p=(:SSHUser)-[:HasCertificate]->(c:SSHCertificate)
+WHERE c.ValidBefore = "9999-12-31T23:59:59Z"
 RETURN p
 ```
 

@@ -1,0 +1,591 @@
+{
+  "metadata": {},
+  "graph": {
+    "nodes": [
+      {
+        "kinds": [
+          "SSHComputer"
+        ],
+        "id": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "FQDN": "wildcard-host",
+          "name": "wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "0@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "root@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1000@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "daemon@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1001@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "bin@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1002@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "sys@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1003@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "sync@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1004@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "games@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1005@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "man@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1006@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "lp@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1007@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "mail@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1008@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "news@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1009@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "uucp@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1010@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "proxy@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1011@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "www-data@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1012@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "backup@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1013@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "list@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1014@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "irc@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1015@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "_apt@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1016@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "nobody@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1017@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "systemd-network@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "998@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "sshd@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1018@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+        "properties": {
+          "name": "alice@wildcard-host"
+        }
+      },
+      {
+        "kinds": [
+          "SSHKeyPair"
+        ],
+        "id": "Mso+Z/gVFGHK+8dAKH+oWZPzIj1GMJWQRKr/0TVPVnk",
+        "properties": {
+          "Algorithm": "ssh-ed25519",
+          "FIDO2": false,
+          "FingerprintMD5": "af:69:7c:89:1c:9e:74:dd:4b:86:f3:66:b2:ad:f7:de",
+          "FingerprintSHA256": "Mso+Z/gVFGHK+8dAKH+oWZPzIj1GMJWQRKr/0TVPVnk",
+          "name": "Mso+Z/gVFGHK+8dAKH+oWZPzIj1GMJWQRKr/0TVPVnk"
+        }
+      },
+      {
+        "kinds": [
+          "SSHCertificate"
+        ],
+        "id": "*@5LTv/HiayrcOApcB3M1eVn0Op9NMqrAiM2wRrjQfm/4",
+        "properties": {
+          "CAFingerprintSHA256": "DBg5cnG1hsyQrZyh2MQG+rVH/VfpK8Zhykk3CxMI0pw",
+          "CertFingerprintSHA256": "5LTv/HiayrcOApcB3M1eVn0Op9NMqrAiM2wRrjQfm/4",
+          "Extension_permit-pty": "",
+          "KeyId": "alice-wildcard",
+          "Principal": "*",
+          "Serial": "0",
+          "SubjectAlgorithm": "ssh-ed25519",
+          "SubjectFIDO2": false,
+          "SubjectFingerprintMD5": "af:69:7c:89:1c:9e:74:dd:4b:86:f3:66:b2:ad:f7:de",
+          "SubjectFingerprintSHA256": "Mso+Z/gVFGHK+8dAKH+oWZPzIj1GMJWQRKr/0TVPVnk",
+          "ValidAfter": "2026-07-01T10:29:00Z",
+          "ValidBefore": "2027-06-30T10:30:17Z",
+          "WildcardPrincipal": true,
+          "name": "*@5LTv/HiayrcOApcB3M1eVn0Op9NMqrAiM2wRrjQfm/4",
+          "CertFingerprintMD5": "83:5c:71:d7:b6:22:8d:c1:59:e4:ee:04:92:0d:fb:5c",
+          "CAFingerprintMD5": "ab:8c:74:24:bc:65:ac:9b:60:92:d0:76:ac:70:c4:28"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "0@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "IsRoot",
+        "start": {
+          "match_by": "id",
+          "value": "0@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1000@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1001@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1002@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1003@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1004@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1005@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1006@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1007@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1008@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1009@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1010@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1011@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1012@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1013@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1014@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1015@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1016@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1017@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "998@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1018@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanSudo",
+        "start": {
+          "match_by": "id",
+          "value": "1018@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHComputer"
+        },
+        "properties": {
+          "Commands": "(ALL) NOPASSWD: ALL",
+          "PasswordRequired": false
+        }
+      },
+      {
+        "kind": "HasPrivateKey",
+        "start": {
+          "match_by": "id",
+          "value": "1018@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "Mso+Z/gVFGHK+8dAKH+oWZPzIj1GMJWQRKr/0TVPVnk",
+          "kind": "SSHKeyPair"
+        },
+        "properties": {
+          "Cipher": "none",
+          "Comment": "",
+          "Encrypted": false,
+          "KDF": "none",
+          "KeyFormat": "openssh-key-v1",
+          "PrivateKeyFile": "/home/alice/.ssh/id_ed25519"
+        }
+      },
+      {
+        "kind": "HasCertificate",
+        "start": {
+          "match_by": "id",
+          "value": "1018@5Ztx7CknZa8Y3f+mMwzp+RUZFm7fIxvyBtfkLTL/z3Q",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "*@5LTv/HiayrcOApcB3M1eVn0Op9NMqrAiM2wRrjQfm/4",
+          "kind": "SSHCertificate"
+        },
+        "properties": {
+          "Cipher": "none",
+          "Comment": "",
+          "Encrypted": false,
+          "KDF": "none",
+          "KeyFormat": "openssh-key-v1",
+          "CertificateFile": "/home/alice/.ssh/id_ed25519-cert.pub",
+          "PrivateKeyFile": "/home/alice/.ssh/id_ed25519"
+        }
+      }
+    ]
+  }
+}

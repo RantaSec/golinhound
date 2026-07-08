@@ -6,14 +6,13 @@
         "kinds": [
           "SSHKeyPair"
         ],
-        "id": "e1nQ8+jn3n6HtGnGN1tJk4VCNlCMlJUAVtL9tw66MjQ",
+        "id": "YnEWTtJcONvlo/LmGF2+5k+B6pJWvqQ9/1t1ZW1yin8",
         "properties": {
           "Algorithm": "ssh-rsa",
-          "Base64": "AAAAB3NzaC1yc2EAAAADAQABAAABgQDC6EhQmbkDtgQXMWzdfldyLfPsy2V+OixwcIZz4wErRZdPCfyJsBaFsSCOUuPit15m41uDtzn6H8XnWYZzg/hY67QJO1u4xXKiWksn3te01lraMWxJNXvUoERM66TxTsbpWCjidtlY1QplxOzrQabBCZ9T9OvNd41GDeekjJM7j9fOcT0kyWU9Z/HbiTyr5fdl19SCNNj/vIyiRgNmJI0tAJtzIRyMAN6Nnga+ClPxExm60ntHQUgon3dIbwGoD4HHQean4DkohcUtIjFBrasdfHfjj/L8FZNpHb0dgrfnf2gLKYpgcuwlR25zDiZYAtFiN9yzy6Lztut0MNl2nK4shMegwjs771T6mCM1cmgizflGAs5qp1+gVd8oKwK2Wk4xWbM4Xhn56vcm9+GuYz010nKOuLAQ4qSazjIVe/JZWQAVcgt2CcXeX+LuBaNT9tdK9PQzDE80N/PDeITED+w4hCEOvdvrmuAVlLJlMjeXLthBehteYoWvv+X0B1AGYuc=",
           "FIDO2": false,
-          "FingerprintMD5": "76:32:10:4e:81:5d:f5:96:f3:1b:01:d9:8c:6f:98:03",
-          "FingerprintSHA256": "e1nQ8+jn3n6HtGnGN1tJk4VCNlCMlJUAVtL9tw66MjQ",
-          "name": "e1nQ8+jn3n6HtGnGN1tJk4VCNlCMlJUAVtL9tw66MjQ"
+          "FingerprintMD5": "68:5c:62:fd:1c:f8:c0:ef:5e:db:ce:f4:e3:40:5b:dc",
+          "FingerprintSHA256": "YnEWTtJcONvlo/LmGF2+5k+B6pJWvqQ9/1t1ZW1yin8",
+          "name": "YnEWTtJcONvlo/LmGF2+5k+B6pJWvqQ9/1t1ZW1yin8"
         }
       },
       {
@@ -55,23 +54,23 @@
         },
         "end": {
           "match_by": "id",
-          "value": "e1nQ8+jn3n6HtGnGN1tJk4VCNlCMlJUAVtL9tw66MjQ",
+          "value": "YnEWTtJcONvlo/LmGF2+5k+B6pJWvqQ9/1t1ZW1yin8",
           "kind": "SSHKeyPair"
         },
         "properties": {
           "Cipher": "none",
           "Comment": "",
           "Encrypted": false,
-          "FilePath": "/var/lib/alice/.ssh/id_rsa",
           "KDF": "none",
-          "KeyFormat": "PEM"
+          "KeyFormat": "PEM",
+          "PrivateKeyFile": "/var/lib/alice/.ssh/id_rsa"
         }
       },
       {
         "kind": "CanSSH",
         "start": {
           "match_by": "id",
-          "value": "e1nQ8+jn3n6HtGnGN1tJk4VCNlCMlJUAVtL9tw66MjQ",
+          "value": "YnEWTtJcONvlo/LmGF2+5k+B6pJWvqQ9/1t1ZW1yin8",
           "kind": "SSHKeyPair"
         },
         "end": {
@@ -81,7 +80,7 @@
         },
         "properties": {
           "Comment": "ansible-master@srv1",
-          "FilePath": "/home/ansible/.ssh/authorized_keys"
+          "AuthorizedKeysFile": "/home/ansible/.ssh/authorized_keys"
         }
       },
       {

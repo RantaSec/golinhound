@@ -1,580 +1,574 @@
 {
-    "metadata": {},
-    "graph": {
-        "nodes": [
-            {
-                "kinds": [
-                    "SSHComputer"
-                ],
-                "id": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                "properties": {
-                    "FQDN": "52170a57403b",
-                    "name": "52170a57403b"
-                }
-            },
-            {
-                "kinds": [
-                    "SSHUser"
-                ],
-                "id": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                "properties": {
-                    "name": "root@52170a57403b"
-                }
-            },
-            {
-                "kinds": [
-                    "SSHUser"
-                ],
-                "id": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                "properties": {
-                    "name": "alice_adm@52170a57403b"
-                }
-            },
-            {
-                "kinds": [
-                    "SSHUser"
-                ],
-                "id": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                "properties": {
-                    "name": "alice@52170a57403b"
-                }
-            },
-            {
-                "kinds": [
-                    "SSHKeyPair"
-                ],
-                "id": "TqhtVAmgVIQgCRZJVlULjX+slIm/3RiizmmMLCOAomQ",
-                "properties": {
-                    "Algorithm": "ecdsa-sha2-nistp256",
-                    "Base64": "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKCdTApO5THU4xKI1pdI47+Q07NcddOltsy9Ez+ctHTt9yOQsLa+krK1jxwcJT/QrKU4btX2UsM1u+aqdqxjuO8=",
-                    "FIDO2": false,
-                    "FingerprintMD5": "60:93:eb:35:50:a5:9c:61:d2:39:41:79:85:95:d8:96",
-                    "FingerprintSHA256": "TqhtVAmgVIQgCRZJVlULjX+slIm/3RiizmmMLCOAomQ",
-                    "name": "TqhtVAmgVIQgCRZJVlULjX+slIm/3RiizmmMLCOAomQ"
-                }
-            },
-            {
-                "kinds": [
-                    "SSHKeyPair"
-                ],
-                "id": "f7UsDI4jgPLl+6ciaRr8HOK4ldg/ACRdrQIhzxVl5WU",
-                "properties": {
-                    "Algorithm": "ecdsa-sha2-nistp256",
-                    "Base64": "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBAvgOA+gix3RZQhBcTtHJdJBLQshJeRwvS5wCKeJMrqV5A6Tg0OCwsWnDoSWWqOrSt830xTnWf8w8v2PAF+m5qs=",
-                    "FIDO2": false,
-                    "FingerprintMD5": "a1:f6:ac:7a:55:26:ac:2c:08:cc:24:27:d4:6a:b5:37",
-                    "FingerprintSHA256": "f7UsDI4jgPLl+6ciaRr8HOK4ldg/ACRdrQIhzxVl5WU",
-                    "name": "f7UsDI4jgPLl+6ciaRr8HOK4ldg/ACRdrQIhzxVl5WU"
-                }
-            },
-            {
-                "kinds": [
-                    "SSHKeyPair"
-                ],
-                "id": "ypIWoZK2PDvsKanWOlIZMXChbSkHYBzN98TodBwm+A0",
-                "properties": {
-                    "Algorithm": "ssh-ed25519",
-                    "Base64": "AAAAC3NzaC1lZDI1NTE5AAAAIMjlc24njIMtA6KlS+FBo90P5c53h6dPU+7AcxOfMizB",
-                    "FIDO2": false,
-                    "FingerprintMD5": "47:07:de:ff:93:d2:d8:40:8d:32:08:e3:da:7e:f5:cb",
-                    "FingerprintSHA256": "ypIWoZK2PDvsKanWOlIZMXChbSkHYBzN98TodBwm+A0",
-                    "name": "ypIWoZK2PDvsKanWOlIZMXChbSkHYBzN98TodBwm+A0"
-                }
-            },
-            {
-                "kinds": [
-                    "SSHKeyPair"
-                ],
-                "id": "wS2og3hMtPIPKD8bOG35BTSrUgw2aaaOstyMqYn7Umo",
-                "properties": {
-                    "Algorithm": "ssh-ed25519",
-                    "Base64": "AAAAC3NzaC1lZDI1NTE5AAAAIK1bWkYQV911LQSWwrN/PJhzdldldNTaahp40/iVaTkt",
-                    "FIDO2": false,
-                    "FingerprintMD5": "78:44:00:5d:f3:53:cb:b6:ab:f5:86:64:2f:34:ce:c3",
-                    "FingerprintSHA256": "wS2og3hMtPIPKD8bOG35BTSrUgw2aaaOstyMqYn7Umo",
-                    "name": "wS2og3hMtPIPKD8bOG35BTSrUgw2aaaOstyMqYn7Umo"
-                }
-            },
-            {
-                "kinds": [
-                    "SSHKeyPair"
-                ],
-                "id": "yBnWyfkx/j8aFJjru83+i7zUwhBd1FPGEuKlWk3qhzI",
-                "properties": {
-                    "Algorithm": "ssh-rsa",
-                    "Base64": "AAAAB3NzaC1yc2EAAAADAQABAAABgQCwMEE+TqzKucYpYIY6k+fS21r5AB+q4v64xgaLKebPlvOc7N43GqwsV8A+DKsd4C4Gy1qFaV5W8v+0hjI5lgSb3cZ3ed5usy4ZEABm29pQLTiJj/JFjK6UiCETnW84UU6RQ4uEmA7Ffu+zGfUgHYjhZYgoCbiEYm3WArJcXfm99qCuseBxgfdAyf0pmogEI24B4iLJfGDP5wPX54P+Trj9GguHX2wUMqXbXLIezJPnzGRTrqQwprE0xJrQKlJsI/8Um819DNhdNJkapLV/Ka0Y1SFfNQ3EQjlKmKbt25o2EepAveFsDNI/sLEox98WjG57OULa5UgnepfACREYvWfweHfzk0+vUdDhYuD02wrWiVtz08kK3+s/IlovExWmN+lJ+j1zbGMVXp4uG//jFSD0hxcSpNSd7yWWVuy2m+AuSxgZeU1IdszLwBnUN0qN0ichHRrMD+ajQR3p4Qdd7DOPd1XvD3pQknkDi/oPfqMItx0sljyy8FBRLGfsxNohABs=",
-                    "FIDO2": false,
-                    "FingerprintMD5": "bb:00:d5:64:24:76:fe:f5:fb:96:0e:a7:bf:76:d3:47",
-                    "FingerprintSHA256": "yBnWyfkx/j8aFJjru83+i7zUwhBd1FPGEuKlWk3qhzI",
-                    "name": "yBnWyfkx/j8aFJjru83+i7zUwhBd1FPGEuKlWk3qhzI"
-                }
-            },
-            {
-                "kinds": [
-                    "SSHKeyPair"
-                ],
-                "id": "86Git1XezX4kx65YE+lhqJtUBTrXsgV1IZYi3tva5g4",
-                "properties": {
-                    "Algorithm": "ssh-rsa",
-                    "Base64": "AAAAB3NzaC1yc2EAAAADAQABAAABgQC/nbttdXw63iln93nFH0YDS9EBlOt5pQntB3n1PVSKjT0J8n0apmQhRxl00Qjkv/iiC9YhCtqfnm5+2OgRSDuHYmwApI8iwAv0p0RRiIIK4Ka2Xzqw54OoRE7/JzVaM+Qm1KTiQK6XTHeQmuyieIUkw+hUhfuCRMSJLafU1T5Z8YCdL5zaqQiWjypQ+QUsMHDjNXuFQnm21RwNixHw9Jx1DRp2mlI8Hn+6OQZVsrPV4aqCZoh7hBqxkW2f3ppFrtxSjXsMGEVH6iKylXOOn1N1jTnfm+vCCnhIJIfvmB0wuXquIBtKk3cSNeM+YI1Gva9DTmIcDF5lP2p2fJNdiuChYitDC9ZfGJNoSb/IdAsl6h4bO5KkRz44rPwT+aiKR3Tjl7ZeGNHnqoyyMrEC4cnapk78dPe9kmVWNzgOqjyqRp7haAgH2b9FzAjQShwvUVUuJsQ0cmiqbrVV+vFFZwgi04n0/wc5qVB2NrKFR1MlDd9m94wnOmauUAq4YIjJyas=",
-                    "FIDO2": false,
-                    "FingerprintMD5": "2a:ac:9b:73:23:43:6d:5f:ad:f5:34:47:cf:3d:8a:af",
-                    "FingerprintSHA256": "86Git1XezX4kx65YE+lhqJtUBTrXsgV1IZYi3tva5g4",
-                    "name": "86Git1XezX4kx65YE+lhqJtUBTrXsgV1IZYi3tva5g4"
-                }
-            }
+  "metadata": {},
+  "graph": {
+    "nodes": [
+      {
+        "kinds": [
+          "SSHComputer"
         ],
-        "edges": [
-            {
-                "kind": "IsRoot",
-                "start": {
-                    "match_by": "id",
-                    "value": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHComputer"
-                }
-            },
-            {
-                "kind": "CanImpersonate",
-                "start": {
-                    "match_by": "id",
-                    "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHComputer"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                }
-            },
-            {
-                "kind": "CanImpersonate",
-                "start": {
-                    "match_by": "id",
-                    "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHComputer"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                }
-            },
-            {
-                "kind": "CanSudo",
-                "start": {
-                    "match_by": "id",
-                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHComputer"
-                },
-                "properties": {
-                    "Commands": "(ALL : ALL) ALL",
-                    "PasswordRequired": true
-                }
-            },
-            {
-                "kind": "CanImpersonate",
-                "start": {
-                    "match_by": "id",
-                    "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHComputer"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                }
-            },
-            {
-                "kind": "HasPrivateKey",
-                "start": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "TqhtVAmgVIQgCRZJVlULjX+slIm/3RiizmmMLCOAomQ",
-                    "kind": "SSHKeyPair"
-                },
-                "properties": {
-                    "Cipher": "none",
-                    "Comment": "",
-                    "Encrypted": false,
-                    "FilePath": "/home/alice/.ssh/id_ecdsa_PKCS8_nopasswd",
-                    "KDF": "none",
-                    "KeyFormat": "PKCS#8"
-                }
-            },
-            {
-                "kind": "HasPrivateKey",
-                "start": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "f7UsDI4jgPLl+6ciaRr8HOK4ldg/ACRdrQIhzxVl5WU",
-                    "kind": "SSHKeyPair"
-                },
-                "properties": {
-                    "Cipher": "aes128-cbc",
-                    "Comment": "alice@buildkitsandbox",
-                    "Encrypted": true,
-                    "FilePath": "/home/alice/.ssh/id_ecdsa_PKCS8_passwd",
-                    "KDF": "pbkdf2",
-                    "KeyFormat": "PKCS#8"
-                }
-            },
-            {
-                "kind": "HasPrivateKey",
-                "start": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "ypIWoZK2PDvsKanWOlIZMXChbSkHYBzN98TodBwm+A0",
-                    "kind": "SSHKeyPair"
-                },
-                "properties": {
-                    "Cipher": "none",
-                    "Comment": "",
-                    "Encrypted": false,
-                    "FilePath": "/home/alice/.ssh/id_ed25519_RFC4716_nopasswd",
-                    "KDF": "none",
-                    "KeyFormat": "openssh-key-v1"
-                }
-            },
-            {
-                "kind": "HasPrivateKey",
-                "start": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "wS2og3hMtPIPKD8bOG35BTSrUgw2aaaOstyMqYn7Umo",
-                    "kind": "SSHKeyPair"
-                },
-                "properties": {
-                    "Cipher": "aes256-ctr",
-                    "Comment": "",
-                    "Encrypted": true,
-                    "FilePath": "/home/alice/.ssh/id_ed25519_RFC4716_passwd",
-                    "KDF": "bcrypt",
-                    "KeyFormat": "openssh-key-v1"
-                }
-            },
-            {
-                "kind": "HasPrivateKey",
-                "start": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "yBnWyfkx/j8aFJjru83+i7zUwhBd1FPGEuKlWk3qhzI",
-                    "kind": "SSHKeyPair"
-                },
-                "properties": {
-                    "Cipher": "none",
-                    "Comment": "",
-                    "Encrypted": false,
-                    "FilePath": "/home/alice/.ssh/id_rsa_PEM_nopasswd",
-                    "KDF": "none",
-                    "KeyFormat": "PEM"
-                }
-            },
-            {
-                "kind": "HasPrivateKey",
-                "start": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "86Git1XezX4kx65YE+lhqJtUBTrXsgV1IZYi3tva5g4",
-                    "kind": "SSHKeyPair"
-                },
-                "properties": {
-                    "Cipher": "aes128-cbc",
-                    "Comment": "alice@buildkitsandbox",
-                    "Encrypted": true,
-                    "FilePath": "/home/alice/.ssh/id_rsa_PEM_passwd",
-                    "KDF": "evp_bytestokey",
-                    "KeyFormat": "PEM"
-                }
-            },
-            {
-                "kind": "ForwardsKey",
-                "start": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "ypIWoZK2PDvsKanWOlIZMXChbSkHYBzN98TodBwm+A0",
-                    "kind": "SSHKeyPair"
-                },
-                "properties": {
-                    "Comment": "alice@buildkitsandbox",
-                    "LastLoginIP": "::1",
-                    "LastLoginSocket": "/tmp/ssh-kjfjZ9482L/agent.562",
-                    "LastLoginTime": "2026-02-20T03:20:09Z"
-                }
-            },
-            {
-                "kind": "CanSSH",
-                "start": {
-                    "match_by": "id",
-                    "value": "TqhtVAmgVIQgCRZJVlULjX+slIm/3RiizmmMLCOAomQ",
-                    "kind": "SSHKeyPair"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "properties": {
-                    "Comment": "alice@buildkitsandbox",
-                    "FilePath": "/home/alice/.ssh/authorized_keys"
-                }
-            },
-            {
-                "kind": "CanSSH",
-                "start": {
-                    "match_by": "id",
-                    "value": "f7UsDI4jgPLl+6ciaRr8HOK4ldg/ACRdrQIhzxVl5WU",
-                    "kind": "SSHKeyPair"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "properties": {
-                    "Comment": "alice@buildkitsandbox",
-                    "FilePath": "/home/alice/.ssh/authorized_keys"
-                }
-            },
-            {
-                "kind": "CanSSH",
-                "start": {
-                    "match_by": "id",
-                    "value": "ypIWoZK2PDvsKanWOlIZMXChbSkHYBzN98TodBwm+A0",
-                    "kind": "SSHKeyPair"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "properties": {
-                    "Comment": "alice@buildkitsandbox",
-                    "FilePath": "/home/alice/.ssh/authorized_keys"
-                }
-            },
-            {
-                "kind": "CanSSH",
-                "start": {
-                    "match_by": "id",
-                    "value": "wS2og3hMtPIPKD8bOG35BTSrUgw2aaaOstyMqYn7Umo",
-                    "kind": "SSHKeyPair"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "properties": {
-                    "Comment": "alice@buildkitsandbox",
-                    "FilePath": "/home/alice/.ssh/authorized_keys"
-                }
-            },
-            {
-                "kind": "CanSSH",
-                "start": {
-                    "match_by": "id",
-                    "value": "yBnWyfkx/j8aFJjru83+i7zUwhBd1FPGEuKlWk3qhzI",
-                    "kind": "SSHKeyPair"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "properties": {
-                    "Comment": "alice@buildkitsandbox",
-                    "FilePath": "/home/alice/.ssh/authorized_keys"
-                }
-            },
-            {
-                "kind": "CanSSH",
-                "start": {
-                    "match_by": "id",
-                    "value": "86Git1XezX4kx65YE+lhqJtUBTrXsgV1IZYi3tva5g4",
-                    "kind": "SSHKeyPair"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "properties": {
-                    "Comment": "alice@buildkitsandbox",
-                    "FilePath": "/home/alice/.ssh/authorized_keys"
-                }
-            },
-            {
-                "kind": "CanSSH",
-                "start": {
-                    "match_by": "id",
-                    "value": "TqhtVAmgVIQgCRZJVlULjX+slIm/3RiizmmMLCOAomQ",
-                    "kind": "SSHKeyPair"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "properties": {
-                    "Comment": "alice@buildkitsandbox",
-                    "FilePath": "/home/alice_adm/.ssh/authorized_keys"
-                }
-            },
-            {
-                "kind": "CanSSH",
-                "start": {
-                    "match_by": "id",
-                    "value": "f7UsDI4jgPLl+6ciaRr8HOK4ldg/ACRdrQIhzxVl5WU",
-                    "kind": "SSHKeyPair"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "properties": {
-                    "Comment": "alice@buildkitsandbox",
-                    "FilePath": "/home/alice_adm/.ssh/authorized_keys"
-                }
-            },
-            {
-                "kind": "CanSSH",
-                "start": {
-                    "match_by": "id",
-                    "value": "ypIWoZK2PDvsKanWOlIZMXChbSkHYBzN98TodBwm+A0",
-                    "kind": "SSHKeyPair"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "properties": {
-                    "Comment": "alice@buildkitsandbox",
-                    "FilePath": "/home/alice_adm/.ssh/authorized_keys"
-                }
-            },
-            {
-                "kind": "CanSSH",
-                "start": {
-                    "match_by": "id",
-                    "value": "wS2og3hMtPIPKD8bOG35BTSrUgw2aaaOstyMqYn7Umo",
-                    "kind": "SSHKeyPair"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "properties": {
-                    "Comment": "alice@buildkitsandbox",
-                    "FilePath": "/home/alice_adm/.ssh/authorized_keys"
-                }
-            },
-            {
-                "kind": "CanSSH",
-                "start": {
-                    "match_by": "id",
-                    "value": "yBnWyfkx/j8aFJjru83+i7zUwhBd1FPGEuKlWk3qhzI",
-                    "kind": "SSHKeyPair"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "properties": {
-                    "Comment": "alice@buildkitsandbox",
-                    "FilePath": "/home/alice_adm/.ssh/authorized_keys"
-                }
-            },
-            {
-                "kind": "CanSSH",
-                "start": {
-                    "match_by": "id",
-                    "value": "86Git1XezX4kx65YE+lhqJtUBTrXsgV1IZYi3tva5g4",
-                    "kind": "SSHKeyPair"
-                },
-                "end": {
-                    "match_by": "id",
-                    "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHUser"
-                },
-                "properties": {
-                    "Comment": "alice@buildkitsandbox",
-                    "FilePath": "/home/alice_adm/.ssh/authorized_keys"
-                }
-            },
-            {
-                "kind": "HasKeytab",
-                "start": {
-                    "match_by": "id",
-                    "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHComputer"
-                },
-                "end": {
-                    "match_by": "property",
-                    "kind": "User",
-                    "property_matchers": [{"key": "name", "operator": "equals", "value": "SVC_CUSTOM@DEMO.LOCAL"}]
-                },
-                "properties": {
-                    "FilePath": "/home/alice/svc_custom.keytab"
-                }
-            },
-            {
-                "kind": "HasKeytab",
-                "start": {
-                    "match_by": "id",
-                    "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-                    "kind": "SSHComputer"
-                },
-                "end": {
-                    "match_by": "property",
-                    "kind": "Computer",
-                    "property_matchers": [{"key": "name", "operator": "equals", "value": "SERVER.DEMO.LOCAL"}]
-                },
-                "properties": {
-                    "FilePath": "/etc/krb5.keytab"
-                }
-            }
-        ]
-    }
+        "id": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+        "properties": {
+          "FQDN": "52170a57403b",
+          "name": "52170a57403b"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+        "properties": {
+          "name": "root@52170a57403b"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+        "properties": {
+          "name": "alice_adm@52170a57403b"
+        }
+      },
+      {
+        "kinds": [
+          "SSHUser"
+        ],
+        "id": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+        "properties": {
+          "name": "alice@52170a57403b"
+        }
+      },
+      {
+        "kinds": [
+          "SSHKeyPair"
+        ],
+        "id": "cCqokWv9eAmqlFXWBLf5jrSkvoIgU8slbuoQYva8zNg",
+        "properties": {
+          "Algorithm": "ecdsa-sha2-nistp256",
+          "FIDO2": false,
+          "FingerprintMD5": "37:fd:3a:a1:fc:f9:b9:8f:68:f0:b4:99:d4:10:9f:af",
+          "FingerprintSHA256": "cCqokWv9eAmqlFXWBLf5jrSkvoIgU8slbuoQYva8zNg",
+          "name": "cCqokWv9eAmqlFXWBLf5jrSkvoIgU8slbuoQYva8zNg"
+        }
+      },
+      {
+        "kinds": [
+          "SSHKeyPair"
+        ],
+        "id": "BQbFdGglqZdJteASukMGaEnfjYeyNCFmGqOiwzN8eZI",
+        "properties": {
+          "Algorithm": "ecdsa-sha2-nistp256",
+          "FIDO2": false,
+          "FingerprintMD5": "49:3a:ac:c9:27:d9:07:84:b6:63:41:09:49:33:e0:fd",
+          "FingerprintSHA256": "BQbFdGglqZdJteASukMGaEnfjYeyNCFmGqOiwzN8eZI",
+          "name": "BQbFdGglqZdJteASukMGaEnfjYeyNCFmGqOiwzN8eZI"
+        }
+      },
+      {
+        "kinds": [
+          "SSHKeyPair"
+        ],
+        "id": "BwdSes6eJx7t8eaURC0Axqij+UKoExQ0kfLnIZpRV2w",
+        "properties": {
+          "Algorithm": "ssh-ed25519",
+          "FIDO2": false,
+          "FingerprintMD5": "e6:65:9b:dc:01:37:f4:3a:87:95:62:46:0a:20:13:08",
+          "FingerprintSHA256": "BwdSes6eJx7t8eaURC0Axqij+UKoExQ0kfLnIZpRV2w",
+          "name": "BwdSes6eJx7t8eaURC0Axqij+UKoExQ0kfLnIZpRV2w"
+        }
+      },
+      {
+        "kinds": [
+          "SSHKeyPair"
+        ],
+        "id": "oVNunR+e7q1C/kj4YAm9Wc5X7F8WV2QHKQi3pxDgo8E",
+        "properties": {
+          "Algorithm": "ssh-ed25519",
+          "FIDO2": false,
+          "FingerprintMD5": "ee:9c:a8:9e:b9:b7:3a:b1:41:2e:60:1f:d3:bc:a1:40",
+          "FingerprintSHA256": "oVNunR+e7q1C/kj4YAm9Wc5X7F8WV2QHKQi3pxDgo8E",
+          "name": "oVNunR+e7q1C/kj4YAm9Wc5X7F8WV2QHKQi3pxDgo8E"
+        }
+      },
+      {
+        "kinds": [
+          "SSHKeyPair"
+        ],
+        "id": "XA8UCw3svDrf2gyDYTL+sdSspw7083Wfo5AADXLo1nE",
+        "properties": {
+          "Algorithm": "ssh-rsa",
+          "FIDO2": false,
+          "FingerprintMD5": "74:22:f0:9d:53:93:23:fa:2b:65:59:f1:06:92:94:88",
+          "FingerprintSHA256": "XA8UCw3svDrf2gyDYTL+sdSspw7083Wfo5AADXLo1nE",
+          "name": "XA8UCw3svDrf2gyDYTL+sdSspw7083Wfo5AADXLo1nE"
+        }
+      },
+      {
+        "kinds": [
+          "SSHKeyPair"
+        ],
+        "id": "0iC5YKGScwdasA+FSWRjLB2z8iJnNjXbYBjTQR20qow",
+        "properties": {
+          "Algorithm": "ssh-rsa",
+          "FIDO2": false,
+          "FingerprintMD5": "86:e4:e0:48:e4:c2:a2:55:ff:1c:b8:65:8a:0b:6f:9b",
+          "FingerprintSHA256": "0iC5YKGScwdasA+FSWRjLB2z8iJnNjXbYBjTQR20qow",
+          "name": "0iC5YKGScwdasA+FSWRjLB2z8iJnNjXbYBjTQR20qow"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "kind": "IsRoot",
+        "start": {
+          "match_by": "id",
+          "value": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHComputer"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "CanSudo",
+        "start": {
+          "match_by": "id",
+          "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHComputer"
+        },
+        "properties": {
+          "Commands": "(ALL : ALL) ALL",
+          "PasswordRequired": true
+        }
+      },
+      {
+        "kind": "CanImpersonate",
+        "start": {
+          "match_by": "id",
+          "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        }
+      },
+      {
+        "kind": "HasPrivateKey",
+        "start": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "cCqokWv9eAmqlFXWBLf5jrSkvoIgU8slbuoQYva8zNg",
+          "kind": "SSHKeyPair"
+        },
+        "properties": {
+          "Cipher": "none",
+          "Comment": "",
+          "Encrypted": false,
+          "KDF": "none",
+          "KeyFormat": "PKCS#8",
+          "PrivateKeyFile": "/home/alice/.ssh/id_ecdsa_PKCS8_nopasswd"
+        }
+      },
+      {
+        "kind": "HasPrivateKey",
+        "start": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "BQbFdGglqZdJteASukMGaEnfjYeyNCFmGqOiwzN8eZI",
+          "kind": "SSHKeyPair"
+        },
+        "properties": {
+          "Cipher": "aes128-cbc",
+          "Comment": "alice@buildkitsandbox",
+          "Encrypted": true,
+          "KDF": "pbkdf2",
+          "KeyFormat": "PKCS#8",
+          "PrivateKeyFile": "/home/alice/.ssh/id_ecdsa_PKCS8_passwd"
+        }
+      },
+      {
+        "kind": "HasPrivateKey",
+        "start": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "BwdSes6eJx7t8eaURC0Axqij+UKoExQ0kfLnIZpRV2w",
+          "kind": "SSHKeyPair"
+        },
+        "properties": {
+          "Cipher": "none",
+          "Comment": "",
+          "Encrypted": false,
+          "KDF": "none",
+          "KeyFormat": "openssh-key-v1",
+          "PrivateKeyFile": "/home/alice/.ssh/id_ed25519_RFC4716_nopasswd"
+        }
+      },
+      {
+        "kind": "HasPrivateKey",
+        "start": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "oVNunR+e7q1C/kj4YAm9Wc5X7F8WV2QHKQi3pxDgo8E",
+          "kind": "SSHKeyPair"
+        },
+        "properties": {
+          "Cipher": "aes256-ctr",
+          "Comment": "",
+          "Encrypted": true,
+          "KDF": "bcrypt",
+          "KeyFormat": "openssh-key-v1",
+          "PrivateKeyFile": "/home/alice/.ssh/id_ed25519_RFC4716_passwd"
+        }
+      },
+      {
+        "kind": "HasPrivateKey",
+        "start": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "XA8UCw3svDrf2gyDYTL+sdSspw7083Wfo5AADXLo1nE",
+          "kind": "SSHKeyPair"
+        },
+        "properties": {
+          "Cipher": "none",
+          "Comment": "",
+          "Encrypted": false,
+          "KDF": "none",
+          "KeyFormat": "PEM",
+          "PrivateKeyFile": "/home/alice/.ssh/id_rsa_PEM_nopasswd"
+        }
+      },
+      {
+        "kind": "HasPrivateKey",
+        "start": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "0iC5YKGScwdasA+FSWRjLB2z8iJnNjXbYBjTQR20qow",
+          "kind": "SSHKeyPair"
+        },
+        "properties": {
+          "Cipher": "aes128-cbc",
+          "Comment": "alice@buildkitsandbox",
+          "Encrypted": true,
+          "KDF": "evp_bytestokey",
+          "KeyFormat": "PEM",
+          "PrivateKeyFile": "/home/alice/.ssh/id_rsa_PEM_passwd"
+        }
+      },
+      {
+        "kind": "ForwardsKey",
+        "start": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "BwdSes6eJx7t8eaURC0Axqij+UKoExQ0kfLnIZpRV2w",
+          "kind": "SSHKeyPair"
+        },
+        "properties": {
+          "Comment": "alice@buildkitsandbox",
+          "LastLoginIP": "::1",
+          "LastLoginSocket": "/tmp/ssh-kjfjZ9482L/agent.562",
+          "LastLoginTime": "2026-02-20T03:20:09Z"
+        }
+      },
+      {
+        "kind": "CanSSH",
+        "start": {
+          "match_by": "id",
+          "value": "cCqokWv9eAmqlFXWBLf5jrSkvoIgU8slbuoQYva8zNg",
+          "kind": "SSHKeyPair"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "properties": {
+          "Comment": "alice@buildkitsandbox",
+          "AuthorizedKeysFile": "/home/alice/.ssh/authorized_keys"
+        }
+      },
+      {
+        "kind": "CanSSH",
+        "start": {
+          "match_by": "id",
+          "value": "BQbFdGglqZdJteASukMGaEnfjYeyNCFmGqOiwzN8eZI",
+          "kind": "SSHKeyPair"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "properties": {
+          "Comment": "alice@buildkitsandbox",
+          "AuthorizedKeysFile": "/home/alice/.ssh/authorized_keys"
+        }
+      },
+      {
+        "kind": "CanSSH",
+        "start": {
+          "match_by": "id",
+          "value": "BwdSes6eJx7t8eaURC0Axqij+UKoExQ0kfLnIZpRV2w",
+          "kind": "SSHKeyPair"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "properties": {
+          "Comment": "alice@buildkitsandbox",
+          "AuthorizedKeysFile": "/home/alice/.ssh/authorized_keys"
+        }
+      },
+      {
+        "kind": "CanSSH",
+        "start": {
+          "match_by": "id",
+          "value": "oVNunR+e7q1C/kj4YAm9Wc5X7F8WV2QHKQi3pxDgo8E",
+          "kind": "SSHKeyPair"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "properties": {
+          "Comment": "alice@buildkitsandbox",
+          "AuthorizedKeysFile": "/home/alice/.ssh/authorized_keys"
+        }
+      },
+      {
+        "kind": "CanSSH",
+        "start": {
+          "match_by": "id",
+          "value": "XA8UCw3svDrf2gyDYTL+sdSspw7083Wfo5AADXLo1nE",
+          "kind": "SSHKeyPair"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "properties": {
+          "Comment": "alice@buildkitsandbox",
+          "AuthorizedKeysFile": "/home/alice/.ssh/authorized_keys"
+        }
+      },
+      {
+        "kind": "CanSSH",
+        "start": {
+          "match_by": "id",
+          "value": "0iC5YKGScwdasA+FSWRjLB2z8iJnNjXbYBjTQR20qow",
+          "kind": "SSHKeyPair"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "properties": {
+          "Comment": "alice@buildkitsandbox",
+          "AuthorizedKeysFile": "/home/alice/.ssh/authorized_keys"
+        }
+      },
+      {
+        "kind": "CanSSH",
+        "start": {
+          "match_by": "id",
+          "value": "cCqokWv9eAmqlFXWBLf5jrSkvoIgU8slbuoQYva8zNg",
+          "kind": "SSHKeyPair"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "properties": {
+          "Comment": "alice@buildkitsandbox",
+          "AuthorizedKeysFile": "/home/alice_adm/.ssh/authorized_keys"
+        }
+      },
+      {
+        "kind": "CanSSH",
+        "start": {
+          "match_by": "id",
+          "value": "BQbFdGglqZdJteASukMGaEnfjYeyNCFmGqOiwzN8eZI",
+          "kind": "SSHKeyPair"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "properties": {
+          "Comment": "alice@buildkitsandbox",
+          "AuthorizedKeysFile": "/home/alice_adm/.ssh/authorized_keys"
+        }
+      },
+      {
+        "kind": "CanSSH",
+        "start": {
+          "match_by": "id",
+          "value": "BwdSes6eJx7t8eaURC0Axqij+UKoExQ0kfLnIZpRV2w",
+          "kind": "SSHKeyPair"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "properties": {
+          "Comment": "alice@buildkitsandbox",
+          "AuthorizedKeysFile": "/home/alice_adm/.ssh/authorized_keys"
+        }
+      },
+      {
+        "kind": "CanSSH",
+        "start": {
+          "match_by": "id",
+          "value": "oVNunR+e7q1C/kj4YAm9Wc5X7F8WV2QHKQi3pxDgo8E",
+          "kind": "SSHKeyPair"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "properties": {
+          "Comment": "alice@buildkitsandbox",
+          "AuthorizedKeysFile": "/home/alice_adm/.ssh/authorized_keys"
+        }
+      },
+      {
+        "kind": "CanSSH",
+        "start": {
+          "match_by": "id",
+          "value": "XA8UCw3svDrf2gyDYTL+sdSspw7083Wfo5AADXLo1nE",
+          "kind": "SSHKeyPair"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "properties": {
+          "Comment": "alice@buildkitsandbox",
+          "AuthorizedKeysFile": "/home/alice_adm/.ssh/authorized_keys"
+        }
+      },
+      {
+        "kind": "CanSSH",
+        "start": {
+          "match_by": "id",
+          "value": "0iC5YKGScwdasA+FSWRjLB2z8iJnNjXbYBjTQR20qow",
+          "kind": "SSHKeyPair"
+        },
+        "end": {
+          "match_by": "id",
+          "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHUser"
+        },
+        "properties": {
+          "Comment": "alice@buildkitsandbox",
+          "AuthorizedKeysFile": "/home/alice_adm/.ssh/authorized_keys"
+        }
+      },
+      {
+        "kind": "HasKeytab",
+        "start": {
+          "match_by": "id",
+          "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "property",
+          "kind": "User",
+          "property_matchers": [{"key": "name", "operator": "equals", "value": "SVC_CUSTOM@DEMO.LOCAL"}]
+        },
+        "properties": {
+          "KeytabFile": "/home/alice/svc_custom.keytab"
+        }
+      },
+      {
+        "kind": "HasKeytab",
+        "start": {
+          "match_by": "id",
+          "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
+          "kind": "SSHComputer"
+        },
+        "end": {
+          "match_by": "property",
+          "kind": "Computer",
+          "property_matchers": [{"key": "name", "operator": "equals", "value": "SERVER.DEMO.LOCAL"}]
+        },
+        "properties": {
+          "KeytabFile": "/etc/krb5.keytab"
+        }
+      }
+    ]
+  }
 }
