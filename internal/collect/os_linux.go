@@ -82,6 +82,11 @@ func emitSudoer(ctx context.Context, h *Host, u *User, b *opengraph.GraphBuilder
 		slog.Debug("emitSudoer: user is root, skipping", "userName", u.UserName)
 		return
 	}
+	// handle abandoned home dirs
+	if strings.HasPrefix(u.UserName, "unknown:") {
+		slog.Debug("emitSudoer: synthesized user, skipping", "userName", u.UserName)
+		return
+	}
 
 	cctx, cancel := context.WithTimeout(ctx, SudoExecTimeout)
 	defer cancel()
