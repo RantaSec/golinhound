@@ -14,10 +14,24 @@
         "group": "build"
       },
       {
+        "label": "go build windows/amd64",
+        "type": "shell",
+        "command": "make build-windows-amd64",
+        "group": "build"
+      },
+      {
+        "label": "go build windows/arm64",
+        "type": "shell",
+        "command": "make build-windows-arm64",
+        "group": "build"
+      },
+      {
         "label": "go build all",
         "dependsOn": [
           "go build linux/amd64",
-          "go build linux/arm64"
+          "go build linux/arm64",
+          "go build windows/amd64",
+          "go build windows/arm64"
         ],
         "dependsOrder": "parallel",
         "problemMatcher": [],
