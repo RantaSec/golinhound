@@ -13,7 +13,7 @@ import (
 )
 
 // SudoExecTimeout caps the runtime of each `sudo -l -U <user>` probe.
-const SudoExecTimeout = 2 * time.Second
+const SudoExecTimeout = 3 * time.Second
 
 // OSCollector emits every edge that comes from the host itself:
 //
