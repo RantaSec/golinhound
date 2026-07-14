@@ -365,7 +365,7 @@ func sssdHomeDirGlobs() map[string]struct{} {
 func localGlobMatches(glob string) []string {
 	parent := wildcardParentDir(glob)
 	if !isPathOnLocalFS(parent) {
-		slog.Error("localGlobMatches: skipping remote path", "path", parent, "glob", glob)
+		slog.Error("localGlobMatches: skipping sssd.conf home-dir glob because its parent is remote or unavailable", "path", parent, "glob", glob)
 		return nil
 	}
 	if parent == glob {
@@ -414,7 +414,7 @@ func nextWildcardSegment(rest string) (string, string) {
 func isPathOnLocalFS(p string) bool {
 	var st syscall.Statfs_t
 	if err := syscall.Statfs(p, &st); err != nil {
-		slog.Error("isPathOnLocalFS: statfs failed, treating as remote", "path", p, "err", err)
+		slog.Error("isPathOnLocalFS: statfs failed, treating path as remote and skipping enumeration", "path", p, "err", err)
 		return false
 	}
 	switch uint32(st.Type) {
