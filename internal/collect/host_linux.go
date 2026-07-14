@@ -208,7 +208,9 @@ func recentSessionUserNames() (map[string]struct{}, error) {
 	cmd := exec.CommandContext(ctx, "journalctl",
 		"MESSAGE_ID="+SessionStartMessageID,
 		"-o", "json",
-		"--output-fields", "USER_ID",
+		// --output-fields would reduce the output JSON to just USER_ID,
+		// but it only exists since systemd v236 (commit cc25a67e, 2017-10-27)
+		//"--output-fields", "USER_ID",
 		"--since", fmt.Sprintf("%d days ago", SessionHistoryDays),
 		"--no-pager",
 	)
