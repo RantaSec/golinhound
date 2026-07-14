@@ -248,7 +248,11 @@ func getentPasswd(name string) (*User, bool) {
 	defer cancel()
 	out, err := exec.CommandContext(ctx, "getent", "passwd", name).Output()
 	if err != nil {
-		slog.Error("getentPasswd: exit non-zero", "name", name, "err", err)
+		// exit code 2: user not found. This is expected on stale accounts.
+		// We only output unexpected errors here.
+		if ee, ok := err.(*exec.ExitError); !ok || ee.ExitCode() != 2 {
+			slog.Error("getentPasswd: exit non-zero", "name", name, "err", err)
+		}
 		return nil, false
 	}
 	line := string(out)
