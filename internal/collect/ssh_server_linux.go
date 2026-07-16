@@ -58,8 +58,13 @@ func (s *SSHServerCollector) Collect(ctx context.Context, h *Host, b *opengraph.
 			continue
 		}
 		emitAuthorizedKeys(h, u, sshdConfig, b)
-		emitCanIssueCertificates(h, u, sshdConfig, cas, caFile, b)
-		emitCanCertSSH(h, u, sshdConfig, cas, b)
+		if len(cas) > 0 {
+			principals, file := authorizedPrincipalsFor(sshdConfig, u)
+			if len(principals) > 0 {
+				emitCanIssueCertificates(h, u, cas, principals, file, caFile, b)
+				emitCanCertSSH(h, u, cas, principals, file, b)
+			}
+		}
 	}
 
 	emitForwardedKeys(ctx, h, s.WaitForKeysDuration, b)
@@ -120,7 +125,7 @@ func emitAuthorizedKeys(h *Host, u *User, sshdConfig map[string]string, b *openg
 			continue
 		}
 		for len(data) > 0 {
-			pub, comment, _, rest, err := ssh.ParseAuthorizedKey(data)
+			pub, comment, opts, rest, err := ssh.ParseAuthorizedKey(data)
 			if err != nil {
 				if errors.Unwrap(err) != nil {
 					slog.Debug("emitAuthorizedKeys: malformed key line(s) ignored", "file", file, "err", err)
@@ -130,6 +135,15 @@ func emitAuthorizedKeys(h *Host, u *User, sshdConfig map[string]string, b *openg
 			data = rest
 			pubKey := newPublicKey(pub, comment)
 			emitKeypairNode(b, *pubKey)
+			if slices.Contains(opts, "cert-authority") {
+				principals := certAuthorityPrincipals(opts, u)
+				if len(principals) > 0 {
+					cas := []publicKey{*pubKey}
+					emitCanIssueCertificates(h, u, cas, principals, file, "", b)
+					emitCanCertSSH(h, u, cas, principals, file, b)
+				}
+				continue
+			}
 			b.AddEdge("CanSSH",
 				opengraph.ByID("SSHKeyPair", pubKey.FingerprintSHA256),
 				opengraph.ByID("SSHUser", h.ReferenceUser(u.UID)),
@@ -378,10 +392,10 @@ func authorizedPrincipalsFor(sshdConfig map[string]string, u *User) (principals 
 }
 
 // parsePrincipalsFile returns the principal names from one
-// AuthorizedPrincipalsFile. Per sshd(8): one principal per line, blank
-// lines and #-comments ignored. Lines may begin with authorized_keys
-// options (command=, principals=, etc.) — we strip those by taking the
-// last whitespace-separated field on each non-comment line.
+// AuthorizedPrincipalsFile. One principal per line, blank lines and
+// #-comments ignored. Lines may begin with authorized_keys options
+// (command=, principals=, etc.) — we strip those by taking the last
+// whitespace-separated field on each non-comment line.
 func parsePrincipalsFile(data []byte) []string {
 	var out []string
 	for line := range strings.SplitSeq(string(data), "\n") {
@@ -395,24 +409,34 @@ func parsePrincipalsFile(data []byte) []string {
 	return out
 }
 
-// emitCanIssueCertificates emits one CanIssueCertificate edge per
-// (CA, user) pair. Edges omit AuthorizedPrincipalsFile under sshd's
-// username-fallback rule.
-func emitCanIssueCertificates(h *Host, u *User, sshdConfig map[string]string, cas []publicKey, caFile string, b *opengraph.GraphBuilder) {
-	if len(cas) == 0 {
-		return
+// certAuthorityPrincipals resolves the principals option in a
+// cert-authority authorized_keys entry. With the option unset, returns
+// [username] (sshd's username-fallback rule). An empty principals slice
+// (from principals="") means sshd would deny cert auth.
+func certAuthorityPrincipals(opts []string, u *User) []string {
+	for _, o := range opts {
+		if v, ok := strings.CutPrefix(o, "principals=\""); ok {
+			v = strings.TrimSuffix(v, "\"")
+			if v == "" {
+				return nil
+			}
+			return strings.Split(v, ",")
+		}
 	}
-	principals, file := authorizedPrincipalsFor(sshdConfig, u)
-	if len(principals) == 0 {
-		return
-	}
+	return []string{u.UserName}
+}
 
+// emitCanIssueCertificates emits one CanIssueCertificate edge per
+// (CA, user) pair.
+func emitCanIssueCertificates(h *Host, u *User, cas []publicKey, principals []string, principalsFile, caFile string, b *opengraph.GraphBuilder) {
 	props := map[string]any{
-		"AuthorizedPrincipals":  principals,
-		"TrustedUserCAKeysFile": caFile,
+		"AuthorizedPrincipals": principals,
 	}
-	if file != "" {
-		props["AuthorizedPrincipalsFile"] = file
+	if caFile != "" {
+		props["TrustedUserCAKeysFile"] = caFile
+	}
+	if principalsFile != "" {
+		props["AuthorizedPrincipalsFile"] = principalsFile
 	}
 	for _, ca := range cas {
 		b.AddEdge("CanIssueCertificate",
@@ -439,15 +463,7 @@ func emitCanIssueCertificates(h *Host, u *User, sshdConfig map[string]string, ca
 //     PROTOCOL.certkeys: "a zero-length valid principals field means
 //     the certificate is valid for any principal of the specified
 //     type").
-func emitCanCertSSH(h *Host, u *User, sshdConfig map[string]string, cas []publicKey, b *opengraph.GraphBuilder) {
-	if len(cas) == 0 {
-		return
-	}
-	principals, file := authorizedPrincipalsFor(sshdConfig, u)
-	if len(principals) == 0 {
-		return
-	}
-
+func emitCanCertSSH(h *Host, u *User, cas []publicKey, principals []string, file string, b *opengraph.GraphBuilder) {
 	// AuthorizedPrincipals is redundant while the per-principal split gives
 	// each edge its own concrete principal via the ByProperty(Principal=...)
 	// selector. Re-enable once BloodHound gains a list-contains matcher and
