@@ -261,7 +261,7 @@ func parsePrivateKeyPKCS8Encrypted(userName, privKeyPath string, privKeyBytes []
 	// PBES1: pbeWithMD5AndDES-CBC -> KDF=PBKDF1, Cipher=DES-CBC.
 	if strings.HasPrefix(encAlg, "pbeWith") {
 		kdf = "PBKDF1"
-		cipher = strings.Split(strings.ReplaceAll(encAlg, "pbeWith", ""), "And")[1]
+		_, cipher, _ = strings.Cut(encAlg, "And")
 	}
 
 	// PBES2: separate KDF + EncryptionScheme algorithm identifiers.
@@ -310,7 +310,7 @@ var pkcs8OIDToAlgorithm = map[string]string{
 // EVP_BytesToKey.
 func parsePrivateKeyPEMEncrypted(userName, privKeyPath, dekInfo string, pub publicKey) *privateKey {
 	slog.Debug("parsePrivateKeyPEMEncrypted", "userName", userName, "privKeyPath", privKeyPath, "dekInfo", dekInfo)
-	cipher := strings.Split(dekInfo, ",")[0]
+	cipher, _, _ := strings.Cut(dekInfo, ",")
 	return newPrivateKey(userName, pub, privKeyPath, "PEM", "EVP_BytesToKey", cipher)
 }
 

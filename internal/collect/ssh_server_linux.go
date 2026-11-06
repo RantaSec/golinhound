@@ -269,7 +269,8 @@ func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.
 		return
 	}
 
-	sshdPid, _ := strconv.ParseInt(strings.Split(filepath.Base(socket), ".")[1], 10, 32)
+	_, pidStr, _ := strings.CutLast(filepath.Base(socket), ".")
+	sshdPid, _ := strconv.ParseInt(pidStr, 10, 32)
 	sshdProcess, err := process.NewProcess(int32(sshdPid))
 	if err != nil {
 		slog.Debug("emitForwardedKey: SSHD process no longer exists", "sshdPid", sshdPid)
@@ -303,8 +304,8 @@ func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.
 	var loginIp string
 	sshdChildEnviron, _ := sshdChildProcesses[0].Environ()
 	for _, envString := range sshdChildEnviron {
-		if strings.Contains(envString, "SSH_CONNECTION") {
-			loginIp = strings.Split(strings.Split(envString, "=")[1], " ")[0]
+		if val, ok := strings.CutPrefix(envString, "SSH_CONNECTION="); ok {
+			loginIp, _, _ = strings.Cut(val, " ")
 		}
 	}
 
