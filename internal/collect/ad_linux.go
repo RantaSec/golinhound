@@ -11,8 +11,6 @@ import (
 	"time"
 
 	"github.com/RantaSec/golinhound/internal/opengraph"
-	"github.com/jcmturner/gokrb5/v8/credentials"
-	"github.com/jcmturner/gokrb5/v8/keytab"
 )
 
 // Timeouts for Kerberos artifact discovery and parsing.
@@ -62,14 +60,13 @@ func emitKeytabs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) {
 
 	for file := range chKeytabs {
 		ctxLoad, cancelLoad := context.WithTimeout(context.Background(), KeytabLoadTimeout)
-		kt, err := loadKeytab(ctxLoad, file)
+		entries, err := loadKeytab(ctxLoad, file)
 		cancelLoad()
 		if err != nil {
 			slog.Error("could not load keytab", "file", file, "err", err)
-			continue
 		}
-		for _, entry := range kt.Entries {
-			emitHasKeytabEdge(h, b, file, entry.Principal.String(), entry.Principal.Realm)
+		for _, entry := range entries {
+			emitHasKeytabEdge(h, b, file, entry.Principal, entry.Realm)
 		}
 	}
 }
@@ -133,28 +130,6 @@ func findKeytabFiles(ctx context.Context, chKeytabs chan<- string, rootDir strin
 	}
 }
 
-// loadKeytab calls keytab.Load on filePath inside a goroutine so that
-// ctx cancellation can abort a stuck parse. The library call itself
-// has no context support; this wrapper provides the timeout boundary
-// for the entire keytab-load step.
-func loadKeytab(ctx context.Context, filePath string) (*keytab.Keytab, error) {
-	type result struct {
-		keytab *keytab.Keytab
-		err    error
-	}
-	resultChan := make(chan result, 1)
-	go func() {
-		kt, err := keytab.Load(filePath)
-		resultChan <- result{keytab: kt, err: err}
-	}()
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case res := <-resultChan:
-		return res.keytab, res.err
-	}
-}
-
 // emitTGTs iterates every on-disk ticket cache (findFileTicketCaches),
 // loads it, and emits one HasTGT edge per Ticket Granting Ticket that
 // has not yet expired beyond its renewal window.
@@ -165,15 +140,14 @@ func emitTGTs(h *Host, b *opengraph.GraphBuilder) {
 			continue
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), CredentialCacheLoadTimeout)
-		ccache, err := loadCCache(ctx, cacheFile)
+		credsList, err := loadCCache(ctx, cacheFile)
 		cancel()
 		if err != nil {
 			slog.Error("could not load Kerberos ticket cache", "cacheFile", cacheFile, "err", err)
-			continue
 		}
-		for _, creds := range ccache.Credentials {
+		for _, creds := range credsList {
 			// only true TGTs (krbtgt/...) become HasTGT edges
-			if !strings.HasPrefix(creds.Server.PrincipalName.PrincipalNameString(), "krbtgt/") {
+			if !strings.HasPrefix(creds.ServerPrincipal, "krbtgt/") {
 				continue
 			}
 			// expired AND non-renewable: drop
@@ -191,10 +165,8 @@ func emitTGTs(h *Host, b *opengraph.GraphBuilder) {
 // StartTime/EndTime/RenewTime in RFC3339. Ccaches whose uid doesn't
 // map to any Host.Users entry (see Host.fileOwner) are debug-logged
 // and dropped.
-func emitHasTGTEdge(h *Host, b *opengraph.GraphBuilder, filePath string, creds *credentials.Credential) {
-	principal := creds.Client.PrincipalName.PrincipalNameString()
-	realm := creds.Client.Realm
-	name, err := PrincipalToBloodhoundName(principal, realm)
+func emitHasTGTEdge(h *Host, b *opengraph.GraphBuilder, filePath string, creds ccacheCredential) {
+	name, err := PrincipalToBloodhoundName(creds.ClientPrincipal, creds.ClientRealm)
 	if err != nil {
 		slog.Debug("emitHasTGTEdge: PrincipalToBloodhoundName failed", "err", err)
 		return
@@ -228,32 +200,6 @@ func findFileTicketCaches() []string {
 	c2, _ := filepath.Glob("/run/user/*/krb5cc/*")
 	caches = append(caches, c2...)
 	return caches
-}
-
-// loadCCache calls credentials.LoadCCache on filePath inside a goroutine
-// so that ctx cancellation can abort a stuck parse. Returns early with
-// "file is empty" if os.Stat fails (missing/unreadable) or reports a
-// zero-byte file, so the gokrb5 loader is never handed an unusable input.
-func loadCCache(ctx context.Context, filePath string) (*credentials.CCache, error) {
-	fi, err := os.Stat(filePath)
-	if err != nil || fi.Size() == 0 {
-		return nil, fmt.Errorf("file is empty: %s", filePath)
-	}
-	type result struct {
-		ccache *credentials.CCache
-		err    error
-	}
-	resultChan := make(chan result, 1)
-	go func() {
-		ccache, err := credentials.LoadCCache(filePath)
-		resultChan <- result{ccache: ccache, err: err}
-	}()
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case res := <-resultChan:
-		return res.ccache, res.err
-	}
 }
 
 // findKeyringTicketCaches finds paths of kernel keyring ticket caches.
