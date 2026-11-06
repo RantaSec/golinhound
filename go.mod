@@ -1,6 +1,6 @@
 module github.com/RantaSec/golinhound
 
-go 1.25.0
+go 1.27.3
 
 require (
 	github.com/fsnotify/fsnotify v1.10.1
