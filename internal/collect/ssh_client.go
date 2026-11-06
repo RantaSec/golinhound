@@ -6,6 +6,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -321,7 +322,7 @@ func emitSSHCertificate(h *Host, u *User, pk *privateKey, b *opengraph.GraphBuil
 	certPath := pk.FilePath + "-cert.pub"
 	cert, err := parseSSHCertificate(u.UserName, certPath)
 	if err != nil {
-		if !os.IsNotExist(err) {
+		if !errors.Is(err, os.ErrNotExist) {
 			slog.Debug("emitSSHCertificate: could not parse sibling certificate", "certPath", certPath, "err", err)
 		}
 		return

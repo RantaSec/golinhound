@@ -216,8 +216,7 @@ func recentSessionUserNames() (map[string]struct{}, error) {
 	)
 	out, err := cmd.Output()
 	if err != nil {
-		var ee *exec.ExitError
-		if errors.As(err, &ee) && len(ee.Stderr) > 0 {
+		if ee, ok := errors.AsType[*exec.ExitError](err); ok && len(ee.Stderr) > 0 {
 			return nil, fmt.Errorf("journalctl: %w: %s", err, strings.TrimSpace(string(ee.Stderr)))
 		}
 		return nil, fmt.Errorf("journalctl: %w", err)
@@ -250,7 +249,7 @@ func getentPasswd(name string) (*User, bool) {
 	if err != nil {
 		// exit code 2: user not found. This is expected on stale accounts.
 		// We only output unexpected errors here.
-		if ee, ok := err.(*exec.ExitError); !ok || ee.ExitCode() != 2 {
+		if ee, ok := errors.AsType[*exec.ExitError](err); !ok || ee.ExitCode() != 2 {
 			slog.Error("getentPasswd: exit non-zero", "name", name, "err", err)
 		}
 		return nil, false
