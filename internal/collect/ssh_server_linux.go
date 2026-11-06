@@ -160,10 +160,8 @@ func emitAuthorizedKeys(h *Host, u *User, sshdConfig map[string]string, b *openg
 // directive and verifying the path exists.
 func authorizedKeysFiles(sshdConfig map[string]string, userName, userDir string) []string {
 	slog.Debug("authorizedKeysFiles", "userName", userName, "userDir", userDir)
-	configValues := strings.Fields(sshdConfig["authorizedkeysfile"])
-
 	var files []string
-	for _, f := range configValues {
+	for f := range strings.FieldsSeq(sshdConfig["authorizedkeysfile"]) {
 		f = strings.ReplaceAll(f, "%u", userName)
 		f = strings.ReplaceAll(f, "%h", userDir+"/")
 		if !filepath.IsAbs(f) {
