@@ -52,9 +52,8 @@ func emitKeytabs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) {
 	var wg sync.WaitGroup
 	chKeytabs := make(chan string)
 
-	wg.Add(2)
-	go findKeytabFiles(cctx, &wg, chKeytabs, "/etc/", 2)
-	go findKeytabFiles(cctx, &wg, chKeytabs, "/home/", 1)
+	wg.Go(func() { findKeytabFiles(cctx, chKeytabs, "/etc/", 2) })
+	wg.Go(func() { findKeytabFiles(cctx, chKeytabs, "/home/", 1) })
 
 	go func() {
 		wg.Wait()
@@ -103,12 +102,11 @@ func emitHasKeytabEdge(h *Host, b *opengraph.GraphBuilder, filePath, principal, 
 }
 
 // findKeytabFiles walks rootDir up to maxDepth levels, sending every
-// *.keytab path it finds into chKeytabs. Respects ctx cancellation and
-// always calls wg.Done() on return. Per-entry walk errors are silently
-// dropped (the walk continues); only a terminal error returned by
-// filepath.WalkDir itself — typically ctx cancellation — is logged.
-func findKeytabFiles(ctx context.Context, wg *sync.WaitGroup, chKeytabs chan<- string, rootDir string, maxDepth int) {
-	defer wg.Done()
+// *.keytab path it finds into chKeytabs. Respects ctx cancellation.
+// Per-entry walk errors are silently dropped (the walk continues);
+// only a terminal error returned by filepath.WalkDir itself —
+// typically ctx cancellation — is logged.
+func findKeytabFiles(ctx context.Context, chKeytabs chan<- string, rootDir string, maxDepth int) {
 	rootDir = filepath.Clean(rootDir)
 	rootDepth := strings.Count(rootDir, string(os.PathSeparator))
 

@@ -184,14 +184,12 @@ func emitForwardedKeys(ctx context.Context, h *Host, duration int, b *opengraph.
 	slog.Debug("emitForwardedKeys", "duration", duration)
 	chSockets := make(chan string)
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Go(func() { queryOpenSockets(chSockets) })
+	wg.Go(func() { watchNewSockets(ctx, chSockets, duration) })
 	go func() {
 		wg.Wait()
 		close(chSockets)
 	}()
-
-	go queryOpenSockets(chSockets, &wg)
-	go watchNewSockets(ctx, chSockets, duration, &wg)
 
 	for socket := range chSockets {
 		emitForwardedKey(ctx, h, socket, b)
@@ -200,9 +198,8 @@ func emitForwardedKeys(ctx context.Context, h *Host, duration int, b *opengraph.
 
 // queryOpenSockets globs /tmp/ssh-*/agent.* once and sends every match
 // into chSockets, then returns.
-func queryOpenSockets(chSockets chan<- string, wg *sync.WaitGroup) {
+func queryOpenSockets(chSockets chan<- string) {
 	slog.Debug("queryOpenSockets")
-	defer wg.Done()
 	sockets, _ := filepath.Glob("/tmp/ssh-*/agent.*")
 	for _, socket := range sockets {
 		chSockets <- socket
@@ -213,9 +210,8 @@ func queryOpenSockets(chSockets chan<- string, wg *sync.WaitGroup) {
 // (minutes), forwarding every /tmp/ssh-*/agent.* socket created during
 // the window into chSockets. Returns early on ctx cancellation or watcher-
 // init failure (logged at Error).
-func watchNewSockets(ctx context.Context, chSockets chan<- string, duration int, wg *sync.WaitGroup) {
+func watchNewSockets(ctx context.Context, chSockets chan<- string, duration int) {
 	slog.Debug("watchNewSockets", "duration", duration)
-	defer wg.Done()
 
 	timeout := time.After(time.Duration(duration) * time.Minute)
 
