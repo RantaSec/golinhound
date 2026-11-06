@@ -2,8 +2,11 @@ package collect
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"log/slog"
+	"math"
+	"net/netip"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,7 +18,6 @@ import (
 
 	"github.com/RantaSec/golinhound/internal/opengraph"
 	"github.com/fsnotify/fsnotify"
-	"github.com/shirou/gopsutil/v4/process"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -183,7 +185,9 @@ func emitForwardedKeys(ctx context.Context, h *Host, duration int, b *opengraph.
 	chSockets := make(chan string)
 	var wg sync.WaitGroup
 	wg.Go(func() { queryOpenSockets(chSockets) })
-	wg.Go(func() { watchNewSockets(ctx, chSockets, duration) })
+	if duration > 0 {
+		wg.Go(func() { watchNewSockets(ctx, chSockets, duration) })
+	}
 	go func() {
 		wg.Wait()
 		close(chSockets)
@@ -232,7 +236,14 @@ func watchNewSockets(ctx context.Context, chSockets chan<- string, duration int)
 				return
 			}
 			if event.Has(fsnotify.Create) && strings.HasPrefix(event.Name, "/tmp/ssh-") {
-				sockets, _ := filepath.Glob(filepath.Join(event.Name, "/agent.*"))
+				var sockets []string
+				for range 10 {
+					sockets, _ = filepath.Glob(filepath.Join(event.Name, "agent.*"))
+					if len(sockets) > 0 {
+						break
+					}
+					time.Sleep(10 * time.Millisecond)
+				}
 				for _, socket := range sockets {
 					chSockets <- socket
 				}
@@ -251,13 +262,21 @@ func watchNewSockets(ctx context.Context, chSockets chan<- string, duration int)
 }
 
 // emitForwardedKey runs `ssh-add -L` against one forwarded agent socket
-// (bounded by SSHLoadFwdKeyTimeout), pairs it with metadata about the owning
-// sshd process (owner, child-process creation time, SSH_CONNECTION IP) and
+// (bounded by SSHLoadFwdKeyTimeout), pairs it with metadata from the socket
+// and owning sshd process (owner, socket creation time, peer IP) and
 // emits one ForwardsKey edge (SSHUser -> SSHKeyPair) per key visible on the
-// agent. Any pre-edge failure (ssh-add error, dead sshd pid,
-// missing owner, no child process) is logged at Debug and skips this
-// socket.
+// agent. Any pre-edge failure (ssh-add error, missing owner, or unresolvable
+// peer IP) is logged at Debug and skips this socket.
 func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.GraphBuilder) {
+	fi, err := os.Stat(socket)
+	if err != nil {
+		return
+	}
+	owner := h.fileOwner(socket)
+	if owner == nil {
+		return
+	}
+
 	cctx, cancel := context.WithTimeout(ctx, SSHLoadFwdKeyTimeout)
 	defer cancel()
 
@@ -269,45 +288,15 @@ func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.
 		return
 	}
 
-	_, pidStr, _ := strings.CutLast(filepath.Base(socket), ".")
-	sshdPid, _ := strconv.ParseInt(pidStr, 10, 32)
-	sshdProcess, err := process.NewProcess(int32(sshdPid))
-	if err != nil {
-		slog.Debug("emitForwardedKey: SSHD process no longer exists", "sshdPid", sshdPid)
-		return
-	}
-
-	// Ask the kernel directly for the sshd process's UID — gopsutil
-	// reads /proc/<pid>/status. The uid must be in h.Users so
-	// OSCollector.Finalize can find the display name (the sshd
-	// session owner is currently logged in, so /etc/passwd or the
-	// SSSD /home/ scan covered them; if neither did, skip).
-	sshdUids, err := sshdProcess.Uids()
-	if err != nil || len(sshdUids) == 0 {
-		slog.Debug("emitForwardedKey: could not read sshd process UIDs", "sshdPid", sshdPid, "err", err)
-		return
-	}
-	sshdUid := strconv.FormatInt(int64(sshdUids[0]), 10)
-	if _, ok := h.Users[sshdUid]; !ok {
-		slog.Debug("emitForwardedKey: sshd process owner not in h.Users", "sshdPid", sshdPid, "uid", sshdUid)
-		return
-	}
-
-	sshdChildProcesses, err := sshdProcess.Children()
-	if err != nil || len(sshdChildProcesses) == 0 {
-		slog.Debug("emitForwardedKey: SSHD process does not have any children", "sshdPid", sshdPid)
-		return
-	}
-	loginTimeEpoch, _ := sshdChildProcesses[0].CreateTime()
-	loginTimeZulu := time.Unix(loginTimeEpoch/1000, 0).UTC().Format(time.RFC3339)
-
 	var loginIp string
-	sshdChildEnviron, _ := sshdChildProcesses[0].Environ()
-	for _, envString := range sshdChildEnviron {
-		if val, ok := strings.CutPrefix(envString, "SSH_CONNECTION="); ok {
-			loginIp, _, _ = strings.Cut(val, " ")
-		}
+	if _, pidStr, ok := strings.CutLast(filepath.Base(socket), "."); ok {
+		loginIp = procRemoteIP(pidStr)
 	}
+	if loginIp == "" {
+		slog.Debug("emitForwardedKey: could not resolve remote IP for sshd process", "socket", socket)
+		return
+	}
+	loginTimeZulu := fi.ModTime().UTC().Format(time.RFC3339)
 
 	for data := stdOut; len(data) > 0; {
 		pub, comment, _, rest, err := ssh.ParseAuthorizedKey(data)
@@ -318,7 +307,7 @@ func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.
 		pubKey := newPublicKey(pub, comment)
 		emitKeypairNode(b, *pubKey)
 		b.AddEdge("GLH_ForwardsKey",
-			opengraph.ByID("GLH_SSHUser", h.ReferenceUser(sshdUid)),
+			opengraph.ByID("GLH_SSHUser", h.ReferenceUser(owner.UID)),
 			opengraph.ByID("GLH_SSHKeyPair", pubKey.FingerprintSHA256),
 			map[string]any{
 				"LastLoginSocket": socket,
@@ -327,6 +316,92 @@ func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.
 				"Comment":         pubKey.Comment,
 			})
 	}
+}
+
+// procRemoteIP resolves the remote peer IP of the lowest-FD established TCP
+// socket held by pid via /proc/<pid>/fd and /proc/<pid>/net/tcp{,6}.
+// Selecting the lowest FD ensures the initial SSH client connection (typically
+// fd 3/4) always wins over later port-forwarding channels (-L/-D).
+func procRemoteIP(pid string) string {
+	// List all open file descriptors for pid. Non-numeric or exited pids
+	// fail here immediately without touching /proc/<pid>/net/tcp{,6}.
+	entries, err := os.ReadDir("/proc/" + pid + "/fd")
+	if err != nil {
+		return ""
+	}
+
+	// Build a lookup from socket symlink target ("socket:[<inode>]") to its lowest FD.
+	inodeFD := make(map[string]int, len(entries))
+	for _, e := range entries {
+		fd, err := strconv.Atoi(e.Name())
+		if err != nil {
+			continue
+		}
+		target, err := os.Readlink("/proc/" + pid + "/fd/" + e.Name())
+		// Skip non-socket FDs (files, pipes, /dev/pts/*).
+		if err != nil || !strings.HasPrefix(target, "socket:[") {
+			continue
+		}
+		if prev, exists := inodeFD[target]; !exists || fd < prev {
+			inodeFD[target] = fd
+		}
+	}
+
+	// Bail early before reading /proc/<pid>/net/tcp{,6} if the process has no open sockets.
+	if len(inodeFD) == 0 {
+		return ""
+	}
+
+	// Initialize bestFD to MaxInt so any real FD (< MaxInt) beats it.
+	bestFD := math.MaxInt
+	var bestIP string
+	for _, table := range []string{"tcp", "tcp6"} {
+		data, err := os.ReadFile("/proc/" + pid + "/net/" + table)
+		if err != nil {
+			continue
+		}
+		for line := range strings.SplitSeq(string(data), "\n") {
+			fields := strings.Fields(line)
+			// Kernel table columns: [0]=sl [1]=local_address [2]=rem_address
+			// [3]=st ("01" = TCP_ESTABLISHED) ... [9]=inode.
+			if len(fields) < 10 || fields[3] != "01" {
+				continue
+			}
+
+			// Look up this socket's FD and skip if we already found a lower FD.
+			fd, ok := inodeFD["socket:["+fields[9]+"]"]
+			if !ok || fd >= bestFD {
+				continue
+			}
+
+			// rem_address is HEX_IP:HEX_PORT; decode HEX_IP and record it as
+			// the new best candidate.
+			if hexIP, _, ok := strings.Cut(fields[2], ":"); ok {
+				if ip := parseProcHexIP(hexIP); ip != "" {
+					bestFD = fd
+					bestIP = ip
+				}
+			}
+		}
+	}
+	return bestIP
+}
+
+// parseProcHexIP decodes a little-endian 32-bit word hex IP from
+// /proc/net/tcp{,6} into its canonical IPv4 or IPv6 string.
+func parseProcHexIP(hexIP string) string {
+	raw, err := hex.DecodeString(hexIP)
+	if err != nil || (len(raw) != 4 && len(raw) != 16) {
+		return ""
+	}
+	for i := 0; i < len(raw); i += 4 {
+		slices.Reverse(raw[i : i+4])
+	}
+	addr, ok := netip.AddrFromSlice(raw)
+	if !ok {
+		return ""
+	}
+	return addr.Unmap().String()
 }
 
 // trustedUserCAKeys returns the CA pubkeys listed in sshd's
