@@ -71,7 +71,7 @@ func NewHost() (*Host, error) {
 	}
 	h := hmac.New(sha256.New, []byte("fLhn74XaBtmouSQkBSRIAm6tbISvrf26"))
 	h.Write([]byte(machineId))
-	uniqueId := strings.TrimRight(base64.StdEncoding.EncodeToString(h.Sum(nil)), "=")
+	uniqueId := base64.RawStdEncoding.EncodeToString(h.Sum(nil))
 
 	fqdn, err := os.Hostname()
 	if err != nil {
