@@ -7,7 +7,6 @@ require (
 	github.com/jcmturner/gokrb5/v8 v8.4.4
 	github.com/shirou/gopsutil/v4 v4.26.10
 	golang.org/x/crypto v0.58.0
-	golang.org/x/term v0.47.0
 )
 
 require (

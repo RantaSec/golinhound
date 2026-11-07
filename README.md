@@ -8,7 +8,7 @@ Outputs [OpenGraph](https://bloodhound.specterops.io/opengraph/schema) JSON and 
 ## Table of Contents
 
 - [Getting Started](#getting-started)
-  - [Extension kind migration](#extension-kind-migration)
+  - [Extension installation and upgrades](#extension-installation-and-upgrades)
 - [Data Model](#data-model)
   - [SSH: Key-Based Authentication](#ssh-key-based-authentication)
   - [SSH: Certificate-Based Authentication](#ssh-certificate-based-authentication)
@@ -22,6 +22,8 @@ Outputs [OpenGraph](https://bloodhound.specterops.io/opengraph/schema) JSON and 
 
 ## Getting Started
 
+Before collecting data, upload the extension bundle [`extension/GoLinHound-v1.0.0.zip`](extension/GoLinHound-v1.0.0.zip) through [OpenGraph Management](https://bloodhound.specterops.io/opengraph/extensions/manage) in BloodHound 9.9.0 or later.
+
 ```bash
 # clone repository
 git clone https://github.com/rantasec/golinhound
@@ -34,9 +36,6 @@ make build
 wget -P "bin/" "https://github.com/RantaSec/golinhound/releases/latest/download/golinhound-linux-amd64"
 wget -P "bin/" "https://github.com/RantaSec/golinhound/releases/latest/download/golinhound-linux-arm64"
 
-# add custom node icons to BloodHound (prompts for password; add -insecure for self-signed certs)
-./bin/golinhound-linux-amd64 configure -url http://localhost:8080 -user admin
-
 # execute golinhound
 sudo ./bin/golinhound-linux-amd64 collect > output.json
 
@@ -44,11 +43,13 @@ sudo ./bin/golinhound-linux-amd64 collect > output.json
 cat *.json | ./bin/golinhound-linux-amd64 merge > merged.json
 ```
 
-### Extension kind migration
+### Extension installation and upgrades
 
-Install [`extension/schema.json`](extension/schema.json) through OpenGraph Management before ingesting structured data.
+Upload the committed [`GoLinHound-v1.0.0.zip`](extension/GoLinHound-v1.0.0.zip) through **Administration > OpenGraph Management** in BloodHound 9.9.0 or later.
 
-This version prefixes extension-owned node and relationship kinds with `GLH_`. Object IDs and built-in AD/Azure kinds are unchanged. Existing graph data and custom queries using the old kinds need migration: recollect and re-ingest with the updated collector, and update custom Cypher references. Re-ingestion alone does not remove old labels or relationships. Review and remove obsolete data separately using your normal data-management procedure; `configure` does not delete it. Existing legacy icon configuration is not automatically removed.
+The bundle contains [`schema.json`](extension/schema.json) and [`saved_queries.json`](extension/saved_queries.json). Graph data is collected and uploaded separately. The JSON query file uses the extension-bundle format; it is not a legacy saved-query bulk-import export.
+
+This version prefixes extension-owned node and relationship kinds with `GLH_`. Object IDs and built-in AD/Azure kinds are unchanged. Existing graph data and custom queries using the old kinds need migration: recollect and re-ingest with the updated collector, and update custom Cypher references. Re-ingestion alone does not remove old labels or relationships. Review and remove obsolete data separately using your normal data-management procedure; no automatic cleanup is performed. Existing legacy icon configuration is not automatically removed.
 
 All twelve relationship kinds are declared traversable based on the attack paths described below. This preserves the author's attack model, including the two directions of `SameMachine`; it does not prove that every credential, sudo grant, certificate, or Azure control prerequisite is currently exploitable. See each relationship's schema description for qualifications.
 
@@ -217,7 +218,7 @@ klist
 
 ## Cypher Queries
 
-Queries that uncover interesting attack paths are in [`extension/saved_queries.json`](extension/saved_queries.json).
+Queries that uncover interesting attack paths are in [`extension/saved_queries.json`](extension/saved_queries.json) and included in the extension bundle.
 
 [Open the JSON in queries.specterops.io](https://queries.specterops.io/?source=https%3A%2F%2Fraw.githubusercontent.com%2FRantaSec%2Fgolinhound%2Frefs%2Fheads%2Fmain%2Fextension%2Fsaved_queries.json&sourceLabel=GoLinHound) to view and run them.
 
