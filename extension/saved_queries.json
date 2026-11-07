@@ -1,0 +1,109 @@
+{
+  "queries": [
+    {
+      "query_key": "GLH_local_privilege_escalation",
+      "name": "Local Privilege Escalation",
+      "description": "This query identifies non-privileged users that can obtain root privileges.",
+      "query": "// identify administrative users\nMATCH pEnd=(admin:SSHUser)-[:CanSudo|IsRoot]->(c:SSHComputer)\n// identify unprivileged users\nMATCH (c)-[:CanImpersonate]->(user:SSHUser)\nWHERE NOT (user)-[:CanSudo|IsRoot]->(c)\n// find path from unprivileged user to admin\nMATCH pStart=allShortestPaths((user)-[*1..]->(admin))\n// start segment should not include target computer\nWHERE none(n in nodes(pStart) WHERE n.objectid=c.objectid)\nRETURN pStart, pEnd\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_pivot_from_dev_to_prod",
+      "name": "Pivot from Dev to Prod",
+      "description": "This query identifies attack paths from test/dev to prod.",
+      "query": "// identify all computers that contain non-prod strings\nMATCH (testc:SSHComputer)\nWHERE (\n    testc.name CONTAINS \"TEST\" OR\n    testc.name CONTAINS \"TST\" OR\n    testc.name CONTAINS \"DEV\"\n)\n// identify computers with prod string and all local users\nMATCH (prodc:SSHComputer)-[:CanImpersonate]->(produ:SSHUser)\nWHERE (\n    prodc.name CONTAINS \"PROD\" OR\n    prodc.name contains \"PRD\"\n)\n// check if there is path from test to prod\nMATCH p=allShortestPaths((testc)-[*..]->(produ))\n// ignore paths that go through the prod host\nWHERE none(n in nodes(p) WHERE n.objectid=prodc.objectid)\n// show privileges to prod host\nOPTIONAL MATCH p2=(produ)-[:CanSudo|IsRoot]->(prodc)\nRETURN p,p2\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_azure_tenant_breakout",
+      "name": "Azure Tenant Breakout",
+      "description": "This query shows non-Azure attack paths from a vm in one Azure tenant to a vm in another tenant.",
+      "query": "MATCH (vm1:AZVM)-[:SameMachine]->(:SSHComputer)\nMATCH (:SSHComputer)-[:SameMachine]->(vm2:AZVM)\nWHERE vm1.tenantid <> vm2.tenantid\nMATCH p=allShortestPaths((vm1)-[*..]->(vm2))\nWHERE none(r in relationships(p) WHERE type(r) STARTS WITH \"AZ\")\nRETURN p\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_azure_subscription_breakout",
+      "name": "Azure Subscription Breakout",
+      "description": "This query shows non-Azure attack paths from a vm in one Azure subscription to a vm in another subscription.",
+      "query": "MATCH (vm1:AZVM)-[:SameMachine]->(:SSHComputer)\nMATCH (:SSHComputer)-[:SameMachine]->(vm2:AZVM)\nWITH \n    vm1,\n    vm2,\n    substring(vm1.objectid,15,36) AS subscriptionId1,\n    substring(vm2.objectid,15,36) AS subscriptionId2\nWHERE subscriptionId1 <> subscriptionId2\nMATCH p=allShortestPaths((vm1)-[*..]->(vm2))\nWHERE none(r in relationships(p) WHERE type(r) STARTS WITH \"AZ\")\nRETURN p\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_azure_vms_with_privileged_service_principals",
+      "name": "Azure VMs with Privileged Service Principals",
+      "description": "This query shows non-Azure attack paths to Azure VMs that have privileges assigned.",
+      "query": "MATCH p=(:SSHComputer)-[:SameMachine]->(vm:AZVM)-->(:AZServicePrincipal)-->()\nRETURN p\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_active_directory_domain_breakout",
+      "name": "Active Directory Domain Breakout",
+      "description": "This query shows non-AD attack paths from an Active Directory principal in one domain to a principal in another domain.",
+      "query": "MATCH p1=(u1:SSHUser)-[:HasKeytab|HasTGT]->(ad1)\nMATCH p2=(u2:SSHUser)-[:HasKeytab|HasTGT]->(ad2)\nWHERE u1 <> u2 AND ad1.domain <> ad2.domain\nMATCH p=allShortestPaths((u1)-[*..]->(u2))\nRETURN p1, p, p2\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_active_directory_principal_breakout",
+      "name": "Active Directory Principal Breakout",
+      "description": "This query shows non-AD attack paths from a user with access to one Active Directory principal to another principal.",
+      "query": "MATCH p1=(u1:SSHUser)-[:HasKeytab|HasTGT]->(ad1)\nMATCH p2=(u2:SSHUser)-[:HasKeytab|HasTGT]->(ad2)\nWHERE u1 <> u2 AND ad1 <> ad2\nMATCH p=allShortestPaths((u1)-[*..]->(u2))\nRETURN p1, p, p2\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_private_keys_on_more_than_one_computer",
+      "name": "Private Keys on More Than One Computer",
+      "description": "This query identifies private keys that can be found on multiple hosts.",
+      "query": "MATCH (c:SSHComputer)-[:CanImpersonate]->(u:SSHUser)-[:HasPrivateKey]->(k:SSHKeyPair)\nWITH k, collect(DISTINCT c) AS computers\nWHERE size(computers) > 1\nUNWIND computers AS c\nMATCH p=(c)-[:CanImpersonate]->()-[:HasPrivateKey]->(k)\nRETURN p\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_unprotected_private_keys",
+      "name": "Unprotected Private Keys",
+      "description": "This query shows private keys that are unencrypted and not protected by FIDO2.",
+      "query": "MATCH p=(:SSHUser)-[r:HasPrivateKey]->(k:SSHKeyPair)\nWHERE k.FIDO2 = false AND r.Encrypted = false\nRETURN p\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_private_keys_with_weak_encryption",
+      "name": "Private Keys with Weak Encryption",
+      "description": "This query shows non-FIDO2 private keys that are encrypted with something other than aes.",
+      "query": "MATCH p=(u:SSHUser)-[r:HasPrivateKey]->(k:SSHKeyPair)\nWHERE k.FIDO2 = false\n  AND r.Encrypted = true\n  AND r.Cipher <> \"none\"\n  AND NOT r.Cipher STARTS WITH \"aes256-\"\n  AND NOT r.Cipher STARTS WITH \"aes128-\"\nRETURN p\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_agent_forwarding",
+      "name": "Agent Forwarding",
+      "description": "This query shows which private keys are forwarded via SSH agent forwarding.",
+      "query": "MATCH p=(:SSHUser)-[:ForwardsKey]->(k:SSHKeyPair)\nRETURN p\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_hosts_that_allow_root_logins",
+      "name": "Hosts that allow root logins",
+      "description": "This query returns hosts that allow the root user to login.",
+      "query": "MATCH p=(:SSHKeyPair)-[:CanSSH]->(:SSHUser)-[:IsRoot]->(:SSHComputer)\nRETURN p\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_ca_private_key_used_for_key_based_authentication",
+      "name": "CA Private Key used for Key-Based Authentication",
+      "description": "This query surfaces SSH keypairs that are simultaneously trusted as a certificate authority (via `TrustedUserCAKeys` on some host) AND listed as a plain public key in someone's `authorized_keys`. It also shows who has access to the private key, if the information is available.",
+      "query": "// find keypairs that are trusted as CA and in authorized keys\nMATCH pk = (k:SSHKeyPair)-[:CanSSH]->(:SSHUser)\nMATCH pc = (k)-[:CanIssueCertificate]->(:SSHUser)\n// find out who has the respective private key\nOPTIONAL MATCH p0 = (:SSHUser)-[:HasPrivateKey]->(k)\nRETURN p0, pk, pc\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_wildcard_certificates",
+      "name": "Wildcard Certificates",
+      "description": "This query returns SSH certificates that authorize login as ANY principal.",
+      "query": "MATCH p=(:SSHUser)-[:HasCertificate]->(c:SSHCertificate)\nWHERE c.WildcardPrincipal = true\nRETURN p\nLIMIT 1000",
+      "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_certificates_without_expiration_date",
+      "name": "Certificates without Expiration Date",
+      "description": "This query returns SSH certificates that have no expiration date.",
+      "query": "MATCH p=(:SSHUser)-[:HasCertificate]->(c:SSHCertificate)\nWHERE c.ValidBefore = \"9999-12-31T23:59:59Z\"\nRETURN p\nLIMIT 1000",
+      "category": "Access Relationships"
+    }
+  ]
+}
