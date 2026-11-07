@@ -1,27 +1,27 @@
 {
   "custom_types": {
-    "SSHUser": {
+    "GLH_SSHUser": {
       "icon": {
         "type": "font-awesome",
         "name": "user",
         "color": "#35d2eb"
       }
     },
-    "SSHComputer": {
+    "GLH_SSHComputer": {
       "icon": {
         "type": "font-awesome",
         "name": "desktop",
         "color": "#f879e7"
       }
     },
-    "SSHKeyPair": {
+    "GLH_SSHKeyPair": {
       "icon": {
         "type": "font-awesome",
         "name": "key",
         "color": "#ffe100"
       }
     },
-    "SSHCertificate": {
+    "GLH_SSHCertificate": {
       "icon": {
         "type": "font-awesome",
         "name": "id-card",

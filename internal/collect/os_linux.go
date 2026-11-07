@@ -36,7 +36,7 @@ type OSCollector struct{}
 // Never returns an error today; per-user probe failures log and skip.
 func (c *OSCollector) Finalize(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 	// emit computer node
-	b.AddNode([]string{"SSHComputer"}, h.ComputerID(), map[string]any{
+	b.AddNode([]string{"GLH_SSHComputer"}, h.ComputerID(), map[string]any{
 		"name": h.FQDN,
 		"FQDN": h.FQDN,
 	})
@@ -44,9 +44,9 @@ func (c *OSCollector) Finalize(ctx context.Context, h *Host, b *opengraph.GraphB
 	// emit privileged users
 	for _, u := range h.Users {
 		if u.UID == "0" {
-			b.AddEdge("IsRoot",
-				opengraph.ByID("SSHUser", h.ReferenceUser(u.UID)),
-				opengraph.ByID("SSHComputer", h.ComputerID()),
+			b.AddEdge("GLH_IsRoot",
+				opengraph.ByID("GLH_SSHUser", h.ReferenceUser(u.UID)),
+				opengraph.ByID("GLH_SSHComputer", h.ComputerID()),
 				nil)
 		}
 		emitSudoer(ctx, h, u, b)
@@ -63,12 +63,12 @@ func (c *OSCollector) Finalize(ctx context.Context, h *Host, b *opengraph.GraphB
 			continue
 		}
 		id := h.ReferenceUser(uid)
-		b.AddNode([]string{"SSHUser"}, id, map[string]any{
+		b.AddNode([]string{"GLH_SSHUser"}, id, map[string]any{
 			"name": fmt.Sprintf("%s@%s", u.UserName, h.FQDN),
 		})
-		b.AddEdge("CanImpersonate",
-			opengraph.ByID("SSHComputer", h.ComputerID()),
-			opengraph.ByID("SSHUser", id),
+		b.AddEdge("GLH_CanImpersonate",
+			opengraph.ByID("GLH_SSHComputer", h.ComputerID()),
+			opengraph.ByID("GLH_SSHUser", id),
 			nil)
 	}
 	return nil
@@ -117,9 +117,9 @@ func emitSudoer(ctx context.Context, h *Host, u *User, b *opengraph.GraphBuilder
 		return
 	}
 
-	b.AddEdge("CanSudo",
-		opengraph.ByID("SSHUser", h.ReferenceUser(u.UID)),
-		opengraph.ByID("SSHComputer", h.ComputerID()),
+	b.AddEdge("GLH_CanSudo",
+		opengraph.ByID("GLH_SSHUser", h.ReferenceUser(u.UID)),
+		opengraph.ByID("GLH_SSHComputer", h.ComputerID()),
 		map[string]any{
 			"PasswordRequired": passwordRequired,
 			"Commands":         commands,

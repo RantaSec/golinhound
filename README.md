@@ -8,6 +8,7 @@ Outputs [OpenGraph](https://bloodhound.specterops.io/opengraph/schema) JSON and 
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+  - [Extension kind migration](#extension-kind-migration)
 - [Data Model](#data-model)
   - [SSH: Key-Based Authentication](#ssh-key-based-authentication)
   - [SSH: Certificate-Based Authentication](#ssh-certificate-based-authentication)
@@ -43,9 +44,17 @@ sudo ./bin/golinhound-linux-amd64 collect > output.json
 cat *.json | ./bin/golinhound-linux-amd64 merge > merged.json
 ```
 
+### Extension kind migration
+
+Install [`extension/schema.json`](extension/schema.json) through OpenGraph Management before ingesting structured data.
+
+This version prefixes extension-owned node and relationship kinds with `GLH_`. Object IDs and built-in AD/Azure kinds are unchanged. Existing graph data and custom queries using the old kinds need migration: recollect and re-ingest with the updated collector, and update custom Cypher references. Re-ingestion alone does not remove old labels or relationships. Review and remove obsolete data separately using your normal data-management procedure; `configure` does not delete it. Existing legacy icon configuration is not automatically removed.
+
+All twelve relationship kinds are declared traversable based on the attack paths described below. This preserves the author's attack model, including the two directions of `SameMachine`; it does not prove that every credential, sudo grant, certificate, or Azure control prerequisite is currently exploitable. See each relationship's schema description for qualifications.
+
 ## Data Model
 
-This section describes the edges collected by GoLinHound and provides examples how they can be abused.
+This section describes the edges collected by GoLinHound and provides examples how they can be abused. The diagrams and headings use short kind names; the collector, schema, and saved queries use the `GLH_` prefix. Built-in Azure and Active Directory kinds retain their existing names.
 
 ### SSH: Key-Based Authentication
 

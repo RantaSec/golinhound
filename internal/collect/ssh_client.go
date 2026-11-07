@@ -88,9 +88,9 @@ func emitPrivateKeys(h *Host, u *User, b *opengraph.GraphBuilder, collectExpired
 		}
 
 		emitKeypairNode(b, pk.PublicKey)
-		b.AddEdge("HasPrivateKey",
-			opengraph.ByID("SSHUser", h.ReferenceUser(u.UID)),
-			opengraph.ByID("SSHKeyPair", pk.PublicKey.FingerprintSHA256),
+		b.AddEdge("GLH_HasPrivateKey",
+			opengraph.ByID("GLH_SSHUser", h.ReferenceUser(u.UID)),
+			opengraph.ByID("GLH_SSHKeyPair", pk.PublicKey.FingerprintSHA256),
 			map[string]any{
 				"PrivateKeyFile": pk.FilePath,
 				"KeyFormat":      pk.KeyFormat,
@@ -507,14 +507,14 @@ func emitSSHCertificateNodes(b *opengraph.GraphBuilder, h *Host, u *User, pk *pr
 			props["Extension_"+k] = v
 		}
 
-		b.AddNode([]string{"SSHCertificate"}, nodeID, props)
+		b.AddNode([]string{"GLH_SSHCertificate"}, nodeID, props)
 		// HasCertificate edge payload mirrors HasPrivateKey: the same
 		// key-protection properties (KeyFormat/KDF/Cipher/Encrypted/
 		// Comment) come from the UNDERLYING private key, since the cert
 		// is just a public-text envelope around that key.
-		b.AddEdge("HasCertificate",
-			opengraph.ByID("SSHUser", h.ReferenceUser(u.UID)),
-			opengraph.ByID("SSHCertificate", nodeID),
+		b.AddEdge("GLH_HasCertificate",
+			opengraph.ByID("GLH_SSHUser", h.ReferenceUser(u.UID)),
+			opengraph.ByID("GLH_SSHCertificate", nodeID),
 			map[string]any{
 				"PrivateKeyFile":  pk.FilePath,
 				"CertificateFile": c.FilePath,

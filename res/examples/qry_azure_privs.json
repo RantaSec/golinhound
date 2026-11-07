@@ -4,7 +4,7 @@
     "nodes": [
       {
         "kinds": [
-          "SSHComputer"
+          "GLH_SSHComputer"
         ],
         "id": "upA5AFwS53IlYaoe6YU2ftKZvy6BUPBle+LAwyZw6OI",
         "properties": {
@@ -49,11 +49,11 @@
     ],
     "edges": [
       {
-        "kind": "SameMachine",
+        "kind": "GLH_SameMachine",
         "start": {
           "match_by": "id",
           "value": "upA5AFwS53IlYaoe6YU2ftKZvy6BUPBle+LAwyZw6OI",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "end": {
           "match_by": "id",
