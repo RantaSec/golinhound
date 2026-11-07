@@ -8,6 +8,7 @@ Outputs [OpenGraph](https://bloodhound.specterops.io/opengraph/schema) JSON and 
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+  - [Collector requirements and options](#collector-requirements-and-options)
   - [Extension installation and upgrades](#extension-installation-and-upgrades)
 - [Data Model](#data-model)
   - [SSH: Key-Based Authentication](#ssh-key-based-authentication)
@@ -42,6 +43,20 @@ sudo ./bin/golinhound-linux-amd64 collect > output.json
 # optional: merge multiple output files
 cat *.json | ./bin/golinhound-linux-amd64 merge > merged.json
 ```
+
+### Collector requirements and options
+
+The collector supports Linux on amd64 and arm64. Building from source requires Go 1.27.3 or later, as declared in `go.mod`; prebuilt binaries do not require Go. Collection requires root: unprivileged collection is rejected. The host must provide `/etc/machine-id`, `/etc/passwd`, and working hostname resolution.
+
+Collection uses `sshd -T`, `ssh-add -L`, `sudo -l`, `journalctl`, and `getent` for the corresponding SSH, sudo, and account-discovery features. Missing tools or inaccessible source data can reduce coverage. No measured minimum CPU, RAM, or disk requirement is currently published; requirements depend on the host's accounts, credentials, and resulting graph size.
+
+| Command | Option | Purpose |
+| --- | --- | --- |
+| `collect` | `-wait-for-keys <minutes>` | Watch for new forwarded-agent sockets; defaults to `0` for a one-shot collection. |
+| `collect` | `-include-expired-certs` | Include expired SSH certificates; disabled by default. Historical certificates can produce paths that are no longer usable. |
+| `collect`, `merge` | `-verbose` | Enable debug logging to stderr. |
+
+For example, `sudo ./bin/golinhound-linux-amd64 collect -wait-for-keys 5 -verbose > output.json` watches for forwarded keys for five minutes.
 
 ### Extension installation and upgrades
 
