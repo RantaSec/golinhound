@@ -23,7 +23,7 @@ Outputs [OpenGraph](https://bloodhound.specterops.io/opengraph/schema) JSON and 
 
 ## Getting Started
 
-Before collecting data, upload the extension bundle [`extension/GoLinHound-v1.0.0.zip`](extension/GoLinHound-v1.0.0.zip) through [OpenGraph Management](https://bloodhound.specterops.io/opengraph/extensions/manage) in BloodHound 9.9.0 or later.
+Before collecting data, upload the extension bundle [`extension/GoLinHound-Community-v1.0.0.zip`](extension/GoLinHound-Community-v1.0.0.zip) through [OpenGraph Management](https://bloodhound.specterops.io/opengraph/extensions/manage) in BloodHound 9.9.0 or later.
 
 ```bash
 # clone repository
@@ -60,7 +60,7 @@ For example, `sudo ./bin/golinhound-linux-amd64 collect -wait-for-keys 5 -verbos
 
 ### Extension installation and upgrades
 
-Upload the committed [`GoLinHound-v1.0.0.zip`](extension/GoLinHound-v1.0.0.zip) through **Administration > OpenGraph Management** in BloodHound 9.9.0 or later.
+Upload the committed [`GoLinHound-Community-v1.0.0.zip`](extension/GoLinHound-Community-v1.0.0.zip) through **Administration > OpenGraph Management** in BloodHound 9.9.0 or later.
 
 The bundle contains [`schema.json`](extension/schema.json) and [`saved_queries.json`](extension/saved_queries.json). Graph data is collected and uploaded separately. The JSON query file uses the extension-bundle format; it is not a legacy saved-query bulk-import export.
 
