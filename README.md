@@ -23,7 +23,11 @@ Outputs [OpenGraph](https://bloodhound.specterops.io/opengraph/schema) JSON and 
 
 ## Getting Started
 
-Before collecting data, upload the extension bundle [`extension/GoLinHound-Community-v1.0.0.zip`](extension/GoLinHound-Community-v1.0.0.zip) through [OpenGraph Management](https://bloodhound.specterops.io/opengraph/extensions/manage) in BloodHound 9.9.0 or later.
+Before collecting data, upload the extension bundle `extension/GoLinHound-Community-v<#.#.#>.zip` through [OpenGraph Management](https://bloodhound.specterops.io/opengraph/extensions/manage) in BloodHound 9.9.0 or later.
+
+The bundle contains [`schema.json`](extension/schema.json) and [`saved_queries.json`](extension/saved_queries.json) and allows for easy upgrades with every extension version.
+
+To build the collector:
 
 ```bash
 # clone repository
@@ -57,16 +61,6 @@ Collection uses `sshd -T`, `ssh-add -L`, `sudo -l`, `journalctl`, and `getent` f
 | `collect`, `merge` | `-verbose` | Enable debug logging to stderr. |
 
 For example, `sudo ./bin/golinhound-linux-amd64 collect -wait-for-keys 5 -verbose > output.json` watches for forwarded keys for five minutes.
-
-### Extension installation and upgrades
-
-Upload the committed [`GoLinHound-Community-v1.0.0.zip`](extension/GoLinHound-Community-v1.0.0.zip) through **Administration > OpenGraph Management** in BloodHound 9.9.0 or later.
-
-The bundle contains [`schema.json`](extension/schema.json) and [`saved_queries.json`](extension/saved_queries.json). Graph data is collected and uploaded separately. The JSON query file uses the extension-bundle format; it is not a legacy saved-query bulk-import export.
-
-This version prefixes extension-owned node and relationship kinds with `GLH_`. Object IDs and built-in AD/Azure kinds are unchanged. Existing graph data and custom queries using the old kinds need migration: recollect and re-ingest with the updated collector, and update custom Cypher references. Re-ingestion alone does not remove old labels or relationships. Review and remove obsolete data separately using your normal data-management procedure; no automatic cleanup is performed. Existing legacy icon configuration is not automatically removed.
-
-All twelve relationship kinds are declared traversable based on the attack paths described below. This preserves the author's attack model, including the two directions of `SameMachine`; it does not prove that every credential, sudo grant, certificate, or Azure control prerequisite is currently exploitable. See each relationship's schema description for qualifications.
 
 ## Data Model
 
