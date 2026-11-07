@@ -104,6 +104,13 @@
       "description": "This query returns SSH certificates that have no expiration date.",
       "query": "MATCH p=(:GLH_SSHUser)-[:GLH_HasCertificate]->(c:GLH_SSHCertificate)\nWHERE c.ValidBefore = \"9999-12-31T23:59:59Z\"\nRETURN p\nLIMIT 1000",
       "category": "Access Relationships"
+    },
+    {
+      "query_key": "GLH_certificate_authentication_paths",
+      "name": "Certificate Authentication Paths",
+      "description": "Show local users holding certificates that authorize authentication as another Linux user, subject to private-key usability and certificate validity.",
+      "query": "MATCH p=(:GLH_SSHUser)-[:GLH_HasCertificate]->(:GLH_SSHCertificate)-[:GLH_CanCertSSH]->(:GLH_SSHUser)\nRETURN p\nLIMIT 1000",
+      "category": "Access Relationships"
     }
   ]
 }
