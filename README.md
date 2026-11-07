@@ -97,7 +97,7 @@ ssh -i <priv_key> user@host
 ```
 
 #### ForwardsKey
-This edge indicates that a keypair was forwarded to another SSHComputer via [SSH agent forwarding](https://medium.com/@alejlopbu/hijacking-ssh-sessions-to-move-laterally-3d6a708b683b).
+This edge links an SSHUser to a keypair available through a forwarded agent socket on the user's SSHComputer, collected via [SSH agent forwarding](https://medium.com/@alejlopbu/hijacking-ssh-sessions-to-move-laterally-3d6a708b683b).
 
 Use the forwarded authentication socket to authenticate to other hosts:
 
