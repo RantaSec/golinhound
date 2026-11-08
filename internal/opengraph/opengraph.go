@@ -21,7 +21,7 @@ type openGraph struct {
 }
 
 // openGraphNode is the wire shape of one node in the envelope. Kinds
-// is the BloodHound kind list (e.g. ["SSHUser"] or ["AZVM","AZBase"]);
+// is the BloodHound kind list (e.g. ["GLH_SSHUser"] or ["AZVM","AZBase"]);
 // ID is the unique identifier within the source; Properties is the
 // free-form bag emitted by collectors.
 type openGraphNode struct {
@@ -31,7 +31,7 @@ type openGraphNode struct {
 }
 
 // openGraphEdge is the wire shape of one edge. Kind is the relationship
-// label (e.g. "CanSSH", "HasPrivateKey"); Start and End are
+// label (e.g. "GLH_CanSSH", "GLH_HasPrivateKey"); Start and End are
 // node-selector references; Properties is the per-edge payload.
 type openGraphEdge struct {
 	Kind       string                `json:"kind"`

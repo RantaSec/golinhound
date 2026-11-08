@@ -1,0 +1,104 @@
+{
+  "schema": {
+    "name": "GoLinHound",
+    "display_name": "GoLinHound",
+    "version": "v1.0.0",
+    "namespace": "GLH"
+  },
+  "node_kinds": [
+    {
+      "name": "GLH_SSHUser",
+      "display_name": "SSHUser",
+      "description": "A local Linux user account on a collected host.",
+      "is_display_kind": true,
+      "icon": "user",
+      "color": "#35d2eb"
+    },
+    {
+      "name": "GLH_SSHComputer",
+      "display_name": "SSHComputer",
+      "description": "A Linux host collected by GoLinHound.",
+      "is_display_kind": true,
+      "icon": "desktop",
+      "color": "#f879e7"
+    },
+    {
+      "name": "GLH_SSHKeyPair",
+      "display_name": "SSHKeyPair",
+      "description": "An SSH public/private key pair identified by its public-key fingerprint.",
+      "is_display_kind": true,
+      "icon": "key",
+      "color": "#ffe100"
+    },
+    {
+      "name": "GLH_SSHCertificate",
+      "display_name": "SSHCertificate",
+      "description": "An OpenSSH user certificate with a corresponding private key.",
+      "is_display_kind": true,
+      "icon": "id-card",
+      "color": "#a78bfa"
+    }
+  ],
+  "relationship_kinds": [
+    {
+      "name": "GLH_HasPrivateKey",
+      "description": "The source Linux user can access the private key for the destination SSH key pair. Encrypted keys may require passphrase recovery or capture.",
+      "is_traversable": true
+    },
+    {
+      "name": "GLH_CanSSH",
+      "description": "The source SSH key pair is authorized to authenticate as the destination Linux user, subject to SSH server restrictions.",
+      "is_traversable": true
+    },
+    {
+      "name": "GLH_ForwardsKey",
+      "description": "The source Linux user has access to an SSH agent session exposing the destination key pair for authentication while the forwarded socket is usable.",
+      "is_traversable": true
+    },
+    {
+      "name": "GLH_HasCertificate",
+      "description": "The source Linux user holds the destination SSH certificate together with its local private key.",
+      "is_traversable": true
+    },
+    {
+      "name": "GLH_CanCertSSH",
+      "description": "The source SSH certificate is authorized to authenticate as the destination Linux user.",
+      "is_traversable": true
+    },
+    {
+      "name": "GLH_CanIssueCertificate",
+      "description": "The source SSH key pair is trusted as a CA for the destination Linux user. Control of its private key enables issuing a certificate for an authorized principal.",
+      "is_traversable": true
+    },
+    {
+      "name": "GLH_IsRoot",
+      "description": "The source Linux user has UID 0 on the destination Linux host and controls that host.",
+      "is_traversable": true
+    },
+    {
+      "name": "GLH_CanSudo",
+      "description": "The source Linux user has an unrestricted sudo grant to root on the destination Linux host.",
+      "is_traversable": true
+    },
+    {
+      "name": "GLH_CanImpersonate",
+      "description": "Control of the source Linux host as root enables impersonating the destination local Linux user.",
+      "is_traversable": true
+    },
+    {
+      "name": "GLH_SameMachine",
+      "description": "The source and destination represent the same Linux host and Azure VM.",
+      "is_traversable": true
+    },
+    {
+      "name": "GLH_HasKeytab",
+      "description": "The source Linux user owns a keytab containing credentials for the destination Active Directory principal.",
+      "is_traversable": true
+    },
+    {
+      "name": "GLH_HasTGT",
+      "description": "The source Linux user owns a credential cache containing a TGT for the destination Active Directory principal.",
+      "is_traversable": true
+    }
+  ]
+}

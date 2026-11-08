@@ -4,7 +4,7 @@
     "nodes": [
       {
         "kinds": [
-          "SSHComputer"
+          "GLH_SSHComputer"
         ],
         "id": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
         "properties": {
@@ -14,7 +14,7 @@
       },
       {
         "kinds": [
-          "SSHUser"
+          "GLH_SSHUser"
         ],
         "id": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
         "properties": {
@@ -23,7 +23,7 @@
       },
       {
         "kinds": [
-          "SSHUser"
+          "GLH_SSHUser"
         ],
         "id": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
         "properties": {
@@ -32,7 +32,7 @@
       },
       {
         "kinds": [
-          "SSHUser"
+          "GLH_SSHUser"
         ],
         "id": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
         "properties": {
@@ -41,7 +41,7 @@
       },
       {
         "kinds": [
-          "SSHKeyPair"
+          "GLH_SSHKeyPair"
         ],
         "id": "cCqokWv9eAmqlFXWBLf5jrSkvoIgU8slbuoQYva8zNg",
         "properties": {
@@ -54,7 +54,7 @@
       },
       {
         "kinds": [
-          "SSHKeyPair"
+          "GLH_SSHKeyPair"
         ],
         "id": "BQbFdGglqZdJteASukMGaEnfjYeyNCFmGqOiwzN8eZI",
         "properties": {
@@ -67,7 +67,7 @@
       },
       {
         "kinds": [
-          "SSHKeyPair"
+          "GLH_SSHKeyPair"
         ],
         "id": "BwdSes6eJx7t8eaURC0Axqij+UKoExQ0kfLnIZpRV2w",
         "properties": {
@@ -80,7 +80,7 @@
       },
       {
         "kinds": [
-          "SSHKeyPair"
+          "GLH_SSHKeyPair"
         ],
         "id": "oVNunR+e7q1C/kj4YAm9Wc5X7F8WV2QHKQi3pxDgo8E",
         "properties": {
@@ -93,7 +93,7 @@
       },
       {
         "kinds": [
-          "SSHKeyPair"
+          "GLH_SSHKeyPair"
         ],
         "id": "XA8UCw3svDrf2gyDYTL+sdSspw7083Wfo5AADXLo1nE",
         "properties": {
@@ -106,7 +106,7 @@
       },
       {
         "kinds": [
-          "SSHKeyPair"
+          "GLH_SSHKeyPair"
         ],
         "id": "0iC5YKGScwdasA+FSWRjLB2z8iJnNjXbYBjTQR20qow",
         "properties": {
@@ -120,55 +120,55 @@
     ],
     "edges": [
       {
-        "kind": "IsRoot",
+        "kind": "GLH_IsRoot",
         "start": {
           "match_by": "id",
           "value": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         }
       },
       {
-        "kind": "CanImpersonate",
+        "kind": "GLH_CanImpersonate",
         "start": {
           "match_by": "id",
           "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "end": {
           "match_by": "id",
           "value": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         }
       },
       {
-        "kind": "CanImpersonate",
+        "kind": "GLH_CanImpersonate",
         "start": {
           "match_by": "id",
           "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "end": {
           "match_by": "id",
           "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         }
       },
       {
-        "kind": "CanSudo",
+        "kind": "GLH_CanSudo",
         "start": {
           "match_by": "id",
           "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "properties": {
           "Commands": "(ALL : ALL) ALL",
@@ -176,29 +176,29 @@
         }
       },
       {
-        "kind": "CanImpersonate",
+        "kind": "GLH_CanImpersonate",
         "start": {
           "match_by": "id",
           "value": "zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "end": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         }
       },
       {
-        "kind": "HasPrivateKey",
+        "kind": "GLH_HasPrivateKey",
         "start": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "cCqokWv9eAmqlFXWBLf5jrSkvoIgU8slbuoQYva8zNg",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "properties": {
           "Cipher": "none",
@@ -210,16 +210,16 @@
         }
       },
       {
-        "kind": "HasPrivateKey",
+        "kind": "GLH_HasPrivateKey",
         "start": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "BQbFdGglqZdJteASukMGaEnfjYeyNCFmGqOiwzN8eZI",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "properties": {
           "Cipher": "aes128-cbc",
@@ -231,16 +231,16 @@
         }
       },
       {
-        "kind": "HasPrivateKey",
+        "kind": "GLH_HasPrivateKey",
         "start": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "BwdSes6eJx7t8eaURC0Axqij+UKoExQ0kfLnIZpRV2w",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "properties": {
           "Cipher": "none",
@@ -252,16 +252,16 @@
         }
       },
       {
-        "kind": "HasPrivateKey",
+        "kind": "GLH_HasPrivateKey",
         "start": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "oVNunR+e7q1C/kj4YAm9Wc5X7F8WV2QHKQi3pxDgo8E",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "properties": {
           "Cipher": "aes256-ctr",
@@ -273,16 +273,16 @@
         }
       },
       {
-        "kind": "HasPrivateKey",
+        "kind": "GLH_HasPrivateKey",
         "start": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "XA8UCw3svDrf2gyDYTL+sdSspw7083Wfo5AADXLo1nE",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "properties": {
           "Cipher": "none",
@@ -294,16 +294,16 @@
         }
       },
       {
-        "kind": "HasPrivateKey",
+        "kind": "GLH_HasPrivateKey",
         "start": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "0iC5YKGScwdasA+FSWRjLB2z8iJnNjXbYBjTQR20qow",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "properties": {
           "Cipher": "aes128-cbc",
@@ -315,16 +315,16 @@
         }
       },
       {
-        "kind": "ForwardsKey",
+        "kind": "GLH_ForwardsKey",
         "start": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "BwdSes6eJx7t8eaURC0Axqij+UKoExQ0kfLnIZpRV2w",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "properties": {
           "Comment": "alice@buildkitsandbox",
@@ -334,16 +334,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "cCqokWv9eAmqlFXWBLf5jrSkvoIgU8slbuoQYva8zNg",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "alice@buildkitsandbox",
@@ -351,16 +351,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "BQbFdGglqZdJteASukMGaEnfjYeyNCFmGqOiwzN8eZI",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "alice@buildkitsandbox",
@@ -368,16 +368,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "BwdSes6eJx7t8eaURC0Axqij+UKoExQ0kfLnIZpRV2w",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "alice@buildkitsandbox",
@@ -385,16 +385,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "oVNunR+e7q1C/kj4YAm9Wc5X7F8WV2QHKQi3pxDgo8E",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "alice@buildkitsandbox",
@@ -402,16 +402,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "XA8UCw3svDrf2gyDYTL+sdSspw7083Wfo5AADXLo1nE",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "alice@buildkitsandbox",
@@ -419,16 +419,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "0iC5YKGScwdasA+FSWRjLB2z8iJnNjXbYBjTQR20qow",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "alice@buildkitsandbox",
@@ -436,16 +436,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "cCqokWv9eAmqlFXWBLf5jrSkvoIgU8slbuoQYva8zNg",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "alice@buildkitsandbox",
@@ -453,16 +453,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "BQbFdGglqZdJteASukMGaEnfjYeyNCFmGqOiwzN8eZI",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "alice@buildkitsandbox",
@@ -470,16 +470,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "BwdSes6eJx7t8eaURC0Axqij+UKoExQ0kfLnIZpRV2w",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "alice@buildkitsandbox",
@@ -487,16 +487,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "oVNunR+e7q1C/kj4YAm9Wc5X7F8WV2QHKQi3pxDgo8E",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "alice@buildkitsandbox",
@@ -504,16 +504,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "XA8UCw3svDrf2gyDYTL+sdSspw7083Wfo5AADXLo1nE",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "alice@buildkitsandbox",
@@ -521,16 +521,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "0iC5YKGScwdasA+FSWRjLB2z8iJnNjXbYBjTQR20qow",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1000@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "alice@buildkitsandbox",
@@ -538,11 +538,11 @@
         }
       },
       {
-        "kind": "HasKeytab",
+        "kind": "GLH_HasKeytab",
         "start": {
           "match_by": "id",
           "value": "1001@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "property",
@@ -554,11 +554,11 @@
         }
       },
       {
-        "kind": "HasKeytab",
+        "kind": "GLH_HasKeytab",
         "start": {
           "match_by": "id",
           "value": "0@zOVfBOOalGjjMJoAegbquCaA07xDDqG0JsViiM+oQtI",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "property",

@@ -8,32 +8,23 @@ Outputs [OpenGraph](https://bloodhound.specterops.io/opengraph/schema) JSON and 
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+  - [Obtaining GoLinHound](#obtaining-golinhound)
+  - [Running GoLinHound](#running-golinhound)
+  - [Installing The Extension](#installing-the-extension)
 - [Data Model](#data-model)
-  - [SSH](#ssh)
+  - [SSH: Key-Based Authentication](#ssh-key-based-authentication)
+  - [SSH: Certificate-Based Authentication](#ssh-certificate-based-authentication)
   - [Linux](#linux)
   - [Azure / Entra](#azure--entra)
   - [Active Directory](#active-directory)
 - [Cypher Queries](#cypher-queries)
-  - [Local Privilege Escalation](#local-privilege-escalation)
-  - [Pivot from Dev to Prod](#pivot-from-dev-to-prod)
-  - [Azure Tenant Breakout](#azure-tenant-breakout)
-  - [Azure Subscription Breakout](#azure-subscription-breakout)
-  - [Azure VMs with Privileged Service Principals](#azure-vms-with-privileged-service-principals)
-  - [Active Directory Domain Breakout](#active-directory-domain-breakout)
-  - [Active Directory Principal Breakout](#active-directory-principal-breakout)
-  - [Private Keys on More Than One Computer](#private-keys-on-more-than-one-computer)
-  - [Unprotected Private Keys](#unprotected-private-keys)
-  - [Private Keys with Weak Encryption](#private-keys-with-weak-encryption)
-  - [Agent Forwarding](#agent-forwarding)
-  - [Hosts that allow root logins](#hosts-that-allow-root-logins)
-  - [CA Private Key used for Key-Based Authentication](#ca-private-key-used-for-key-based-authentication)
-  - [Wildcard Certificates](#wildcard-certificates)
-  - [Certificates without Expiration Date](#certificates-without-expiration-date)
 - [Large-Scale Deployment](#large-scale-deployment)
 - [Author & License](#author--license)
 - [Acknowledgements](#acknowledgements)
 
 ## Getting Started
+
+### Obtaining GoLinHound
 
 ```bash
 # clone repository
@@ -46,10 +37,11 @@ make build
 # alternatively, download latest release
 wget -P "bin/" "https://github.com/RantaSec/golinhound/releases/latest/download/golinhound-linux-amd64"
 wget -P "bin/" "https://github.com/RantaSec/golinhound/releases/latest/download/golinhound-linux-arm64"
+```
 
-# add custom node icons to BloodHound (prompts for password; add -insecure for self-signed certs)
-./bin/golinhound-linux-amd64 configure -url http://localhost:8080 -user admin
+### Running GoLinHound
 
+```bash
 # execute golinhound
 sudo ./bin/golinhound-linux-amd64 collect > output.json
 
@@ -57,9 +49,15 @@ sudo ./bin/golinhound-linux-amd64 collect > output.json
 cat *.json | ./bin/golinhound-linux-amd64 merge > merged.json
 ```
 
+GoLinHound supports Linux on amd64 and arm64. Collection requires root.
+
+### Installing The Extension
+
+Before ingesting collected data, upload the `GoLinHound-Community-v<#.#.#>.zip` extension bundle from the [latest release](https://github.com/RantaSec/golinhound/releases/latest) to BloodHound via `Administration > OpenGraph Management`. The bundle teaches BloodHound about GoLinHound's custom node and edge kinds and installs the cypher queries shipped with this release. Re-upload a newer release to upgrade.
+
 ## Data Model
 
-This section describes the edges collected by GoLinHound and provides examples how they can be abused.
+This section describes the edges collected by GoLinHound and provides examples how they can be abused. The diagrams and headings use short kind names; the collector, schema, and saved queries use the `GLH_` prefix. Built-in Azure and Active Directory kinds retain their existing names.
 
 ### SSH: Key-Based Authentication
 
@@ -102,7 +100,7 @@ ssh -i <priv_key> user@host
 ```
 
 #### ForwardsKey
-This edge indicates that a keypair was forwarded to another SSHComputer via [SSH agent forwarding](https://medium.com/@alejlopbu/hijacking-ssh-sessions-to-move-laterally-3d6a708b683b).
+This edge links an SSHUser to a keypair available through a forwarded agent socket on the user's SSHComputer, collected via [SSH agent forwarding](https://medium.com/@alejlopbu/hijacking-ssh-sessions-to-move-laterally-3d6a708b683b).
 
 Use the forwarded authentication socket to authenticate to other hosts:
 
@@ -222,216 +220,9 @@ klist
 
 ## Cypher Queries
 
-This section demonstrates Cypher queries that uncover interesting attack paths. Sample OpenGraph JSON files for testing these queries can be found in the [`res/examples/`](res/examples/) directory.
+Queries that uncover interesting attack paths are in [extension/saved_queries.json](extension/saved_queries.json) and included in the extension bundle.
 
-### Local Privilege Escalation
-
-This query identifies non-privileged users that can obtain root privileges.
-
-```sql
-// identify administrative users
-MATCH pEnd=(admin:SSHUser)-[:CanSudo|IsRoot]->(c:SSHComputer)
-// identify unprivileged users
-MATCH (c)-[:CanImpersonate]->(user:SSHUser)
-WHERE NOT (user)-[:CanSudo|IsRoot]->(c)
-// find path from unprivileged user to admin
-MATCH pStart=allShortestPaths((user)-[*1..]->(admin))
-// start segment should not include target computer
-WHERE none(n in nodes(pStart) WHERE n.objectid=c.objectid)
-RETURN pStart, pEnd
-```
-
-
-### Pivot from Dev to Prod
-
-This query identifies attack paths from test/dev to prod.
-
-```sql
-// identify all computers that contain non-prod strings
-MATCH (testc:SSHComputer)
-WHERE (
-    testc.name CONTAINS "TEST" OR
-    testc.name CONTAINS "TST" OR
-    testc.name CONTAINS "DEV"
-)
-// identify computers with prod string and all local users
-MATCH (prodc:SSHComputer)-[:CanImpersonate]->(produ:SSHUser)
-WHERE (
-    prodc.name CONTAINS "PROD" OR
-    prodc.name contains "PRD"
-)
-// check if there is path from test to prod
-MATCH p=allShortestPaths((testc)-[*..]->(produ))
-// ignore paths that go through the prod host
-WHERE none(n in nodes(p) WHERE n.objectid=prodc.objectid)
-// show privileges to prod host
-OPTIONAL MATCH p2=(produ)-[:CanSudo|IsRoot]->(prodc)
-RETURN p,p2
-```
-
-
-### Azure Tenant Breakout
-
-This query shows non-Azure attack paths from a vm in one Azure tenant to a vm in another tenant.
-
-```sql
-MATCH (vm1:AZVM)-[:SameMachine]->(:SSHComputer)
-MATCH (:SSHComputer)-[:SameMachine]->(vm2:AZVM)
-WHERE vm1.tenantid <> vm2.tenantid
-MATCH p=allShortestPaths((vm1)-[*..]->(vm2))
-WHERE none(r in relationships(p) WHERE type(r) STARTS WITH "AZ")
-RETURN p
-```
-
-
-### Azure Subscription Breakout
-
-This query shows non-Azure attack paths from a vm in one Azure subscription to a vm in another subscription.
-
-```sql
-MATCH (vm1:AZVM)-[:SameMachine]->(:SSHComputer)
-MATCH (:SSHComputer)-[:SameMachine]->(vm2:AZVM)
-WITH 
-    vm1,
-    vm2,
-    substring(vm1.objectid,15,36) AS subscriptionId1,
-    substring(vm2.objectid,15,36) AS subscriptionId2
-WHERE subscriptionId1 <> subscriptionId2
-MATCH p=allShortestPaths((vm1)-[*..]->(vm2))
-WHERE none(r in relationships(p) WHERE type(r) STARTS WITH "AZ")
-RETURN p
-```
-
-### Azure VMs with Privileged Service Principals
-
-This query shows non-Azure attack paths to Azure VMs that have privileges assigned.
-
-```sql
-MATCH p=(:SSHComputer)-[:SameMachine]->(vm:AZVM)-->(:AZServicePrincipal)-->()
-RETURN p
-```
-
-
-### Active Directory Domain Breakout
-
-This query shows non-AD attack paths from an Active Directory principal in one domain to a principal in another domain.
-
-```sql
-MATCH p1=(u1:SSHUser)-[:HasKeytab|:HasTGT]->(ad1)
-MATCH p2=(u2:SSHUser)-[:HasKeytab|:HasTGT]->(ad2)
-WHERE u1 <> u2 AND ad1.domain <> ad2.domain
-MATCH p=allShortestPaths((u1)-[*..]->(u2))
-RETURN p1, p, p2
-```
-
-
-### Active Directory Principal Breakout
-
-This query shows non-AD attack paths from a user with access to one Active Directory principal to another principal.
-
-```sql
-MATCH p1=(u1:SSHUser)-[:HasKeytab|:HasTGT]->(ad1)
-MATCH p2=(u2:SSHUser)-[:HasKeytab|:HasTGT]->(ad2)
-WHERE u1 <> u2 AND ad1 <> ad2
-MATCH p=allShortestPaths((u1)-[*..]->(u2))
-RETURN p1, p, p2
-```
-
-
-### Private Keys on More Than One Computer
-
-This query identifies private keys that can be found on multiple hosts.
-
-```sql
-MATCH (c:SSHComputer)-[:CanImpersonate]->(u:SSHUser)-[:HasPrivateKey]->(k:SSHKeyPair)
-WITH k, collect(DISTINCT c) AS computers
-WHERE size(computers) > 1
-UNWIND computers AS c
-MATCH p=(c)-[:CanImpersonate]->()-[:HasPrivateKey]->(k)
-RETURN p
-```
-
-
-### Unprotected Private Keys
-
-This query shows private keys that are unencrypted and not protected by FIDO2.
-
-```sql
-MATCH p=(:SSHUser)-[r:HasPrivateKey]->(k:SSHKeyPair)
-WHERE k.FIDO2 = false AND r.Encrypted = false
-RETURN p
-```
-
-
-### Private Keys with Weak Encryption
-
-This query shows non-FIDO2 private keys that are encrypted with something other than aes.
-
-```sql
-MATCH p=(u:SSHUser)-[r:HasPrivateKey]->(k:SSHKeyPair)
-WHERE k.FIDO2 = false
-  AND r.Encrypted = true
-  AND r.Cipher <> "none"
-  AND NOT r.Cipher STARTS WITH "aes256-"
-  AND NOT r.Cipher STARTS WITH "aes128-"
-RETURN p
-```
-
-
-### Agent Forwarding
-
-This query shows which private keys are forwarded via SSH agent forwarding.
-
-```sql
-MATCH p=(:SSHUser)-[:ForwardsKey]->(k:SSHKeyPair)
-RETURN p
-```
-
-
-### Hosts that allow root logins
-
-This query returns hosts that allow the root user to login.
-
-```sql
-MATCH p=(:SSHKeyPair)-[:CanSSH]->(:SSHUser)-[:IsRoot]->(:SSHComputer)
-RETURN p
-```
-
-
-### CA Private Key used for Key-Based Authentication
-
-This query surfaces SSH keypairs that are simultaneously trusted as a certificate authority (via `TrustedUserCAKeys` on some host) AND listed as a plain public key in someone's `authorized_keys`. It also shows who has access to the private key, if the information is available.
-
-```sql
-// find keypairs that are trusted as CA and in authorized keys
-MATCH pk = (k:SSHKeyPair)-[:CanSSH]->(:SSHUser)
-MATCH pc = (k)-[:CanIssueCertificate]->(:SSHUser)
-// find out who has the respective private key
-OPTIONAL MATCH p0 = (:SSHUser)-[:HasPrivateKey]->(k)
-RETURN p0, pk, pc
-```
-
-
-### Wildcard Certificates
-
-This query returns SSH certificates that authorize login as ANY principal.
-
-```sql
-MATCH p=(:SSHUser)-[:HasCertificate]->(c:SSHCertificate)
-WHERE c.WildcardPrincipal = true
-RETURN p
-```
-
-
-### Certificates without Expiration Date
-
-This query returns SSH certificates that have no expiration date.
-
-```sql
-MATCH p=(:SSHUser)-[:HasCertificate]->(c:SSHCertificate)
-WHERE c.ValidBefore = "9999-12-31T23:59:59Z"
-RETURN p
-```
+[Open the JSON in queries.specterops.io](https://queries.specterops.io/?source=https%3A%2F%2Fraw.githubusercontent.com%2FRantaSec%2Fgolinhound%2Frefs%2Fheads%2Fmain%2Fextension%2Fsaved_queries.json&sourceLabel=GoLinHound) to view and run them.
 
 
 ## Large-Scale Deployment

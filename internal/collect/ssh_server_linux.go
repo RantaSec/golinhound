@@ -144,9 +144,9 @@ func emitAuthorizedKeys(h *Host, u *User, sshdConfig map[string]string, b *openg
 				}
 				continue
 			}
-			b.AddEdge("CanSSH",
-				opengraph.ByID("SSHKeyPair", pubKey.FingerprintSHA256),
-				opengraph.ByID("SSHUser", h.ReferenceUser(u.UID)),
+			b.AddEdge("GLH_CanSSH",
+				opengraph.ByID("GLH_SSHKeyPair", pubKey.FingerprintSHA256),
+				opengraph.ByID("GLH_SSHUser", h.ReferenceUser(u.UID)),
 				map[string]any{
 					"AuthorizedKeysFile": file,
 					"Comment":            pubKey.Comment,
@@ -317,9 +317,9 @@ func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.
 		data = rest
 		pubKey := newPublicKey(pub, comment)
 		emitKeypairNode(b, *pubKey)
-		b.AddEdge("ForwardsKey",
-			opengraph.ByID("SSHUser", h.ReferenceUser(sshdUid)),
-			opengraph.ByID("SSHKeyPair", pubKey.FingerprintSHA256),
+		b.AddEdge("GLH_ForwardsKey",
+			opengraph.ByID("GLH_SSHUser", h.ReferenceUser(sshdUid)),
+			opengraph.ByID("GLH_SSHKeyPair", pubKey.FingerprintSHA256),
 			map[string]any{
 				"LastLoginSocket": socket,
 				"LastLoginTime":   loginTimeZulu,
@@ -434,9 +434,9 @@ func emitCanIssueCertificates(h *Host, u *User, cas []publicKey, principals []st
 		props["AuthorizedPrincipalsFile"] = principalsFile
 	}
 	for _, ca := range cas {
-		b.AddEdge("CanIssueCertificate",
-			opengraph.ByID("SSHKeyPair", ca.FingerprintSHA256),
-			opengraph.ByID("SSHUser", h.ReferenceUser(u.UID)),
+		b.AddEdge("GLH_CanIssueCertificate",
+			opengraph.ByID("GLH_SSHKeyPair", ca.FingerprintSHA256),
+			opengraph.ByID("GLH_SSHUser", h.ReferenceUser(u.UID)),
 			props)
 	}
 }
@@ -469,19 +469,19 @@ func emitCanCertSSH(h *Host, u *User, cas []publicKey, principals []string, file
 		props["AuthorizedPrincipalsFile"] = file
 	}
 
-	end := opengraph.ByID("SSHUser", h.ReferenceUser(u.UID))
+	end := opengraph.ByID("GLH_SSHUser", h.ReferenceUser(u.UID))
 	for _, ca := range cas {
 		for _, principal := range principals {
-			b.AddEdge("CanCertSSH",
-				opengraph.ByProperty("SSHCertificate",
+			b.AddEdge("GLH_CanCertSSH",
+				opengraph.ByProperty("GLH_SSHCertificate",
 					opengraph.PropEq("CAFingerprintSHA256", ca.FingerprintSHA256),
 					opengraph.PropEq("Principal", principal)),
 				end,
 				props)
 		}
 		// Wildcard edge
-		b.AddEdge("CanCertSSH",
-			opengraph.ByProperty("SSHCertificate",
+		b.AddEdge("GLH_CanCertSSH",
+			opengraph.ByProperty("GLH_SSHCertificate",
 				opengraph.PropEq("CAFingerprintSHA256", ca.FingerprintSHA256),
 				opengraph.PropEq("WildcardPrincipal", true)),
 			end,

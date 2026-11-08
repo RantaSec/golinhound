@@ -4,7 +4,7 @@
     "nodes": [
       {
         "kinds": [
-          "SSHComputer"
+          "GLH_SSHComputer"
         ],
         "id": "/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
         "properties": {
@@ -14,7 +14,7 @@
       },
       {
         "kinds": [
-          "SSHUser"
+          "GLH_SSHUser"
         ],
         "id": "1000@/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
         "properties": {
@@ -23,7 +23,7 @@
       },
       {
         "kinds": [
-          "SSHKeyPair"
+          "GLH_SSHKeyPair"
         ],
         "id": "c2+3xw987nQ6kuUIGJOQE0pAgd5VrXNUKVskrIZWkjw",
         "properties": {
@@ -48,7 +48,7 @@
       },
       {
         "kinds": [
-          "SSHComputer"
+          "GLH_SSHComputer"
         ],
         "id": "/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
         "properties": {
@@ -58,7 +58,7 @@
       },
       {
         "kinds": [
-          "SSHUser"
+          "GLH_SSHUser"
         ],
         "id": "1000@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
         "properties": {
@@ -80,29 +80,29 @@
     ],
     "edges": [
       {
-        "kind": "CanImpersonate",
+        "kind": "GLH_CanImpersonate",
         "start": {
           "match_by": "id",
           "value": "/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "end": {
           "match_by": "id",
           "value": "1000@/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         }
       },
       {
-        "kind": "CanSudo",
+        "kind": "GLH_CanSudo",
         "start": {
           "match_by": "id",
           "value": "1000@/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "properties": {
           "Commands": "(ALL) NOPASSWD: ALL",
@@ -110,16 +110,16 @@
         }
       },
       {
-        "kind": "HasPrivateKey",
+        "kind": "GLH_HasPrivateKey",
         "start": {
           "match_by": "id",
           "value": "1000@/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "c2+3xw987nQ6kuUIGJOQE0pAgd5VrXNUKVskrIZWkjw",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "properties": {
           "Cipher": "none",
@@ -131,11 +131,11 @@
         }
       },
       {
-        "kind": "SameMachine",
+        "kind": "GLH_SameMachine",
         "start": {
           "match_by": "id",
           "value": "/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "end": {
           "match_by": "id",
@@ -144,7 +144,7 @@
         }
       },
       {
-        "kind": "SameMachine",
+        "kind": "GLH_SameMachine",
         "start": {
           "match_by": "id",
           "value": "/SUBSCRIPTIONS/E3CC8B7B-4A14-457D-AC44-CAFC2A77183D/RESOURCEGROUPS/APP/PROVIDERS/MICROSOFT.COMPUTE/VIRTUALMACHINES/srv5",
@@ -153,33 +153,33 @@
         "end": {
           "match_by": "id",
           "value": "/9RkU9G8eQ53t+ayD2TgMyTidTczZAxHFLGSyvdeaqY",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         }
       },
       {
-        "kind": "CanImpersonate",
+        "kind": "GLH_CanImpersonate",
         "start": {
           "match_by": "id",
           "value": "/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "end": {
           "match_by": "id",
           "value": "1000@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         }
       },
       {
-        "kind": "CanSudo",
+        "kind": "GLH_CanSudo",
         "start": {
           "match_by": "id",
           "value": "1000@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "properties": {
           "Commands": "(ALL) NOPASSWD: ALL",
@@ -187,16 +187,16 @@
         }
       },
       {
-        "kind": "HasPrivateKey",
+        "kind": "GLH_HasPrivateKey",
         "start": {
           "match_by": "id",
           "value": "1000@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "c2+3xw987nQ6kuUIGJOQE0pAgd5VrXNUKVskrIZWkjw",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "properties": {
           "Cipher": "none",
@@ -208,16 +208,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "c2+3xw987nQ6kuUIGJOQE0pAgd5VrXNUKVskrIZWkjw",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1000@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "appadmin",
@@ -225,16 +225,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "c2+3xw987nQ6kuUIGJOQE0pAgd5VrXNUKVskrIZWkjw",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "1000@/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "appadmin",
@@ -242,11 +242,11 @@
         }
       },
       {
-        "kind": "SameMachine",
+        "kind": "GLH_SameMachine",
         "start": {
           "match_by": "id",
           "value": "/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "end": {
           "match_by": "id",
@@ -255,7 +255,7 @@
         }
       },
       {
-        "kind": "SameMachine",
+        "kind": "GLH_SameMachine",
         "start": {
           "match_by": "id",
           "value": "/SUBSCRIPTIONS/22D22B53-1083-461B-8352-8F11A23E602B/RESOURCEGROUPS/APP2/PROVIDERS/MICROSOFT.COMPUTE/VIRTUALMACHINES/srv6",
@@ -264,7 +264,7 @@
         "end": {
           "match_by": "id",
           "value": "/jqPLO6sVjWE2T7e+D2ImpFZ+nBrKYRS+RlpR131NQo",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         }
       }
     ]

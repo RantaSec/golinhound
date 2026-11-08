@@ -32,7 +32,7 @@ func newPublicKey(pub ssh.PublicKey, comment string) *publicKey {
 
 // emitKeypairNode adds an SSHKeyPair node.
 func emitKeypairNode(b *opengraph.GraphBuilder, pk publicKey) {
-	b.AddNode([]string{"SSHKeyPair"}, pk.FingerprintSHA256, map[string]any{
+	b.AddNode([]string{"GLH_SSHKeyPair"}, pk.FingerprintSHA256, map[string]any{
 		"name":              pk.FingerprintSHA256,
 		"Algorithm":         pk.Algorithm,
 		"FingerprintSHA256": pk.FingerprintSHA256,

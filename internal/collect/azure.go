@@ -54,13 +54,13 @@ func (c *AzureCollector) Collect(ctx context.Context, h *Host, b *opengraph.Grap
 		"operatingsystem": strings.ToUpper(compute.OSType),
 	})
 
-	b.AddEdge("SameMachine",
-		opengraph.ByID("SSHComputer", h.ComputerID()),
+	b.AddEdge("GLH_SameMachine",
+		opengraph.ByID("GLH_SSHComputer", h.ComputerID()),
 		opengraph.ByID("AZVM", azID),
 		nil)
-	b.AddEdge("SameMachine",
+	b.AddEdge("GLH_SameMachine",
 		opengraph.ByID("AZVM", azID),
-		opengraph.ByID("SSHComputer", h.ComputerID()),
+		opengraph.ByID("GLH_SSHComputer", h.ComputerID()),
 		nil)
 
 	return nil

@@ -95,8 +95,8 @@ func emitHasKeytabEdge(h *Host, b *opengraph.GraphBuilder, filePath, principal, 
 	if !strings.Contains(name, "@") {
 		endKind = "Computer"
 	}
-	b.AddEdge("HasKeytab",
-		opengraph.ByID("SSHUser", h.ReferenceUser(owner.UID)),
+	b.AddEdge("GLH_HasKeytab",
+		opengraph.ByID("GLH_SSHUser", h.ReferenceUser(owner.UID)),
 		opengraph.ByProperty(endKind, opengraph.PropEq("name", name)),
 		map[string]any{"KeytabFile": filePath})
 }
@@ -207,8 +207,8 @@ func emitHasTGTEdge(h *Host, b *opengraph.GraphBuilder, filePath string, creds *
 	if !strings.Contains(name, "@") {
 		endKind = "Computer"
 	}
-	b.AddEdge("HasTGT",
-		opengraph.ByID("SSHUser", h.ReferenceUser(owner.UID)),
+	b.AddEdge("GLH_HasTGT",
+		opengraph.ByID("GLH_SSHUser", h.ReferenceUser(owner.UID)),
 		opengraph.ByProperty(endKind, opengraph.PropEq("name", name)),
 		map[string]any{
 			"TicketCacheFile": filePath,

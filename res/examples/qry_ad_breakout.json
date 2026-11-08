@@ -26,7 +26,7 @@
       },
       {
         "kinds": [
-          "SSHKeyPair"
+          "GLH_SSHKeyPair"
         ],
         "id": "ql14VsTinmQAHIhhGkLy02c2bCAks1HmB2sQVAVbukk",
         "properties": {
@@ -39,7 +39,7 @@
       },
       {
         "kinds": [
-          "SSHComputer"
+          "GLH_SSHComputer"
         ],
         "id": "NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
         "properties": {
@@ -49,7 +49,7 @@
       },
       {
         "kinds": [
-          "SSHUser"
+          "GLH_SSHUser"
         ],
         "id": "998@NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
         "properties": {
@@ -58,7 +58,7 @@
       },
       {
         "kinds": [
-          "SSHComputer"
+          "GLH_SSHComputer"
         ],
         "id": "e7khdDjZrauN4SyCs6QJUuZD9qV5GuhvZP9FQqYU+CU",
         "properties": {
@@ -68,7 +68,7 @@
       },
       {
         "kinds": [
-          "SSHUser"
+          "GLH_SSHUser"
         ],
         "id": "1000@e7khdDjZrauN4SyCs6QJUuZD9qV5GuhvZP9FQqYU+CU",
         "properties": {
@@ -78,29 +78,29 @@
     ],
     "edges": [
       {
-        "kind": "CanImpersonate",
+        "kind": "GLH_CanImpersonate",
         "start": {
           "match_by": "id",
           "value": "NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "end": {
           "match_by": "id",
           "value": "998@NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         }
       },
       {
-        "kind": "CanSudo",
+        "kind": "GLH_CanSudo",
         "start": {
           "match_by": "id",
           "value": "998@NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "properties": {
           "Commands": "(ALL : ALL) ALL\n(ALL) NOPASSWD: ALL",
@@ -108,16 +108,16 @@
         }
       },
       {
-        "kind": "CanSSH",
+        "kind": "GLH_CanSSH",
         "start": {
           "match_by": "id",
           "value": "ql14VsTinmQAHIhhGkLy02c2bCAks1HmB2sQVAVbukk",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "end": {
           "match_by": "id",
           "value": "998@NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "properties": {
           "Comment": "ansible",
@@ -125,29 +125,29 @@
         }
       },
       {
-        "kind": "CanImpersonate",
+        "kind": "GLH_CanImpersonate",
         "start": {
           "match_by": "id",
           "value": "e7khdDjZrauN4SyCs6QJUuZD9qV5GuhvZP9FQqYU+CU",
-          "kind": "SSHComputer"
+          "kind": "GLH_SSHComputer"
         },
         "end": {
           "match_by": "id",
           "value": "1000@e7khdDjZrauN4SyCs6QJUuZD9qV5GuhvZP9FQqYU+CU",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         }
       },
       {
-        "kind": "HasPrivateKey",
+        "kind": "GLH_HasPrivateKey",
         "start": {
           "match_by": "id",
           "value": "1000@e7khdDjZrauN4SyCs6QJUuZD9qV5GuhvZP9FQqYU+CU",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
           "value": "ql14VsTinmQAHIhhGkLy02c2bCAks1HmB2sQVAVbukk",
-          "kind": "SSHKeyPair"
+          "kind": "GLH_SSHKeyPair"
         },
         "properties": {
           "Cipher": "none",
@@ -159,11 +159,11 @@
         }
       },
       {
-        "kind": "HasKeytab",
+        "kind": "GLH_HasKeytab",
         "start": {
           "match_by": "id",
           "value": "1000@e7khdDjZrauN4SyCs6QJUuZD9qV5GuhvZP9FQqYU+CU",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
@@ -175,11 +175,11 @@
         }
       },
       {
-        "kind": "HasTGT",
+        "kind": "GLH_HasTGT",
         "start": {
           "match_by": "id",
           "value": "998@NtbN5zwn1WYCYO3yJL5aaiq/vXwdX3ow9PV+ggZWSjg",
-          "kind": "SSHUser"
+          "kind": "GLH_SSHUser"
         },
         "end": {
           "match_by": "id",
