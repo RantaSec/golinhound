@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"log/slog"
+	"net"
 	"net/netip"
 	"os"
 	"os/exec"
@@ -18,12 +19,13 @@ import (
 	"github.com/RantaSec/golinhound/internal/opengraph"
 	"github.com/fsnotify/fsnotify"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
 )
 
 const (
 	// SSHDLoadConfigTimeout bounds `sshd -T` invocations in loadSSHDConfig.
 	SSHDLoadConfigTimeout = 2 * time.Second
-	// SSHLoadFwdKeyTimeout bounds `ssh-add -L` invocations in emitForwardedKey.
+	// SSHLoadFwdKeyTimeout bounds forwarded agent socket communication in emitForwardedKey.
 	SSHLoadFwdKeyTimeout = 2 * time.Second
 )
 
@@ -193,7 +195,7 @@ func emitForwardedKeys(ctx context.Context, h *Host, duration int, b *opengraph.
 	}()
 
 	for socket := range chSockets {
-		emitForwardedKey(ctx, h, socket, b)
+		emitForwardedKey(h, socket, b)
 	}
 }
 
@@ -260,30 +262,19 @@ func watchNewSockets(ctx context.Context, chSockets chan<- string, duration int)
 	}
 }
 
-// emitForwardedKey runs `ssh-add -L` against one forwarded agent socket
-// (bounded by SSHLoadFwdKeyTimeout), pairs it with metadata from the socket
+// emitForwardedKey queries a forwarded agent socket for loaded public keys
+// (bounded by SSHLoadFwdKeyTimeout), pairs each with metadata from the socket
 // and owning sshd process (owner, socket creation time, peer IP) and
 // emits one ForwardsKey edge (SSHUser -> SSHKeyPair) per key visible on the
-// agent. Any pre-edge failure (ssh-add error, missing owner, or unresolvable
-// peer IP) is logged at Debug and skips this socket.
-func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.GraphBuilder) {
+// agent. Any pre-edge failure (missing owner, unresolvable peer IP, or agent
+// query error) is logged at Debug and skips this socket.
+func emitForwardedKey(h *Host, socket string, b *opengraph.GraphBuilder) {
 	fi, err := os.Stat(socket)
 	if err != nil {
 		return
 	}
 	owner := h.fileOwner(socket)
 	if owner == nil {
-		return
-	}
-
-	cctx, cancel := context.WithTimeout(ctx, SSHLoadFwdKeyTimeout)
-	defer cancel()
-
-	cmd := exec.CommandContext(cctx, "ssh-add", "-L")
-	cmd.Env = []string{"SSH_AUTH_SOCK=" + socket}
-	stdOut, err := cmd.Output()
-	if err != nil {
-		slog.Debug("emitForwardedKey: public key could not be retrieved from socket", "socket", socket)
 		return
 	}
 
@@ -295,15 +286,16 @@ func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.
 		slog.Debug("emitForwardedKey: could not resolve remote IP for sshd process", "socket", socket)
 		return
 	}
-	loginTimeZulu := fi.ModTime().UTC().Format(time.RFC3339)
 
-	for data := stdOut; len(data) > 0; {
-		pub, comment, _, rest, err := ssh.ParseAuthorizedKey(data)
-		if err != nil {
-			break
-		}
-		data = rest
-		pubKey := newPublicKey(pub, comment)
+	keys, err := agentListKeys(socket)
+	if err != nil {
+		slog.Debug("emitForwardedKey: public key could not be retrieved from socket", "socket", socket, "err", err)
+		return
+	}
+
+	loginTimeZulu := fi.ModTime().UTC().Format(time.RFC3339)
+	for _, k := range keys {
+		pubKey := newPublicKey(k, k.Comment)
 		emitKeypairNode(b, *pubKey)
 		b.AddEdge("ForwardsKey",
 			opengraph.ByID("SSHUser", h.ReferenceUser(owner.UID)),
@@ -315,6 +307,19 @@ func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.
 				"Comment":         pubKey.Comment,
 			})
 	}
+}
+
+// agentListKeys queries an SSH agent UNIX domain socket for loaded keys,
+// bounded by SSHLoadFwdKeyTimeout.
+func agentListKeys(socket string) ([]*agent.Key, error) {
+	deadline := time.Now().Add(SSHLoadFwdKeyTimeout)
+	conn, err := net.DialTimeout("unix", socket, SSHLoadFwdKeyTimeout)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	_ = conn.SetDeadline(deadline)
+	return agent.NewClient(conn).List()
 }
 
 // procRemoteIP resolves the remote peer IP of the lowest-FD established TCP
