@@ -1,0 +1,69 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index a649ff6..f386c58 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -1,18 +1,18 @@
+ #[macro_use]
+ mod macros;
+ #[macro_use]
+-pub(crate) mod gettext;
++pub mod gettext;
+ 
+ #[cfg(feature = "apparmor")]
+-pub(crate) mod apparmor;
+-pub(crate) mod common;
+-pub(crate) mod cutils;
+-pub(crate) mod defaults;
+-pub(crate) mod exec;
+-pub(crate) mod log;
+-pub(crate) mod pam;
+-pub(crate) mod sudoers;
+-pub(crate) mod system;
++pub mod apparmor;
++pub mod common;
++pub mod cutils;
++pub mod defaults;
++pub mod exec;
++pub mod log;
++pub mod pam;
++pub mod sudoers;
++pub mod system;
+ 
+ mod su;
+ mod sudo;
+diff --git a/src/pam/error.rs b/src/pam/error.rs
+index d5facb0..4ab59a0 100644
+--- a/src/pam/error.rs
++++ b/src/pam/error.rs
+@@ -157,16 +157,7 @@ impl PamErrorType {
+     }
+ 
+     fn get_err_msg(&self) -> String {
+-        // SAFETY: pam_strerror technically takes a pam handle as the first argument,
+-        // but we do not know of any implementation that actually uses the pamh
+-        // argument. See also the netbsd man page for `pam_strerror`.
+-        let data = unsafe { pam_strerror(std::ptr::null_mut(), self.as_int()) };
+-        if data.is_null() {
+-            String::from("Error unresolved by PAM")
+-        } else {
+-            // SAFETY: pam_strerror returns a pointer to a null-terminated string
+-            unsafe { string_from_ptr(data) }
+-        }
++        format!("PAM error {}", self.as_int())
+     }
+ }
+ 
+diff --git a/src/pam/mod.rs b/src/pam/mod.rs
+index b65d195..085a4b8 100644
+--- a/src/pam/mod.rs
++++ b/src/pam/mod.rs
+@@ -25,9 +25,6 @@ mod securemem;
+ #[allow(nonstandard_style)]
+ pub mod sys;
+ 
+-#[link(name = "pam")]
+-unsafe extern "C" {}
+-
+ #[cfg(target_os = "freebsd")]
+ const PAM_DATA_SILENT: std::ffi::c_int = 0;
+ 

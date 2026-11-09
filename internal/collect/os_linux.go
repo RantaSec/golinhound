@@ -42,6 +42,7 @@ func (c *OSCollector) Finalize(ctx context.Context, h *Host, b *opengraph.GraphB
 	})
 
 	// emit privileged users
+	emitSudoers(ctx, h, b)
 	for _, u := range h.Users {
 		if u.UID == "0" {
 			b.AddEdge("IsRoot",
@@ -49,7 +50,6 @@ func (c *OSCollector) Finalize(ctx context.Context, h *Host, b *opengraph.GraphB
 				opengraph.ByID("SSHComputer", h.ComputerID()),
 				nil)
 		}
-		emitSudoer(ctx, h, u, b)
 	}
 
 	// emit users with attack path edges
@@ -74,20 +74,73 @@ func (c *OSCollector) Finalize(ctx context.Context, h *Host, b *opengraph.GraphB
 	return nil
 }
 
-// emitSudoer queries `sudo -l -U <user>` and adds a CanSudo edge if the
-// user holds an unrestricted (ALL) ALL or (ALL : ALL) ALL grant. Narrower
-// per-command grants are intentionally skipped.
-func emitSudoer(ctx context.Context, h *Host, u *User, b *opengraph.GraphBuilder) {
-	if u.UID == "0" {
-		slog.Debug("emitSudoer: user is root, skipping", "userName", u.UserName)
-		return
-	}
-	// handle abandoned home dirs
-	if strings.HasPrefix(u.UserName, "unknown:") {
-		slog.Debug("emitSudoer: synthesized user, skipping", "userName", u.UserName)
-		return
+// emitSudoers emits CanSudo edges for every user in h.Users whose sudo
+// policy contains an unrestricted (ALL) ALL grant.
+//
+// Two paths produce the same edge shape:
+//
+//  1. Embedded lssudo: one subprocess, parses /etc/sudoers directly, covers
+//     every user in /etc/passwd. On success its result set bounds the set
+//     of "local" users.
+//  2. Fallback `sudo -S -n -l -U <user>`: one subprocess per user, runs
+//     only for users lssudo didn't cover (directory users via SSSD/LDAP,
+//     or every user if lssudo itself failed).
+//
+// The classifier that turns a sudoers rendering into (matched,
+// passwordRequired) is shared so both paths produce byte-identical edges
+// for byte-identical policies.
+func emitSudoers(ctx context.Context, h *Host, b *opengraph.GraphBuilder) {
+	covered := make(map[string]struct{})
+	if entries, err := runLssudo(ctx); err != nil {
+		slog.Warn("lssudo probe failed, falling back to per-user sudo for every user", "err", err)
+	} else {
+		for _, u := range h.Users {
+			if sudoerSkip(u) {
+				covered[u.UserName] = struct{}{}
+				continue
+			}
+			entry, ok := entries[u.UserName]
+			if !ok {
+				continue
+			}
+			covered[u.UserName] = struct{}{}
+			blob := strings.Join(entry.Commands, "\n")
+			if matched, passwordRequired := classifySudoBlob(blob); matched {
+				emitCanSudo(h, u, blob, passwordRequired, b)
+			}
+		}
 	}
 
+	for _, u := range h.Users {
+		if _, ok := covered[u.UserName]; ok {
+			continue
+		}
+		if sudoerSkip(u) {
+			continue
+		}
+		emitSudoerViaSudo(ctx, h, u, b)
+	}
+}
+
+// sudoerSkip returns true for users that should never produce a CanSudo
+// edge: UID 0 (already covered by IsRoot) and synthesized "unknown:"
+// entries for abandoned home dirs.
+func sudoerSkip(u *User) bool {
+	if u.UID == "0" {
+		slog.Debug("sudoer: user is root, skipping", "userName", u.UserName)
+		return true
+	}
+	if strings.HasPrefix(u.UserName, "unknown:") {
+		slog.Debug("sudoer: synthesized user, skipping", "userName", u.UserName)
+		return true
+	}
+	return false
+}
+
+// emitSudoerViaSudo runs `sudo -S -n -l -U <user>` and classifies its
+// output. Used only for users the embedded lssudo didn't cover (directory
+// users) or when lssudo itself failed and we fell back entirely.
+func emitSudoerViaSudo(ctx context.Context, h *Host, u *User, b *opengraph.GraphBuilder) {
 	cctx, cancel := context.WithTimeout(ctx, SudoExecTimeout)
 	defer cancel()
 
@@ -105,18 +158,15 @@ func emitSudoer(ctx context.Context, h *Host, u *User, b *opengraph.GraphBuilder
 	commands = regexp.MustCompile(`(?m)^\s+|^\s+$`).ReplaceAllString(commands, "")
 	commands = strings.TrimSpace(commands)
 
-	var passwordRequired bool
-	switch {
-	case strings.Contains(commands, "(ALL : ALL) NOPASSWD: ALL"),
-		strings.Contains(commands, "(ALL) NOPASSWD: ALL"):
-		passwordRequired = false
-	case strings.Contains(commands, "(ALL : ALL) ALL"),
-		strings.Contains(commands, "(ALL) ALL"):
-		passwordRequired = true
-	default:
+	matched, passwordRequired := classifySudoBlob(commands)
+	if !matched {
 		return
 	}
+	emitCanSudo(h, u, commands, passwordRequired, b)
+}
 
+// emitCanSudo is the single CanSudo edge writer used by both lookup paths.
+func emitCanSudo(h *Host, u *User, commands string, passwordRequired bool, b *opengraph.GraphBuilder) {
 	b.AddEdge("CanSudo",
 		opengraph.ByID("SSHUser", h.ReferenceUser(u.UID)),
 		opengraph.ByID("SSHComputer", h.ComputerID()),
