@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/RantaSec/golinhound/internal/opengraph"
@@ -133,7 +134,7 @@ func emitAuthorizedKeys(ctx context.Context, h *Host, u *User, sshdConfig map[st
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	for _, file := range authorizedKeysFiles(sshdConfig, u.UserName, u.HomeDir) {
+	for _, file := range authorizedKeysFiles(sshdConfig, u) {
 		cctx, cancel := context.WithTimeout(ctx, SSHReadFileTimeout)
 		data, err := readFileWithCtx(cctx, file, MaxAuthorizedKeysSize)
 		cancel()
@@ -141,7 +142,7 @@ func emitAuthorizedKeys(ctx context.Context, h *Host, u *User, sshdConfig map[st
 			return err
 		}
 		if err != nil {
-			if !errors.Is(err, errNonLocalFS) {
+			if !errors.Is(err, os.ErrNotExist) && !errors.Is(err, syscall.EISDIR) && !errors.Is(err, errNonLocalFS) {
 				slog.Error("emitAuthorizedKeys: file could not be read", "userName", u.UserName, "file", file, "err", err)
 			}
 			continue
@@ -178,23 +179,28 @@ func emitAuthorizedKeys(ctx context.Context, h *Host, u *User, sshdConfig map[st
 	return nil
 }
 
-// authorizedKeysFiles resolves all authorized_keys paths for a user by
-// expanding %u/%h placeholders in sshd_config's AuthorizedKeysFile
-// directive and verifying the path exists.
-func authorizedKeysFiles(sshdConfig map[string]string, userName, userDir string) []string {
-	slog.Debug("authorizedKeysFiles", "userName", userName, "userDir", userDir)
+// authorizedKeysFiles resolves all candidate authorized_keys paths for a
+// user by expanding %%/u/%U/%h placeholders in sshd_config's
+// AuthorizedKeysFile directive.
+func authorizedKeysFiles(sshdConfig map[string]string, u *User) []string {
+	slog.Debug("authorizedKeysFiles", "userName", u.UserName, "userDir", u.HomeDir)
+	replacer := strings.NewReplacer(
+		"%%", "%",
+		"%u", u.UserName,
+		"%U", u.UID,
+		"%h", u.HomeDir,
+	)
 	var files []string
-	for f := range strings.FieldsSeq(sshdConfig["authorizedkeysfile"]) {
-		f = strings.ReplaceAll(f, "%u", userName)
-		f = strings.ReplaceAll(f, "%h", userDir+"/")
-		if !filepath.IsAbs(f) {
-			f = filepath.Join(userDir, f)
-		}
-		if !isPathOnLocalFS(f) {
+	for raw := range strings.FieldsSeq(sshdConfig["authorizedkeysfile"]) {
+		if raw == "none" {
 			continue
 		}
-		fi, err := os.Stat(f)
-		if err == nil && !fi.IsDir() && !slices.Contains(files, f) {
+		f := replacer.Replace(raw)
+		if !filepath.IsAbs(f) {
+			f = filepath.Join(u.HomeDir, f)
+		}
+		f = filepath.Clean(f)
+		if filepath.IsAbs(f) && !slices.Contains(files, f) {
 			files = append(files, f)
 		}
 	}
@@ -491,6 +497,10 @@ func trustedUserCAKeys(ctx context.Context, sshdConfig map[string]string) (cas [
 	if file == "" || file == "none" {
 		return nil, ""
 	}
+	file = filepath.Clean(file)
+	if !filepath.IsAbs(file) {
+		return nil, ""
+	}
 	cctx, cancel := context.WithTimeout(ctx, SSHReadFileTimeout)
 	defer cancel()
 
@@ -530,9 +540,19 @@ func authorizedPrincipalsFor(ctx context.Context, sshdConfig map[string]string, 
 		return []string{u.UserName}, ""
 	}
 
-	file = strings.ReplaceAll(rawFile, "%u", u.UserName)
-	file = strings.ReplaceAll(file, "%U", u.UID)
-	file = strings.ReplaceAll(file, "%h", u.HomeDir)
+	file = strings.NewReplacer(
+		"%%", "%",
+		"%u", u.UserName,
+		"%U", u.UID,
+		"%h", u.HomeDir,
+	).Replace(rawFile)
+	if !filepath.IsAbs(file) {
+		file = filepath.Join(u.HomeDir, file)
+	}
+	file = filepath.Clean(file)
+	if !filepath.IsAbs(file) {
+		return nil, ""
+	}
 	cctx, cancel := context.WithTimeout(ctx, SSHReadFileTimeout)
 	defer cancel()
 

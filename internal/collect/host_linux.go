@@ -338,36 +338,21 @@ func enrichWithHomeDirs(ctx context.Context, users map[string]*User) {
 
 // sssdHomeDirGlobs reads /etc/sssd/sssd.conf and returns the set
 // of glob patterns derived from fallback_homedir / override_homedir
-// values. `/home/%u` is always included as a baseline. SSSD
+// values. `/home/*` is always included as a baseline. SSSD
 // placeholders (per sssd.conf(5)) become `*`; `%%` collapses to a
 // literal `%`. NewReplacer's longest-match wins ensures `%%u`
 // resolves to the literal `%u` rather than the `%u` -> `*` rule.
-// Patterns with more than MaxHomeDirGlobWildcards `*`s are dropped.
+// Relative patterns and patterns with more than MaxHomeDirGlobWildcards
+// `*`s are dropped.
 func sssdHomeDirGlobs(ctx context.Context) map[string]struct{} {
-	templates := []string{"/home/%u"}
+	globs := map[string]struct{}{"/home/*": {}}
+
 	cctx, cancel := context.WithTimeout(ctx, HostReadFileTimeout)
 	data, err := readFileWithCtx(cctx, "/etc/sssd/sssd.conf", MaxSSSDConfSize)
 	cancel()
-	if err == nil {
-		for line := range strings.SplitSeq(string(data), "\n") {
-			key, value, ok := strings.Cut(line, "=")
-			if !ok {
-				continue
-			}
-			key = strings.TrimSpace(key)
-			if key != "fallback_homedir" && key != "override_homedir" {
-				continue
-			}
-			// sssd.conf accepts `#`/`;` as inline comment markers.
-			if i := strings.IndexAny(value, "#;"); i >= 0 {
-				value = value[:i]
-			}
-			if v := strings.TrimSpace(value); v != "" {
-				templates = append(templates, v)
-			}
-		}
-	} else {
+	if err != nil {
 		slog.Debug("sssdHomeDirGlobs: sssd.conf unreadable", "err", err)
+		return globs
 	}
 
 	toGlob := strings.NewReplacer(
@@ -380,12 +365,30 @@ func sssdHomeDirGlobs(ctx context.Context) map[string]struct{} {
 		"%o", "*",
 		"%P", "*",
 	)
-	globs := make(map[string]struct{})
-	for _, t := range templates {
-		g := toGlob.Replace(t)
+	for line := range strings.SplitSeq(string(data), "\n") {
+		key, value, ok := strings.Cut(line, "=")
+		if !ok {
+			continue
+		}
+		key = strings.TrimSpace(key)
+		if key != "fallback_homedir" && key != "override_homedir" {
+			continue
+		}
+		// sssd.conf accepts `#`/`;` as inline comment markers.
+		if i := strings.IndexAny(value, "#;"); i >= 0 {
+			value = value[:i]
+		}
+		v := strings.TrimSpace(value)
+		if v == "" {
+			continue
+		}
+		g := filepath.Clean(toGlob.Replace(v))
+		if !filepath.IsAbs(g) {
+			continue
+		}
 		if n := strings.Count(g, "*"); n > MaxHomeDirGlobWildcards {
 			slog.Error("sssdHomeDirGlobs: skipping pattern with too many wildcards",
-				"template", t, "glob", g, "wildcards", n, "max", MaxHomeDirGlobWildcards)
+				"template", v, "glob", g, "wildcards", n, "max", MaxHomeDirGlobWildcards)
 			continue
 		}
 		globs[g] = struct{}{}
