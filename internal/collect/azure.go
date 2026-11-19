@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -13,9 +14,17 @@ import (
 	"github.com/RantaSec/golinhound/internal/opengraph"
 )
 
-// AzureIMDSTimeout bounds each HTTP request to the Azure Instance
-// Metadata Service.
-const AzureIMDSTimeout = 3 * time.Second
+const (
+	// AzureIMDSTimeout bounds each HTTP request to the Azure Instance
+	// Metadata Service.
+	AzureIMDSTimeout = 3 * time.Second
+	// MaxIMDSResponseSize caps Azure IMDS JSON response reads.
+	MaxIMDSResponseSize = 4 << 20 // 4 MiB
+)
+
+var imdsHTTPClient = &http.Client{
+	Transport: &http.Transport{Proxy: nil},
+}
 
 type metadataInstanceCompute struct {
 	ResourceId string `json:"resourceId"`
@@ -38,13 +47,19 @@ type AzureCollector struct{}
 // Collect fetches instance and identity metadata from IMDS and adds an
 // AZVM/AZBase node plus two SameMachine edges (host <-> Azure twin) to b.
 func (c *AzureCollector) Collect(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
-	compute, err := azureIMDSInstanceCompute()
+	compute, err := azureIMDS[metadataInstanceCompute](ctx, "instance/compute")
 	if err != nil {
-		return errors.New("Azure IMDS unreachable")
+		return fmt.Errorf("Azure IMDS unreachable: %w", err)
 	}
-	identity, err := azureIMDSIdentityInfo()
+	if compute.ResourceId == "" {
+		return errors.New("Azure IMDS returned empty resourceId")
+	}
+	identity, err := azureIMDS[metadataIdentityInfo](ctx, "identity/info")
 	if err != nil {
-		return errors.New("Azure IMDS identity unavailable")
+		if ctx.Err() != nil {
+			return fmt.Errorf("Azure IMDS identity unavailable: %w", err)
+		}
+		slog.Debug("Azure IMDS identity unavailable; proceeding with empty tenantId", "err", err)
 	}
 
 	azID := strings.ToUpper(compute.ResourceId)
@@ -66,54 +81,37 @@ func (c *AzureCollector) Collect(ctx context.Context, h *Host, b *opengraph.Grap
 	return nil
 }
 
-// azureIMDSInstanceCompute fetches /metadata/instance/compute from IMDS
-// and returns the parsed metadataInstanceCompute (resource id, name,
-// OS type). Returns the transport error verbatim when the request
-// fails; returns a JSON-decode error when IMDS replies with something
-// unparseable.
-func azureIMDSInstanceCompute() (*metadataInstanceCompute, error) {
-	body, err := azureIMDS("instance/compute")
-	if err != nil {
-		return nil, err
+// azureIMDS fetches /metadata/<path> from the Azure Instance Metadata
+// Service and decodes the JSON response into T. Each call respects ctx
+// cancellation, is bounded by AzureIMDSTimeout, bypasses environment
+// HTTP proxies, and caps the response read at MaxIMDSResponseSize;
+// non-200 responses, transport failures, and invalid JSON return an error.
+func azureIMDS[T any](ctx context.Context, path string) (T, error) {
+	var out T
+	if err := ctx.Err(); err != nil {
+		return out, err
 	}
-	var md metadataInstanceCompute
-	if err := json.Unmarshal(body, &md); err != nil {
-		return nil, err
-	}
-	return &md, nil
-}
-
-// azureIMDSIdentityInfo fetches /metadata/identity/info from IMDS and
-// returns the parsed metadataIdentityInfo (tenant id only). Returns
-// the transport error verbatim when the request fails; returns a
-// JSON-decode error when IMDS replies with something unparseable.
-func azureIMDSIdentityInfo() (*metadataIdentityInfo, error) {
-	body, err := azureIMDS("identity/info")
-	if err != nil {
-		return nil, err
-	}
-	var md metadataIdentityInfo
-	if err := json.Unmarshal(body, &md); err != nil {
-		return nil, err
-	}
-	return &md, nil
-}
-
-// azureIMDS issues an HTTP GET with the metadata Header and returns the body.
-func azureIMDS(path string) ([]byte, error) {
-	client := &http.Client{Timeout: AzureIMDSTimeout}
+	cctx, cancel := context.WithTimeout(ctx, AzureIMDSTimeout)
+	defer cancel()
 
 	url := fmt.Sprintf("http://169.254.169.254/metadata/%s?api-version=2025-04-07", path)
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(cctx, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		return out, err
 	}
-	req.Header.Add("Metadata", "true")
+	req.Header.Set("Metadata", "true")
 
-	resp, err := client.Do(req)
+	resp, err := imdsHTTPClient.Do(req)
 	if err != nil {
-		return nil, err
+		return out, err
 	}
 	defer resp.Body.Close()
-	return io.ReadAll(resp.Body)
+
+	if resp.StatusCode != http.StatusOK {
+		return out, fmt.Errorf("IMDS HTTP %d", resp.StatusCode)
+	}
+	if err := json.NewDecoder(io.LimitReader(resp.Body, MaxIMDSResponseSize)).Decode(&out); err != nil {
+		return out, err
+	}
+	return out, nil
 }
