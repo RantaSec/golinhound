@@ -253,7 +253,11 @@ func parsePrivateKeyUnencrypted(userName, privKeyPath string, pemBytes []byte, k
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] unencrypted PKCS#8 key could not be parsed: '%s'", privKeyPath)
 	}
-	pub, err := ssh.NewPublicKey(cryptoPrivKey.(withPublic).Public())
+	k, ok := cryptoPrivKey.(withPublic)
+	if !ok {
+		return nil, fmt.Errorf("[ERROR] unencrypted PKCS#8 key does not expose public key: '%s'", privKeyPath)
+	}
+	pub, err := ssh.NewPublicKey(k.Public())
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] corresponding PKCS#8 public key could not be calculated: '%s'", privKeyPath)
 	}
@@ -373,7 +377,7 @@ func emitSSHCertificate(ctx context.Context, h *Host, u *User, pk *privateKey, b
 			"certPath", certPath, "certSubjectFingerprint", cert.SubjectKey.FingerprintSHA256, "privKeyFingerprint", pk.PublicKey.FingerprintSHA256)
 		return nil
 	}
-	if !collectExpiredCerts && rfc3339TimeIsPast(cert.ValidBefore) {
+	if !collectExpiredCerts && cert.Expired {
 		slog.Debug("emitSSHCertificate: skipping expired certificate", "certPath", certPath, "validBefore", cert.ValidBefore)
 		return nil
 	}
@@ -394,6 +398,7 @@ type sshCertificate struct {
 	ValidPrincipals       []string          // full list as signed; ALWAYS non-nil (zero-length = wildcard per PROTOCOL.certkeys; null would fail BH ingest)
 	ValidAfter            string            // RFC3339 UTC; lower-bound sentinel ValidAfter==0 -> "1970-01-01T00:00:00Z" (the epoch, unmodified)
 	ValidBefore           string            // RFC3339 UTC; "never expires" sentinel ssh.CertTimeInfinity -> "9999-12-31T23:59:59Z"
+	Expired               bool              // true when current UTC epoch seconds > cert.ValidBefore
 	CriticalOptions       map[string]string // direct from ssh.Permissions
 	Extensions            map[string]string
 	CAFingerprintSHA256   string    // ssh.FingerprintSHA256(cert.SignatureKey) - the CA pubkey
@@ -436,6 +441,7 @@ func parseSSHCertificate(ctx context.Context, userName, certPath string) (*sshCe
 		principals = []string{}
 	}
 
+	now := time.Now().Unix()
 	return &sshCertificate{
 		CertFingerprintSHA256: strings.TrimPrefix(ssh.FingerprintSHA256(cert), "SHA256:"),
 		CertFingerprintMD5:    ssh.FingerprintLegacyMD5(cert),
@@ -444,6 +450,7 @@ func parseSSHCertificate(ctx context.Context, userName, certPath string) (*sshCe
 		ValidPrincipals:       principals,
 		ValidAfter:            epochSecondsToRFC3339(cert.ValidAfter),
 		ValidBefore:           epochSecondsToRFC3339(cert.ValidBefore),
+		Expired:               now >= 0 && uint64(now) > cert.ValidBefore,
 		CriticalOptions:       cert.CriticalOptions,
 		Extensions:            cert.Extensions,
 		CAFingerprintSHA256:   strings.TrimPrefix(ssh.FingerprintSHA256(cert.SignatureKey), "SHA256:"),
@@ -455,26 +462,14 @@ func parseSSHCertificate(ctx context.Context, userName, certPath string) (*sshCe
 }
 
 // epochSecondsToRFC3339 formats a Unix-epoch seconds value as RFC3339 UTC.
-// The "never expires" sentinel (ssh.CertTimeInfinity per
-// PROTOCOL.certkeys) collapses to the RFC3339 max; without that
-// guard the int64(uint64) overflow at MaxInt64 would render it as
-// 1969-12-31T23:59:59Z.
+// Values at or beyond 9999-12-31T23:59:59Z (253402300799, including
+// ssh.CertTimeInfinity) clamp to the RFC3339 4-digit year max so
+// int64(uint64) cannot overflow or produce 5+-digit years.
 func epochSecondsToRFC3339(epoch uint64) string {
-	if epoch == ssh.CertTimeInfinity {
+	if epoch >= 253402300799 {
 		return "9999-12-31T23:59:59Z"
 	}
 	return time.Unix(int64(epoch), 0).UTC().Format(time.RFC3339)
-}
-
-// rfc3339TimeIsPast reports whether the given RFC3339 timestamp is in
-// the past. Unparseable values return false and log a warning.
-func rfc3339TimeIsPast(timestamp string) bool {
-	t, err := time.Parse(time.RFC3339, timestamp)
-	if err != nil {
-		slog.Warn("rfc3339TimeIsPast: could not parse RFC3339 timestamp; treating as not-past", "value", timestamp, "err", err)
-		return false
-	}
-	return time.Now().UTC().After(t)
 }
 
 // emitSSHCertificateNodes emits one SSHCertificate node PER PRINCIPAL
