@@ -28,8 +28,12 @@ const (
 	SessionHistoryDays = 7
 	// JournalctlTimeout caps the time we spend on searching user sessions in the journal.
 	JournalctlTimeout = 30 * time.Second
+	// JournalctlWaitDelay bounds how long journalctl waits for inherited stdio pipes to close.
+	JournalctlWaitDelay = 1 * time.Second
 	// GetentTimeout limits the execution time of `getent passwd <user>`.
 	GetentTimeout = 3 * time.Second
+	// GetentWaitDelay bounds how long getent waits for inherited stdio pipes to close.
+	GetentWaitDelay = 1 * time.Second
 	// HomeDirFindTimeout bounds each sssd home-dir glob walk.
 	HomeDirFindTimeout = 5 * time.Second
 	// HostReadFileTimeout bounds per-file reads of host configuration files.
@@ -234,6 +238,7 @@ func recentSessionUserNames(ctx context.Context) (map[string]struct{}, error) {
 		"--since", fmt.Sprintf("%d days ago", SessionHistoryDays),
 		"--no-pager",
 	)
+	cmd.WaitDelay = JournalctlWaitDelay
 	out, err := cmd.Output()
 	if err != nil {
 		if ee, ok := errors.AsType[*exec.ExitError](err); ok && len(ee.Stderr) > 0 {
@@ -265,7 +270,9 @@ func recentSessionUserNames(ctx context.Context) (map[string]struct{}, error) {
 func getentPasswd(ctx context.Context, name string) (*User, bool) {
 	cctx, cancel := context.WithTimeout(ctx, GetentTimeout)
 	defer cancel()
-	out, err := exec.CommandContext(cctx, "getent", "passwd", name).Output()
+	cmd := exec.CommandContext(cctx, "getent", "passwd", name)
+	cmd.WaitDelay = GetentWaitDelay
+	out, err := cmd.Output()
 	if err != nil {
 		// exit code 2: user not found. This is expected on stale accounts.
 		// We only output unexpected errors here.
@@ -552,4 +559,3 @@ func readFileWithCtx(ctx context.Context, filePath string, maxSize int64) ([]byt
 		return res.data, res.err
 	}
 }
-

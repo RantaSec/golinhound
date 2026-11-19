@@ -12,8 +12,12 @@ import (
 	"github.com/RantaSec/golinhound/internal/opengraph"
 )
 
-// SudoExecTimeout caps the runtime of each `sudo -l -U <user>` probe.
-const SudoExecTimeout = 3 * time.Second
+const (
+	// SudoExecTimeout caps the runtime of each `sudo -l -U <user>` probe.
+	SudoExecTimeout = 3 * time.Second
+	// SudoExecWaitDelay bounds how long sudo waits for inherited stdio pipes to close.
+	SudoExecWaitDelay = 1 * time.Second
+)
 
 // OSCollector emits every edge that comes from the host itself:
 //
@@ -96,6 +100,7 @@ func emitSudoer(ctx context.Context, h *Host, u *User, b *opengraph.GraphBuilder
 	defer cancel()
 
 	cmd := exec.CommandContext(cctx, "sudo", "-S", "-n", "-l", "-U", u.UserName)
+	cmd.WaitDelay = SudoExecWaitDelay
 	stdOut, err := cmd.Output()
 	if err != nil {
 		if ctx.Err() != nil {

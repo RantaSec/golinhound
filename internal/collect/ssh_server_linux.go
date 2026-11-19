@@ -28,6 +28,8 @@ import (
 const (
 	// SSHDLoadConfigTimeout bounds `sshd -T` invocations in loadSSHDConfig.
 	SSHDLoadConfigTimeout = 2 * time.Second
+	// SSHDLoadConfigWaitDelay bounds how long `sshd -T` waits for inherited stdio pipes to close.
+	SSHDLoadConfigWaitDelay = 1 * time.Second
 	// SSHLoadFwdKeyTimeout bounds forwarded agent socket communication in emitForwardedKey.
 	SSHLoadFwdKeyTimeout = 2 * time.Second
 	// MaxAuthorizedKeysSize caps authorized_keys file reads (~65k+ RSA-4096 keys).
@@ -90,7 +92,9 @@ func loadSSHDConfig(ctx context.Context) (map[string]string, error) {
 	cctx, cancel := context.WithTimeout(ctx, SSHDLoadConfigTimeout)
 	defer cancel()
 
-	out, err := exec.CommandContext(cctx, "sshd", "-T").Output()
+	cmd := exec.CommandContext(cctx, "sshd", "-T")
+	cmd.WaitDelay = SSHDLoadConfigWaitDelay
+	out, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("sshd -T: %w", err)
 	}
