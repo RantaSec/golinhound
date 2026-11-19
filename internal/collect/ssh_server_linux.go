@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"log/slog"
 	"math"
 	"net"
@@ -49,9 +50,9 @@ type SSHServerCollector struct {
 // and ForwardsKey edges from forwarded agent sockets. Returns an error
 // when sshd isn't installed (or `sshd -T` failed).
 func (s *SSHServerCollector) Collect(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
-	sshdConfig := loadSSHDConfig(ctx)
-	if sshdConfig == nil {
-		return errors.New("sshd not installed")
+	sshdConfig, err := loadSSHDConfig(ctx)
+	if err != nil {
+		return err
 	}
 
 	cas, caFile := trustedUserCAKeys(ctx, sshdConfig)
@@ -83,28 +84,26 @@ func (s *SSHServerCollector) Collect(ctx context.Context, h *Host, b *opengraph.
 	return emitForwardedKeys(ctx, h, s.WaitForKeysDuration, b)
 }
 
-// loadSSHDConfig parses the current SSHD config from "sshd -T". Returns
-// nil when sshd is not installed or the command fails.
-func loadSSHDConfig(ctx context.Context) map[string]string {
+// loadSSHDConfig parses the current SSHD config from "sshd -T".
+func loadSSHDConfig(ctx context.Context) (map[string]string, error) {
 	slog.Debug("loadSSHDConfig")
 	cctx, cancel := context.WithTimeout(ctx, SSHDLoadConfigTimeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(cctx, "sshd", "-T")
-	var out strings.Builder
-	cmd.Stdout = &out
-	if err := cmd.Run(); err != nil {
-		slog.Debug("loadSSHDConfig: 'sshd -T' failed; treating host as SSH client only", "err", err)
-		return nil
+	out, err := exec.CommandContext(cctx, "sshd", "-T").Output()
+	if err != nil {
+		return nil, fmt.Errorf("sshd -T: %w", err)
 	}
 
 	cfg := make(map[string]string)
-	for line := range strings.SplitSeq(out.String(), "\n") {
-		key, value, _ := strings.Cut(line, " ")
-		cfg[key] = value
+	for line := range strings.SplitSeq(string(out), "\n") {
+		if key, value, ok := strings.Cut(line, " "); ok {
+			cfg[key] = value
+		}
 	}
-	return cfg
+	return cfg, nil
 }
+
 
 // rootLoginAllowed returns true when sshd would allow root pubkey login.
 func rootLoginAllowed(cfg map[string]string) bool {
@@ -530,8 +529,8 @@ func trustedUserCAKeys(ctx context.Context, sshdConfig map[string]string) (cas [
 // would deny cert auth. This happens if the directive is set but the
 // file is missing/unreadable or empty after parsing.
 func authorizedPrincipalsFor(ctx context.Context, sshdConfig map[string]string, u *User) (principals []string, file string) {
-	rawFile, ok := sshdConfig["authorizedprincipalsfile"]
-	if !ok {
+	rawFile := sshdConfig["authorizedprincipalsfile"]
+	if rawFile == "" {
 		slog.Warn("authorizedPrincipalsFor: authorizedprincipalsfile missing from sshd -T output; suppressing cert-auth edges", "userName", u.UserName)
 		return nil, ""
 	}
@@ -553,6 +552,7 @@ func authorizedPrincipalsFor(ctx context.Context, sshdConfig map[string]string, 
 	if !filepath.IsAbs(file) {
 		return nil, ""
 	}
+
 	cctx, cancel := context.WithTimeout(ctx, SSHReadFileTimeout)
 	defer cancel()
 
