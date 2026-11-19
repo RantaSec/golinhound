@@ -79,8 +79,7 @@ func (s *SSHServerCollector) Collect(ctx context.Context, h *Host, b *opengraph.
 		}
 	}
 
-	emitForwardedKeys(ctx, h, s.WaitForKeysDuration, b)
-	return nil
+	return emitForwardedKeys(ctx, h, s.WaitForKeysDuration, b)
 }
 
 // loadSSHDConfig parses the current SSHD config from "sshd -T". Returns
@@ -197,14 +196,17 @@ func authorizedKeysFiles(sshdConfig map[string]string, userName, userDir string)
 	return files
 }
 
-// emitForwardedKeys runs an fsnotify watch on /tmp/ for live agent
-// sockets and emits a ForwardsKey edge for the key visible on each
-// socket.
-func emitForwardedKeys(ctx context.Context, h *Host, duration int, b *opengraph.GraphBuilder) {
+// emitForwardedKeys collects live and newly created SSH agent sockets under
+// /tmp/ and emits ForwardsKey edges for their loaded keys. Returns ctx.Err()
+// if ctx is canceled or expired.
+func emitForwardedKeys(ctx context.Context, h *Host, duration int, b *opengraph.GraphBuilder) error {
 	slog.Debug("emitForwardedKeys", "duration", duration)
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	chSockets := make(chan string)
 	var wg sync.WaitGroup
-	wg.Go(func() { queryOpenSockets(chSockets) })
+	wg.Go(func() { queryOpenSockets(ctx, chSockets) })
 	if duration > 0 {
 		wg.Go(func() { watchNewSockets(ctx, chSockets, duration) })
 	}
@@ -214,28 +216,42 @@ func emitForwardedKeys(ctx context.Context, h *Host, duration int, b *opengraph.
 	}()
 
 	for socket := range chSockets {
-		emitForwardedKey(h, socket, b)
+		if err := emitForwardedKey(ctx, h, socket, b); err != nil {
+			return err
+		}
 	}
+	return ctx.Err()
 }
 
 // queryOpenSockets globs /tmp/ssh-*/agent.* once and sends every match
-// into chSockets, then returns.
-func queryOpenSockets(chSockets chan<- string) {
+// into chSockets, returning early if ctx is canceled.
+func queryOpenSockets(ctx context.Context, chSockets chan<- string) {
 	slog.Debug("queryOpenSockets")
+	if err := ctx.Err(); err != nil {
+		return
+	}
 	sockets, _ := filepath.Glob("/tmp/ssh-*/agent.*")
 	for _, socket := range sockets {
-		chSockets <- socket
+		select {
+		case chSockets <- socket:
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 
 // watchNewSockets runs an fsnotify watch on /tmp/ for the given duration
 // (minutes), forwarding every /tmp/ssh-*/agent.* socket created during
-// the window into chSockets. Returns early on ctx cancellation or watcher-
-// init failure (logged at Error).
+// the window into chSockets. Returns early on ctx cancellation, timeout,
+// or watcher-init failure (logged at Error).
 func watchNewSockets(ctx context.Context, chSockets chan<- string, duration int) {
 	slog.Debug("watchNewSockets", "duration", duration)
+	if err := ctx.Err(); err != nil {
+		return
+	}
 
-	timeout := time.After(time.Duration(duration) * time.Minute)
+	wctx, cancel := context.WithTimeout(ctx, time.Duration(duration)*time.Minute)
+	defer cancel()
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -255,17 +271,29 @@ func watchNewSockets(ctx context.Context, chSockets chan<- string, duration int)
 			if !ok {
 				return
 			}
-			if event.Has(fsnotify.Create) && strings.HasPrefix(event.Name, "/tmp/ssh-") {
-				var sockets []string
-				for range 10 {
-					sockets, _ = filepath.Glob(filepath.Join(event.Name, "agent.*"))
-					if len(sockets) > 0 {
-						break
-					}
-					time.Sleep(10 * time.Millisecond)
+			// Only care about new /tmp/ssh-*/ directories the sshd process creates
+			if !event.Has(fsnotify.Create) || !strings.HasPrefix(event.Name, "/tmp/ssh-") {
+				continue
+			}
+			// Wait up to 100ms for the sshd process to create agent.* sockets in the new directory
+			var sockets []string
+			for range 10 {
+				sockets, _ = filepath.Glob(filepath.Join(event.Name, "agent.*"))
+				if len(sockets) > 0 {
+					break
 				}
-				for _, socket := range sockets {
-					chSockets <- socket
+				select {
+				case <-time.After(10 * time.Millisecond):
+				case <-wctx.Done():
+					return
+				}
+			}
+			// Send any found sockets to the channel, respecting context cancellation
+			for _, socket := range sockets {
+				select {
+				case chSockets <- socket:
+				case <-wctx.Done():
+					return
 				}
 			}
 		case err, ok := <-watcher.Errors:
@@ -273,9 +301,7 @@ func watchNewSockets(ctx context.Context, chSockets chan<- string, duration int)
 				return
 			}
 			slog.Error("fsnotify", "err", err)
-		case <-timeout:
-			return
-		case <-ctx.Done():
+		case <-wctx.Done():
 			return
 		}
 	}
@@ -285,16 +311,20 @@ func watchNewSockets(ctx context.Context, chSockets chan<- string, duration int)
 // (bounded by SSHLoadFwdKeyTimeout), pairs each with metadata from the socket
 // and owning sshd process (owner, socket creation time, peer IP) and
 // emits one ForwardsKey edge (SSHUser -> SSHKeyPair) per key visible on the
-// agent. Any pre-edge failure (missing owner, unresolvable peer IP, or agent
-// query error) is logged at Debug and skips this socket.
-func emitForwardedKey(h *Host, socket string, b *opengraph.GraphBuilder) {
+// agent. Returns ctx.Err() on cancellation; any pre-edge failure (missing
+// owner, unresolvable peer IP, or agent query error) logs at Debug and
+// returns nil.
+func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.GraphBuilder) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	fi, err := os.Stat(socket)
 	if err != nil {
-		return
+		return nil
 	}
 	owner := h.fileOwner(socket)
 	if owner == nil {
-		return
+		return nil
 	}
 
 	var loginIp string
@@ -303,13 +333,16 @@ func emitForwardedKey(h *Host, socket string, b *opengraph.GraphBuilder) {
 	}
 	if loginIp == "" {
 		slog.Debug("emitForwardedKey: could not resolve remote IP for sshd process", "socket", socket)
-		return
+		return nil
 	}
 
-	keys, err := agentListKeys(socket)
+	keys, err := agentListKeys(ctx, socket)
 	if err != nil {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		slog.Debug("emitForwardedKey: public key could not be retrieved from socket", "socket", socket, "err", err)
-		return
+		return nil
 	}
 
 	loginTimeZulu := fi.ModTime().UTC().Format(time.RFC3339)
@@ -326,19 +359,30 @@ func emitForwardedKey(h *Host, socket string, b *opengraph.GraphBuilder) {
 				"Comment":         pubKey.Comment,
 			})
 	}
+	return nil
 }
 
 // agentListKeys queries an SSH agent UNIX domain socket for loaded keys,
-// bounded by SSHLoadFwdKeyTimeout.
-func agentListKeys(socket string) ([]*agent.Key, error) {
-	deadline := time.Now().Add(SSHLoadFwdKeyTimeout)
-	conn, err := net.DialTimeout("unix", socket, SSHLoadFwdKeyTimeout)
+// bounded by SSHLoadFwdKeyTimeout and parent ctx cancellation.
+func agentListKeys(ctx context.Context, socket string) ([]*agent.Key, error) {
+	cctx, cancel := context.WithTimeout(ctx, SSHLoadFwdKeyTimeout)
+	defer cancel()
+
+	conn, err := (&net.Dialer{}).DialContext(cctx, "unix", socket)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Close()
-	_ = conn.SetDeadline(deadline)
-	return agent.NewClient(conn).List()
+
+	// If cctx is canceled, close the connection to unblock agent.NewClient(conn).List().
+	stop := context.AfterFunc(cctx, func() { _ = conn.Close() })
+	defer stop()
+
+	keys, err := agent.NewClient(conn).List()
+	if err != nil && cctx.Err() != nil {
+		return nil, cctx.Err()
+	}
+	return keys, err
 }
 
 // procRemoteIP resolves the remote peer IP of the lowest-FD established TCP

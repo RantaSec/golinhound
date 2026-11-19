@@ -48,14 +48,22 @@ func emitKeytabs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error 
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	cctx, cancel := context.WithTimeout(ctx, KeytabFindTimeout)
+	ctxFind, cancel := context.WithTimeout(ctx, KeytabFindTimeout)
 	defer cancel()
 
 	var wg sync.WaitGroup
 	chKeytabs := make(chan string)
 
-	wg.Go(func() { findKeytabFiles(cctx, chKeytabs, "/etc/", 2) })
-	wg.Go(func() { findKeytabFiles(cctx, chKeytabs, "/home/", 1) })
+	wg.Go(func() {
+		if err := findKeytabFiles(ctxFind, chKeytabs, "/etc/", 2); err != nil && ctx.Err() == nil {
+			slog.Warn("findKeytabFiles timed out", "root", "/etc/", "err", err)
+		}
+	})
+	wg.Go(func() {
+		if err := findKeytabFiles(ctxFind, chKeytabs, "/home/", 1); err != nil && ctx.Err() == nil {
+			slog.Warn("findKeytabFiles timed out", "root", "/home/", "err", err)
+		}
+	})
 
 	go func() {
 		wg.Wait()
@@ -107,35 +115,36 @@ func emitHasKeytabEdge(h *Host, b *opengraph.GraphBuilder, filePath, principal, 
 }
 
 // findKeytabFiles walks rootDir up to maxDepth levels, sending every
-// *.keytab path it finds into chKeytabs. Respects ctx cancellation.
-// Per-entry walk errors are silently dropped (the walk continues);
-// only a terminal error returned by filepath.WalkDir itself —
-// typically ctx cancellation — is logged.
-func findKeytabFiles(ctx context.Context, chKeytabs chan<- string, rootDir string, maxDepth int) {
+// *.keytab path it finds into chKeytabs. Per-entry walk errors are
+// ignored so the walk continues; returns ctx.Err() if ctx cancels or
+// times out.
+func findKeytabFiles(ctx context.Context, chKeytabs chan<- string, rootDir string, maxDepth int) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	rootDir = filepath.Clean(rootDir)
 	rootDepth := strings.Count(rootDir, string(os.PathSeparator))
 
-	err := filepath.WalkDir(rootDir, func(path string, d os.DirEntry, err error) error {
+	return filepath.WalkDir(rootDir, func(path string, d os.DirEntry, err error) error {
+		if cerr := ctx.Err(); cerr != nil {
+			return cerr
+		}
 		if err != nil {
 			return nil
-		}
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
 		}
 		currDepth := strings.Count(path, string(os.PathSeparator)) - rootDepth
 		if currDepth > maxDepth && d.IsDir() {
 			return filepath.SkipDir
 		}
 		if !d.IsDir() && filepath.Ext(d.Name()) == ".keytab" {
-			chKeytabs <- path
+			select {
+			case chKeytabs <- path:
+			case <-ctx.Done():
+				return ctx.Err()
+			}
 		}
 		return nil
 	})
-	if err != nil {
-		slog.Error("WalkDir failed", "root", rootDir, "maxDepth", maxDepth, "err", err)
-	}
 }
 
 // emitTGTs iterates every on-disk ticket cache (findFileTicketCaches),
