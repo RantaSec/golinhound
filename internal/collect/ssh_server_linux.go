@@ -42,7 +42,7 @@ type SSHServerCollector struct {
 // and ForwardsKey edges from forwarded agent sockets. Returns an error
 // when sshd isn't installed (or `sshd -T` failed).
 func (s *SSHServerCollector) Collect(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
-	sshdConfig := loadSSHDConfig()
+	sshdConfig := loadSSHDConfig(ctx)
 	if sshdConfig == nil {
 		return errors.New("sshd not installed")
 	}
@@ -77,12 +77,12 @@ func (s *SSHServerCollector) Collect(ctx context.Context, h *Host, b *opengraph.
 
 // loadSSHDConfig parses the current SSHD config from "sshd -T". Returns
 // nil when sshd is not installed or the command fails.
-func loadSSHDConfig() map[string]string {
+func loadSSHDConfig(ctx context.Context) map[string]string {
 	slog.Debug("loadSSHDConfig")
-	ctx, cancel := context.WithTimeout(context.Background(), SSHDLoadConfigTimeout)
+	cctx, cancel := context.WithTimeout(ctx, SSHDLoadConfigTimeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "sshd", "-T")
+	cmd := exec.CommandContext(cctx, "sshd", "-T")
 	var out strings.Builder
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {

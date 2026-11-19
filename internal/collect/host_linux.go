@@ -56,7 +56,7 @@ type Host struct {
 // NewHost captures a per-run snapshot of the machine: HMAC'd
 // machine-id, FQDN, and the enumerated user set. Root is required
 // so /etc/passwd and journalctl reads never fail on permissions.
-func NewHost() (*Host, error) {
+func NewHost(ctx context.Context) (*Host, error) {
 	if os.Geteuid() != 0 {
 		return nil, errors.New("this program must run as root")
 	}
@@ -78,7 +78,7 @@ func NewHost() (*Host, error) {
 		return nil, fmt.Errorf("hostname: %w", err)
 	}
 
-	users, err := enumerateUsers()
+	users, err := enumerateUsers(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (h *Host) fileOwner(path string) *User {
 // (recent logind SESSION_START records -> getent) and
 // enrichWithHomeDirs (sssd.conf home-dir globs -> getent). Both
 // enrichments fail soft and are no-ops on non-SSSD hosts.
-func enumerateUsers() (map[string]*User, error) {
+func enumerateUsers(ctx context.Context) (map[string]*User, error) {
 	slog.Debug("enumerateUsers")
 	data, err := os.ReadFile("/etc/passwd")
 	if err != nil {
@@ -146,8 +146,8 @@ func enumerateUsers() (map[string]*User, error) {
 			users[u.UID] = u
 		}
 	}
-	enrichFromJournal(users)
-	enrichWithHomeDirs(users)
+	enrichFromJournal(ctx, users)
+	enrichWithHomeDirs(ctx, users)
 	return users, nil
 }
 
@@ -174,10 +174,10 @@ func parsePasswdLine(line string) (*User, bool) {
 // journald and, for each USER_ID not already in `users`, resolves
 // it via `getent passwd`. Every pam_systemd-based login emits such
 // a record.
-func enrichFromJournal(users map[string]*User) {
+func enrichFromJournal(ctx context.Context, users map[string]*User) {
 	slog.Debug("enrichFromJournal")
 
-	names, err := recentSessionUserNames()
+	names, err := recentSessionUserNames(ctx)
 	if err != nil {
 		slog.Error("enrichFromJournal: could not read journal", "err", err)
 		return
@@ -189,10 +189,13 @@ func enrichFromJournal(users map[string]*User) {
 	}
 
 	for name := range names {
+		if ctx.Err() != nil {
+			return
+		}
 		if _, ok := knownNames[name]; ok {
 			continue
 		}
-		u, ok := getentPasswd(name)
+		u, ok := getentPasswd(ctx, name)
 		if !ok {
 			continue
 		}
@@ -202,10 +205,10 @@ func enrichFromJournal(users map[string]*User) {
 
 // recentSessionUserNames returns the distinct USER_ID values from
 // SESSION_START records in the last SessionHistoryDays.
-func recentSessionUserNames() (map[string]struct{}, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), JournalctlTimeout)
+func recentSessionUserNames(ctx context.Context) (map[string]struct{}, error) {
+	cctx, cancel := context.WithTimeout(ctx, JournalctlTimeout)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "journalctl",
+	cmd := exec.CommandContext(cctx, "journalctl",
 		"MESSAGE_ID="+SessionStartMessageID,
 		"-o", "json",
 		// --output-fields would reduce the output JSON to just USER_ID,
@@ -242,10 +245,10 @@ func recentSessionUserNames() (map[string]struct{}, error) {
 // getentPasswd runs `getent passwd <name>` and parses the result.
 // NSS accepts either a name or a numeric UID. Returns (nil, false)
 // on any failure.
-func getentPasswd(name string) (*User, bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), GetentTimeout)
+func getentPasswd(ctx context.Context, name string) (*User, bool) {
+	cctx, cancel := context.WithTimeout(ctx, GetentTimeout)
 	defer cancel()
-	out, err := exec.CommandContext(ctx, "getent", "passwd", name).Output()
+	out, err := exec.CommandContext(cctx, "getent", "passwd", name).Output()
 	if err != nil {
 		// exit code 2: user not found. This is expected on stale accounts.
 		// We only output unexpected errors here.
@@ -269,7 +272,7 @@ func getentPasswd(name string) (*User, bool) {
 // for live accounts; directories whose UID isn't resolvable via
 // NSS (removed user, abandoned home dir) still get an entry with
 // UserName "unknown:<uid>".
-func enrichWithHomeDirs(users map[string]*User) {
+func enrichWithHomeDirs(ctx context.Context, users map[string]*User) {
 	slog.Debug("enrichWithHomeDirs")
 	claimed := make(map[string]struct{}, len(users))
 	for _, u := range users {
@@ -294,7 +297,7 @@ func enrichWithHomeDirs(users map[string]*User) {
 			if _, exists := users[uid]; exists {
 				continue
 			}
-			u, ok := getentPasswd(uid)
+			u, ok := getentPasswd(ctx, uid)
 			if !ok {
 				u = &User{UserName: "unknown:" + uid, UID: uid, HomeDir: dir}
 			}

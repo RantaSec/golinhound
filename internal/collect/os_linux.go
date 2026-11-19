@@ -33,7 +33,8 @@ type OSCollector struct{}
 
 // Finalize writes the host node, the privileged-user edges (IsRoot +
 // CanSudo), and the deferred SSHUser nodes + CanImpersonate edges.
-// Never returns an error today; per-user probe failures log and skip.
+// Always materializes the host and referenced user nodes so prior edges
+// never dangle; returns ctx.Err() if sudo probing is canceled.
 func (c *OSCollector) Finalize(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 	// emit computer node
 	b.AddNode([]string{"GLH_SSHComputer"}, h.ComputerID(), map[string]any{
@@ -71,20 +72,23 @@ func (c *OSCollector) Finalize(ctx context.Context, h *Host, b *opengraph.GraphB
 			opengraph.ByID("GLH_SSHUser", id),
 			nil)
 	}
-	return nil
+	return ctx.Err()
 }
 
 // emitSudoer queries `sudo -l -U <user>` and adds a CanSudo edge if the
 // user holds an unrestricted (ALL) ALL or (ALL : ALL) ALL grant. Narrower
 // per-command grants are intentionally skipped.
 func emitSudoer(ctx context.Context, h *Host, u *User, b *opengraph.GraphBuilder) {
+	if ctx.Err() != nil {
+		return
+	}
 	if u.UID == "0" {
 		slog.Debug("emitSudoer: user is root, skipping", "userName", u.UserName)
 		return
 	}
 	// handle abandoned home dirs
 	if strings.HasPrefix(u.UserName, "unknown:") {
-		slog.Debug("emitSudoer: synthesized user, skipping", "userName", u.UserName)
+		slog.Debug("emitSudoer: unresolved user, skipping", "userName", u.UserName)
 		return
 	}
 
@@ -94,6 +98,9 @@ func emitSudoer(ctx context.Context, h *Host, u *User, b *opengraph.GraphBuilder
 	cmd := exec.CommandContext(cctx, "sudo", "-S", "-n", "-l", "-U", u.UserName)
 	stdOut, err := cmd.Output()
 	if err != nil {
+		if ctx.Err() != nil {
+			return
+		}
 		slog.Error("'sudo -S -n -l -U' could not be executed", "userName", u.UserName, "err", err)
 		return
 	}
