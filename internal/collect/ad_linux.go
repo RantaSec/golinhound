@@ -72,6 +72,10 @@ func emitKeytabs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error 
 	}()
 
 	for file := range chKeytabs {
+		owner := h.fileOwner(file)
+		if owner == nil {
+			continue
+		}
 		ctxLoad, cancelLoad := context.WithTimeout(ctx, KeytabLoadTimeout)
 		entries, err := loadKeytab(ctxLoad, file)
 		cancelLoad()
@@ -84,7 +88,7 @@ func emitKeytabs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error 
 			}
 		}
 		for _, entry := range entries {
-			emitHasKeytabEdge(h, b, file, entry.Principal, entry.Realm)
+			emitHasKeytabEdge(h, b, owner, file, entry.Principal, entry.Realm)
 		}
 	}
 	return ctx.Err()
@@ -94,17 +98,11 @@ func emitKeytabs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error 
 // owns the keytab file to the principal (resolved to a BloodHound
 // node name). The end node kind is User for principals containing
 // "@", Computer otherwise. Principals that don't fit a known shape
-// (see PrincipalToBloodhoundName) and files whose uid doesn't map to
-// any Host.Users entry (see Host.fileOwner) are debug-logged and
-// dropped.
-func emitHasKeytabEdge(h *Host, b *opengraph.GraphBuilder, filePath, principal, realm string) {
+// (see PrincipalToBloodhoundName) are debug-logged and dropped.
+func emitHasKeytabEdge(h *Host, b *opengraph.GraphBuilder, owner *User, filePath, principal, realm string) {
 	name, err := PrincipalToBloodhoundName(principal, realm)
 	if err != nil {
 		slog.Debug("emitHasKeytabEdge: PrincipalToBloodhoundName failed", "err", err)
-		return
-	}
-	owner := h.fileOwner(filePath)
-	if owner == nil {
 		return
 	}
 	endKind := "User"
@@ -147,6 +145,9 @@ func findKeytabFiles(ctx context.Context, chKeytabs chan<- string, rootDir strin
 			}
 			return nil
 		}
+		if !d.Type().IsRegular() && d.Type()&os.ModeSymlink == 0 {
+			return nil
+		}
 		if filepath.Ext(d.Name()) == ".keytab" {
 			select {
 			case chKeytabs <- path:
@@ -158,6 +159,7 @@ func findKeytabFiles(ctx context.Context, chKeytabs chan<- string, rootDir strin
 	})
 }
 
+
 // emitTGTs iterates every on-disk ticket cache (findFileTicketCaches),
 // loads each, and emits one HasTGT edge per Ticket Granting Ticket that
 // has not yet expired beyond its renewal window. Each load has an
@@ -168,8 +170,8 @@ func emitTGTs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 		return err
 	}
 	for _, cacheFile := range findFileTicketCaches(ctx) {
-		fi, err := os.Stat(cacheFile)
-		if err != nil || fi.Size() == 0 {
+		owner := h.fileOwner(cacheFile)
+		if owner == nil {
 			continue
 		}
 		ctxLoad, cancelLoad := context.WithTimeout(ctx, CredentialCacheLoadTimeout)
@@ -192,7 +194,7 @@ func emitTGTs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 			if now := time.Now(); now.After(creds.EndTime) && now.After(creds.RenewTill) {
 				continue
 			}
-			emitHasTGTEdge(h, b, cacheFile, creds)
+			emitHasTGTEdge(h, b, owner, cacheFile, creds)
 		}
 	}
 	// Not yet implemented; left here for visibility.
@@ -204,17 +206,11 @@ func emitTGTs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 // emitHasTGTEdge emits one HasTGT edge from the SSHUser that owns
 // the ccache file to the client principal of creds (resolved via
 // PrincipalToBloodhoundName). Edge properties carry the ticket's
-// StartTime/EndTime/RenewTime in RFC3339. Ccaches whose uid doesn't
-// map to any Host.Users entry (see Host.fileOwner) are debug-logged
-// and dropped.
-func emitHasTGTEdge(h *Host, b *opengraph.GraphBuilder, filePath string, creds ccacheCredential) {
+// StartTime/EndTime/RenewTime in RFC3339.
+func emitHasTGTEdge(h *Host, b *opengraph.GraphBuilder, owner *User, filePath string, creds ccacheCredential) {
 	name, err := PrincipalToBloodhoundName(creds.ClientPrincipal, creds.ClientRealm)
 	if err != nil {
 		slog.Debug("emitHasTGTEdge: PrincipalToBloodhoundName failed", "err", err)
-		return
-	}
-	owner := h.fileOwner(filePath)
-	if owner == nil {
 		return
 	}
 	endKind := "User"

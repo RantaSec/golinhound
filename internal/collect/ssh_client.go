@@ -134,21 +134,25 @@ func emitPrivateKeys(ctx context.Context, h *Host, u *User, b *opengraph.GraphBu
 }
 
 // privateKeysFiles returns potential private-key files in ~/.ssh/.
-// Excludes anything ending in .pub, plus the well-known non-key files.
+// Excludes anything ending in .pub, non-regular/non-symlink entries,
+// plus the well-known non-key files.
 func privateKeysFiles(userDir string) []string {
 	slog.Debug("privateKeysFiles", "userDir", userDir)
 	sshDir := filepath.Join(userDir, ".ssh")
 	if !filepath.IsAbs(userDir) || !isPathOnLocalFS(sshDir) {
 		return nil
 	}
-	pattern := filepath.Join(sshDir, "*")
-	candidates, err := filepath.Glob(pattern)
+	entries, err := os.ReadDir(sshDir)
 	if err != nil {
-		slog.Debug("privateKeysFiles: invalid glob pattern", "userDir", userDir)
+		slog.Debug("privateKeysFiles: could not read .ssh dir", "sshDir", sshDir, "err", err)
+		return nil
 	}
 	var files []string
-	for _, f := range candidates {
-		base := filepath.Base(f)
+	for _, e := range entries {
+		if !e.Type().IsRegular() && e.Type()&os.ModeSymlink == 0 {
+			continue
+		}
+		base := e.Name()
 		if strings.HasSuffix(base, ".pub") ||
 			base == "config" ||
 			base == "known_hosts" ||
@@ -156,7 +160,7 @@ func privateKeysFiles(userDir string) []string {
 			base == "authorized_keys2" {
 			continue
 		}
-		files = append(files, f)
+		files = append(files, filepath.Join(sshDir, base))
 	}
 	return files
 }

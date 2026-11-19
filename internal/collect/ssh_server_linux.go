@@ -335,8 +335,8 @@ func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.
 	if !isPathOnLocalFS(socket) {
 		return nil
 	}
-	fi, err := os.Stat(socket)
-	if err != nil {
+	fi, err := os.Lstat(socket)
+	if err != nil || fi.Mode()&os.ModeSocket == 0 {
 		return nil
 	}
 	owner := h.fileOwner(socket)
