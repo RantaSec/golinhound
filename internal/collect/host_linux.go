@@ -30,6 +30,14 @@ const (
 	JournalctlTimeout = 30 * time.Second
 	// GetentTimeout limits the execution time of `getent passwd <user>`.
 	GetentTimeout = 3 * time.Second
+	// HostReadFileTimeout bounds per-file reads of host configuration files.
+	HostReadFileTimeout = 3 * time.Second
+	// MaxMachineIDSize caps /etc/machine-id reads (valid file is 33 bytes).
+	MaxMachineIDSize = 4 << 10 // 4 KiB
+	// MaxPasswdSize caps /etc/passwd reads (~650k+ user entries).
+	MaxPasswdSize = 64 << 20 // 64 MiB
+	// MaxSSSDConfSize caps /etc/sssd/sssd.conf reads.
+	MaxSSSDConfSize = 4 << 20 // 4 MiB
 	// MaxHomeDirGlobWildcards caps how many `*`s a home-dir glob may
 	// contain. Realistic sssd.conf templates use one or two
 	// placeholders (%u, %d/%u)
@@ -61,7 +69,9 @@ func NewHost(ctx context.Context) (*Host, error) {
 		return nil, errors.New("this program must run as root")
 	}
 
-	raw, err := os.ReadFile("/etc/machine-id")
+	cctx, cancel := context.WithTimeout(ctx, HostReadFileTimeout)
+	raw, err := readFileWithCtx(cctx, "/etc/machine-id", MaxMachineIDSize)
+	cancel()
 	if err != nil {
 		return nil, fmt.Errorf("/etc/machine-id: %w", err)
 	}
@@ -136,7 +146,9 @@ func (h *Host) fileOwner(path string) *User {
 // enrichments fail soft and are no-ops on non-SSSD hosts.
 func enumerateUsers(ctx context.Context) (map[string]*User, error) {
 	slog.Debug("enumerateUsers")
-	data, err := os.ReadFile("/etc/passwd")
+	cctx, cancel := context.WithTimeout(ctx, HostReadFileTimeout)
+	data, err := readFileWithCtx(cctx, "/etc/passwd", MaxPasswdSize)
+	cancel()
 	if err != nil {
 		return nil, fmt.Errorf("/etc/passwd: %w", err)
 	}
@@ -278,7 +290,7 @@ func enrichWithHomeDirs(ctx context.Context, users map[string]*User) {
 	for _, u := range users {
 		claimed[filepath.Clean(u.HomeDir)] = struct{}{}
 	}
-	for pattern := range sssdHomeDirGlobs() {
+	for pattern := range sssdHomeDirGlobs(ctx) {
 		for _, dir := range localGlobMatches(pattern) {
 			cleaned := filepath.Clean(dir)
 			if _, ok := claimed[cleaned]; ok {
@@ -314,9 +326,12 @@ func enrichWithHomeDirs(ctx context.Context, users map[string]*User) {
 // literal `%`. NewReplacer's longest-match wins ensures `%%u`
 // resolves to the literal `%u` rather than the `%u` -> `*` rule.
 // Patterns with more than MaxHomeDirGlobWildcards `*`s are dropped.
-func sssdHomeDirGlobs() map[string]struct{} {
+func sssdHomeDirGlobs(ctx context.Context) map[string]struct{} {
 	templates := []string{"/home/%u"}
-	if data, err := os.ReadFile("/etc/sssd/sssd.conf"); err == nil {
+	cctx, cancel := context.WithTimeout(ctx, HostReadFileTimeout)
+	data, err := readFileWithCtx(cctx, "/etc/sssd/sssd.conf", MaxSSSDConfSize)
+	cancel()
+	if err == nil {
 		for line := range strings.SplitSeq(string(data), "\n") {
 			key, value, ok := strings.Cut(line, "=")
 			if !ok {
@@ -430,3 +445,77 @@ func isPathOnLocalFS(p string) bool {
 	}
 	return false
 }
+
+// readFileWithCtx reads a regular file at filePath up to maxSize bytes while
+// respecting ctx cancellation/deadlines.
+//
+// Because Go's os file operations cannot be canceled by the runtime on regular
+// files (a stalled NFS/FUSE mount puts the OS thread in uninterruptible sleep),
+// the open/stat/read runs in a background goroutine so select can return early
+// on ctx.Done(). Note that if a kernel syscall hangs permanently, that worker
+// goroutine stays blocked until the syscall finishes or the process exits.
+func readFileWithCtx(ctx context.Context, filePath string, maxSize int64) ([]byte, error) {
+	// Fail fast before spawning a goroutine; without this, a pre-canceled ctx
+	// and a fast local read are both ready in select and Go picks at random.
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	type result struct {
+		data []byte
+		err  error
+	}
+	// Buffer size 1 ensures the goroutine can send and exit if ctx wins select first.
+	ch := make(chan result, 1)
+
+	go func() {
+		// O_NONBLOCK prevents open() from blocking on a FIFO with no writer.
+		f, err := os.OpenFile(filePath, os.O_RDONLY|syscall.O_NONBLOCK, 0)
+		if err != nil {
+			ch <- result{err: err}
+			return
+		}
+		defer f.Close()
+
+		// Stat the open descriptor (not filePath) to avoid a Stat-vs-Open TOCTOU race.
+		fi, err := f.Stat()
+		if err != nil {
+			ch <- result{err: err}
+			return
+		}
+		if fi.IsDir() {
+			ch <- result{err: fmt.Errorf("not a regular file: %s: %w", filePath, syscall.EISDIR)}
+			return
+		}
+		// Reject FIFOs, sockets, dirs, and devices like /dev/zero before reading anything.
+		if !fi.Mode().IsRegular() {
+			ch <- result{err: fmt.Errorf("not a regular file: %s", filePath)}
+			return
+		}
+		// Bail before allocating if the file already exceeds maxSize.
+		if fi.Size() > maxSize {
+			ch <- result{err: fmt.Errorf("file exceeds max size: %s", filePath)}
+			return
+		}
+
+		// Read at most maxSize+1 bytes so a file growing mid-read still cannot OOM.
+		data, err := io.ReadAll(io.LimitReader(f, maxSize+1))
+		if err != nil {
+			ch <- result{err: err}
+			return
+		}
+		if int64(len(data)) > maxSize {
+			ch <- result{err: fmt.Errorf("file exceeds max size: %s", filePath)}
+			return
+		}
+		ch <- result{data: data}
+	}()
+
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case res := <-ch:
+		return res.data, res.err
+	}
+}
+

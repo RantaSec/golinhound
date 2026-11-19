@@ -3,14 +3,18 @@ package collect
 import (
 	"context"
 	"errors"
-	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"golang.org/x/crypto/cryptobyte"
 )
 
+const (
+	// MaxKeytabSize caps Kerberos keytab file reads.
+	MaxKeytabSize = 32 << 20 // 32 MiB
+	// MaxCCacheSize caps Kerberos credential cache file reads.
+	MaxCCacheSize = 32 << 20 // 32 MiB
+)
 
 // keytabEntry holds the principal and realm parsed from one keytab record.
 type keytabEntry struct {
@@ -29,60 +33,22 @@ type ccacheCredential struct {
 	RenewTill       time.Time
 }
 
-// loadKeytab reads and parses filePath inside a goroutine so that
-// ctx cancellation can abort a stuck read. This wrapper provides the
-// timeout boundary for the entire keytab-load step.
+// loadKeytab reads and parses filePath within the timeout/cancellation boundary of ctx.
 func loadKeytab(ctx context.Context, filePath string) ([]keytabEntry, error) {
-	type result struct {
-		entries []keytabEntry
-		err     error
+	data, err := readFileWithCtx(ctx, filePath, MaxKeytabSize)
+	if err != nil {
+		return nil, err
 	}
-	resultChan := make(chan result, 1)
-	go func() {
-		data, err := os.ReadFile(filePath)
-		if err != nil {
-			resultChan <- result{err: err}
-			return
-		}
-		entries, err := parseKeytab(data)
-		resultChan <- result{entries: entries, err: err}
-	}()
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case res := <-resultChan:
-		return res.entries, res.err
-	}
+	return parseKeytab(data)
 }
 
-// loadCCache reads and parses filePath inside a goroutine so that ctx
-// cancellation can abort a stuck read. Returns early with "file is empty"
-// if os.Stat fails (missing/unreadable) or reports a zero-byte file.
+// loadCCache reads and parses filePath within the timeout/cancellation boundary of ctx.
 func loadCCache(ctx context.Context, filePath string) ([]ccacheCredential, error) {
-	fi, err := os.Stat(filePath)
-	if err != nil || fi.Size() == 0 {
-		return nil, fmt.Errorf("file is empty: %s", filePath)
+	data, err := readFileWithCtx(ctx, filePath, MaxCCacheSize)
+	if err != nil || len(data) == 0 {
+		return nil, err
 	}
-	type result struct {
-		creds []ccacheCredential
-		err   error
-	}
-	resultChan := make(chan result, 1)
-	go func() {
-		data, err := os.ReadFile(filePath)
-		if err != nil {
-			resultChan <- result{err: err}
-			return
-		}
-		creds, err := parseCCache(data)
-		resultChan <- result{creds: creds, err: err}
-	}()
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case res := <-resultChan:
-		return res.creds, res.err
-	}
+	return parseCCache(data)
 }
 
 // parseKeytab decodes an MIT Kerberos v2 keytab (0x0502) and returns the

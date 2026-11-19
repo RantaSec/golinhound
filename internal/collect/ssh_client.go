@@ -19,6 +19,17 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+const (
+	// SSHReadFileTimeout bounds per-file reads of SSH key and config files.
+	SSHReadFileTimeout = 3 * time.Second
+	// MaxSSHPrivateKeySize caps individual SSH private key reads.
+	MaxSSHPrivateKeySize = 1 << 20 // 1 MiB
+	// MaxSSHPublicKeySize caps individual sibling .pub key reads.
+	MaxSSHPublicKeySize = 1 << 20 // 1 MiB
+	// MaxSSHCertificateSize caps individual OpenSSH *-cert.pub reads.
+	MaxSSHCertificateSize = 1 << 20 // 1 MiB
+)
+
 // SSHClientCollector emits private-key artifacts for every local user.
 type SSHClientCollector struct {
 	// CollectExpiredCertificates: see Options.CollectExpiredCertificates.
@@ -31,19 +42,29 @@ type SSHClientCollector struct {
 // HasPrivateKey edges from the user to each parseable private key.
 func (c *SSHClientCollector) Collect(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 	for _, u := range h.Users {
-		emitPrivateKeys(h, u, b, c.CollectExpiredCertificates)
+		if err := emitPrivateKeys(ctx, h, u, b, c.CollectExpiredCertificates); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 // emitPrivateKeys adds a KeyPair node and a HasPrivateKey edge for every
-// private key.
-func emitPrivateKeys(h *Host, u *User, b *opengraph.GraphBuilder, collectExpiredCerts bool) {
+// private key. Returns ctx.Err() if ctx is canceled or expired.
+func emitPrivateKeys(ctx context.Context, h *Host, u *User, b *opengraph.GraphBuilder, collectExpiredCerts bool) error {
 	slog.Debug("emitPrivateKeys", "userName", u.UserName)
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	for _, privKeyFile := range privateKeysFiles(u.HomeDir) {
-		pemBytes, err := os.ReadFile(privKeyFile)
+		cctx, cancel := context.WithTimeout(ctx, SSHReadFileTimeout)
+		pemBytes, err := readFileWithCtx(cctx, privKeyFile, MaxSSHPrivateKeySize)
+		cancel()
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		if err != nil {
-			slog.Debug("emitPrivateKeys: could not open private key", "userName", u.UserName, "privKeyFile", privKeyFile)
+			slog.Debug("emitPrivateKeys: could not open private key", "userName", u.UserName, "privKeyFile", privKeyFile, "err", err)
 			continue
 		}
 		block, _ := pem.Decode(pemBytes)
@@ -63,9 +84,14 @@ func emitPrivateKeys(h *Host, u *User, b *opengraph.GraphBuilder, collectExpired
 		case block.Type == "ENCRYPTED PRIVATE KEY", block.Type == "RSA PRIVATE KEY" && block.Headers["DEK-Info"] != "":
 			// Both encrypted branches need the .pub file to recover the
 			// public key (it isn't recoverable from the encrypted blob).
-			pubKeyBytes, err := os.ReadFile(privKeyFile + ".pub")
+			cctxPub, cancelPub := context.WithTimeout(ctx, SSHReadFileTimeout)
+			pubKeyBytes, err := readFileWithCtx(cctxPub, privKeyFile+".pub", MaxSSHPublicKeySize)
+			cancelPub()
+			if err := ctx.Err(); err != nil {
+				return err
+			}
 			if err != nil {
-				slog.Debug("emitPrivateKeys: public key could not be read", "userName", u.UserName, "pubKeyFile", privKeyFile+".pub")
+				slog.Debug("emitPrivateKeys: public key could not be read", "userName", u.UserName, "pubKeyFile", privKeyFile+".pub", "err", err)
 				continue
 			}
 			pub, comment, _, _, err := ssh.ParseAuthorizedKey(pubKeyBytes)
@@ -100,8 +126,11 @@ func emitPrivateKeys(h *Host, u *User, b *opengraph.GraphBuilder, collectExpired
 				"Comment":        pk.PublicKey.Comment,
 			})
 
-		emitSSHCertificate(h, u, pk, b, collectExpiredCerts)
+		if err := emitSSHCertificate(ctx, h, u, pk, b, collectExpiredCerts); err != nil {
+			return err
+		}
 	}
+	return ctx.Err()
 }
 
 // privateKeysFiles returns potential private-key files in ~/.ssh/.
@@ -317,26 +346,31 @@ func parsePrivateKeyPEMEncrypted(userName, privKeyPath, dekInfo string, pub publ
 // emitSSHCertificate emits the SSHCertificate node(s) and HasCertificate
 // edge for the sibling `<privKeyFile>-cert.pub`, if one exists and
 // passes the guards (parseable, vouches for this exact private key,
-// not expired unless collectExpiredCerts is set).
-func emitSSHCertificate(h *Host, u *User, pk *privateKey, b *opengraph.GraphBuilder, collectExpiredCerts bool) {
+// not expired unless collectExpiredCerts is set). Returns ctx.Err() if
+// ctx is canceled or expired.
+func emitSSHCertificate(ctx context.Context, h *Host, u *User, pk *privateKey, b *opengraph.GraphBuilder, collectExpiredCerts bool) error {
 	certPath := pk.FilePath + "-cert.pub"
-	cert, err := parseSSHCertificate(u.UserName, certPath)
+	cert, err := parseSSHCertificate(ctx, u.UserName, certPath)
 	if err != nil {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		if !errors.Is(err, os.ErrNotExist) {
 			slog.Debug("emitSSHCertificate: could not parse sibling certificate", "certPath", certPath, "err", err)
 		}
-		return
+		return nil
 	}
 	if cert.SubjectKey.FingerprintSHA256 != pk.PublicKey.FingerprintSHA256 {
 		slog.Debug("emitSSHCertificate: cert subject fingerprint does not match sibling private key",
 			"certPath", certPath, "certSubjectFingerprint", cert.SubjectKey.FingerprintSHA256, "privKeyFingerprint", pk.PublicKey.FingerprintSHA256)
-		return
+		return nil
 	}
 	if !collectExpiredCerts && rfc3339TimeIsPast(cert.ValidBefore) {
 		slog.Debug("emitSSHCertificate: skipping expired certificate", "certPath", certPath, "validBefore", cert.ValidBefore)
-		return
+		return nil
 	}
 	emitSSHCertificateNodes(b, h, u, pk, *cert)
+	return nil
 }
 
 // sshCertificate is the internal carrier for the signed portion of one
@@ -367,9 +401,12 @@ type sshCertificate struct {
 // an sshCertificate. ssh.ParseAuthorizedKey returns a *ssh.Certificate
 // when the key type is `*-cert-v01@openssh.com`; anything else is a
 // misnamed file and an error. Host certs are rejected.
-func parseSSHCertificate(userName, certPath string) (*sshCertificate, error) {
+func parseSSHCertificate(ctx context.Context, userName, certPath string) (*sshCertificate, error) {
 	slog.Debug("parseSSHCertificate", "userName", userName, "certPath", certPath)
-	raw, err := os.ReadFile(certPath)
+	cctx, cancel := context.WithTimeout(ctx, SSHReadFileTimeout)
+	defer cancel()
+
+	raw, err := readFileWithCtx(cctx, certPath, MaxSSHCertificateSize)
 	if err != nil {
 		return nil, err
 	}

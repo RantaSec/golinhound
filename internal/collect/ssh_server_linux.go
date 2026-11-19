@@ -28,6 +28,12 @@ const (
 	SSHDLoadConfigTimeout = 2 * time.Second
 	// SSHLoadFwdKeyTimeout bounds forwarded agent socket communication in emitForwardedKey.
 	SSHLoadFwdKeyTimeout = 2 * time.Second
+	// MaxAuthorizedKeysSize caps authorized_keys file reads (~65k+ RSA-4096 keys).
+	MaxAuthorizedKeysSize = 64 << 20 // 64 MiB
+	// MaxTrustedUserCAKeysSize caps TrustedUserCAKeys file reads.
+	MaxTrustedUserCAKeysSize = 8 << 20 // 8 MiB
+	// MaxAuthorizedPrincipalsSize caps AuthorizedPrincipalsFile reads.
+	MaxAuthorizedPrincipalsSize = 16 << 20 // 16 MiB
 )
 
 // SSHServerCollector emits authorized_keys (CanSSH) and forwarded agent
@@ -47,7 +53,7 @@ func (s *SSHServerCollector) Collect(ctx context.Context, h *Host, b *opengraph.
 		return errors.New("sshd not installed")
 	}
 
-	cas, caFile := trustedUserCAKeys(sshdConfig)
+	cas, caFile := trustedUserCAKeys(ctx, sshdConfig)
 	for _, ca := range cas {
 		emitKeypairNode(b, ca)
 	}
@@ -61,9 +67,11 @@ func (s *SSHServerCollector) Collect(ctx context.Context, h *Host, b *opengraph.
 		if u.UID == "0" && !rootLoginAllowed(sshdConfig) {
 			continue
 		}
-		emitAuthorizedKeys(h, u, sshdConfig, b)
+		if err := emitAuthorizedKeys(ctx, h, u, sshdConfig, b); err != nil {
+			return err
+		}
 		if len(cas) > 0 {
-			principals, file := authorizedPrincipalsFor(sshdConfig, u)
+			principals, file := authorizedPrincipalsFor(ctx, sshdConfig, u)
 			if len(principals) > 0 {
 				emitCanIssueCertificates(h, u, cas, principals, file, caFile, b)
 				emitCanCertSSH(h, u, cas, principals, file, b)
@@ -119,11 +127,20 @@ func isInteractiveShell(shell string) bool {
 }
 
 // emitAuthorizedKeys emits a CanSSH edge (SSHKeyPair -> SSHUser) per
-// parseable key in every authorizedKeysFiles entry for u.
-func emitAuthorizedKeys(h *Host, u *User, sshdConfig map[string]string, b *opengraph.GraphBuilder) {
+// parseable key in every authorizedKeysFiles entry for u. Returns
+// ctx.Err() if ctx is canceled or expired.
+func emitAuthorizedKeys(ctx context.Context, h *Host, u *User, sshdConfig map[string]string, b *opengraph.GraphBuilder) error {
 	slog.Debug("emitAuthorizedKeys", "userName", u.UserName)
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	for _, file := range authorizedKeysFiles(sshdConfig, u.UserName, u.HomeDir) {
-		data, err := os.ReadFile(file)
+		cctx, cancel := context.WithTimeout(ctx, SSHReadFileTimeout)
+		data, err := readFileWithCtx(cctx, file, MaxAuthorizedKeysSize)
+		cancel()
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		if err != nil {
 			slog.Error("emitAuthorizedKeys: file could not be read", "userName", u.UserName, "file", file, "err", err)
 			continue
@@ -157,6 +174,7 @@ func emitAuthorizedKeys(h *Host, u *User, sshdConfig map[string]string, b *openg
 				})
 		}
 	}
+	return nil
 }
 
 // authorizedKeysFiles resolves all authorized_keys paths for a user by
@@ -412,13 +430,16 @@ func parseProcHexIP(hexIP string) string {
 // trustedUserCAKeys returns the CA pubkeys listed in sshd's
 // TrustedUserCAKeys file and that file's path, or (nil, "") if the
 // directive is unset/unreadable.
-func trustedUserCAKeys(sshdConfig map[string]string) (cas []publicKey, file string) {
+func trustedUserCAKeys(ctx context.Context, sshdConfig map[string]string) (cas []publicKey, file string) {
 	slog.Debug("trustedUserCAKeys")
 	file = sshdConfig["trustedusercakeys"]
 	if file == "" || file == "none" {
 		return nil, ""
 	}
-	data, err := os.ReadFile(file)
+	cctx, cancel := context.WithTimeout(ctx, SSHReadFileTimeout)
+	defer cancel()
+
+	data, err := readFileWithCtx(cctx, file, MaxTrustedUserCAKeysSize)
 	if err != nil {
 		slog.Debug("trustedUserCAKeys: TrustedUserCAKeys file could not be read", "file", file, "err", err)
 		return nil, ""
@@ -443,7 +464,7 @@ func trustedUserCAKeys(sshdConfig map[string]string) (cas []publicKey, file stri
 // (sshd's username-fallback rule). An empty principals slice means sshd
 // would deny cert auth. This happens if the directive is set but the
 // file is missing/unreadable or empty after parsing.
-func authorizedPrincipalsFor(sshdConfig map[string]string, u *User) (principals []string, file string) {
+func authorizedPrincipalsFor(ctx context.Context, sshdConfig map[string]string, u *User) (principals []string, file string) {
 	rawFile, ok := sshdConfig["authorizedprincipalsfile"]
 	if !ok {
 		slog.Warn("authorizedPrincipalsFor: authorizedprincipalsfile missing from sshd -T output; suppressing cert-auth edges", "userName", u.UserName)
@@ -457,7 +478,10 @@ func authorizedPrincipalsFor(sshdConfig map[string]string, u *User) (principals 
 	file = strings.ReplaceAll(rawFile, "%u", u.UserName)
 	file = strings.ReplaceAll(file, "%U", u.UID)
 	file = strings.ReplaceAll(file, "%h", u.HomeDir)
-	data, err := os.ReadFile(file)
+	cctx, cancel := context.WithTimeout(ctx, SSHReadFileTimeout)
+	defer cancel()
+
+	data, err := readFileWithCtx(cctx, file, MaxAuthorizedPrincipalsSize)
 	// sshd denies cert auth if AuthorizedPrincipalsFile unreadable
 	if err != nil {
 		slog.Debug("authorizedPrincipalsFor: AuthorizedPrincipalsFile unreadable; sshd would deny", "userName", u.UserName, "file", file, "err", err)

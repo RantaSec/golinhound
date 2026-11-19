@@ -30,11 +30,12 @@ type ADCollector struct{}
 // and HasTGT edges from the host's SSHComputer to each referenced AD
 // principal. Tickets that are expired and non-renewable are dropped.
 func (c *ADCollector) Collect(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
-	emitKeytabs(ctx, h, b)
-	emitTGTs(h, b)
-	// Not yet implemented; left here for visibility.
-	findKCMTicketCaches()
-	findKeyringTicketCaches()
+	if err := emitKeytabs(ctx, h, b); err != nil {
+		return err
+	}
+	if err := emitTGTs(ctx, h, b); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -43,7 +44,10 @@ func (c *ADCollector) Collect(ctx context.Context, h *Host, b *opengraph.GraphBu
 // entry. The find walk is bounded by KeytabFindTimeout; each load has an
 // independent KeytabLoadTimeout so a slow/stuck file doesn't impact the
 // rest.
-func emitKeytabs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) {
+func emitKeytabs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	cctx, cancel := context.WithTimeout(ctx, KeytabFindTimeout)
 	defer cancel()
 
@@ -59,9 +63,12 @@ func emitKeytabs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) {
 	}()
 
 	for file := range chKeytabs {
-		ctxLoad, cancelLoad := context.WithTimeout(context.Background(), KeytabLoadTimeout)
+		ctxLoad, cancelLoad := context.WithTimeout(ctx, KeytabLoadTimeout)
 		entries, err := loadKeytab(ctxLoad, file)
 		cancelLoad()
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		if err != nil {
 			slog.Error("could not load keytab", "file", file, "err", err)
 		}
@@ -69,6 +76,7 @@ func emitKeytabs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) {
 			emitHasKeytabEdge(h, b, file, entry.Principal, entry.Realm)
 		}
 	}
+	return ctx.Err()
 }
 
 // emitHasKeytabEdge emits one HasKeytab edge from the SSHUser that
@@ -131,17 +139,25 @@ func findKeytabFiles(ctx context.Context, chKeytabs chan<- string, rootDir strin
 }
 
 // emitTGTs iterates every on-disk ticket cache (findFileTicketCaches),
-// loads it, and emits one HasTGT edge per Ticket Granting Ticket that
-// has not yet expired beyond its renewal window.
-func emitTGTs(h *Host, b *opengraph.GraphBuilder) {
+// loads each, and emits one HasTGT edge per Ticket Granting Ticket that
+// has not yet expired beyond its renewal window. Each load has an
+// independent CredentialCacheLoadTimeout derived from ctx so a slow/stuck
+// file doesn't impact the rest, while ctx cancellation aborts promptly.
+func emitTGTs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	for _, cacheFile := range findFileTicketCaches() {
 		fi, err := os.Stat(cacheFile)
 		if err != nil || fi.Size() == 0 {
 			continue
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), CredentialCacheLoadTimeout)
-		credsList, err := loadCCache(ctx, cacheFile)
-		cancel()
+		ctxLoad, cancelLoad := context.WithTimeout(ctx, CredentialCacheLoadTimeout)
+		credsList, err := loadCCache(ctxLoad, cacheFile)
+		cancelLoad()
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		if err != nil {
 			slog.Error("could not load Kerberos ticket cache", "cacheFile", cacheFile, "err", err)
 		}
@@ -157,6 +173,10 @@ func emitTGTs(h *Host, b *opengraph.GraphBuilder) {
 			emitHasTGTEdge(h, b, cacheFile, creds)
 		}
 	}
+	// Not yet implemented; left here for visibility.
+	findKCMTicketCaches()
+	findKeyringTicketCaches()
+	return ctx.Err()
 }
 
 // emitHasTGTEdge emits one HasTGT edge from the SSHUser that owns
