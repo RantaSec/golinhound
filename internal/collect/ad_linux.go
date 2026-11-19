@@ -2,6 +2,7 @@ package collect
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -78,7 +79,9 @@ func emitKeytabs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error 
 			return err
 		}
 		if err != nil {
-			slog.Error("could not load keytab", "file", file, "err", err)
+			if !errors.Is(err, errNonLocalFS) {
+				slog.Error("could not load keytab", "file", file, "err", err)
+			}
 		}
 		for _, entry := range entries {
 			emitHasKeytabEdge(h, b, file, entry.Principal, entry.Realm)
@@ -123,6 +126,9 @@ func findKeytabFiles(ctx context.Context, chKeytabs chan<- string, rootDir strin
 		return err
 	}
 	rootDir = filepath.Clean(rootDir)
+	if !isPathOnLocalFS(rootDir) {
+		return nil
+	}
 	rootDepth := strings.Count(rootDir, string(os.PathSeparator))
 
 	return filepath.WalkDir(rootDir, func(path string, d os.DirEntry, err error) error {
@@ -132,11 +138,16 @@ func findKeytabFiles(ctx context.Context, chKeytabs chan<- string, rootDir strin
 		if err != nil {
 			return nil
 		}
-		currDepth := strings.Count(path, string(os.PathSeparator)) - rootDepth
-		if currDepth > maxDepth && d.IsDir() {
-			return filepath.SkipDir
+		if d.IsDir() {
+			if strings.Count(path, string(os.PathSeparator))-rootDepth > maxDepth {
+				return filepath.SkipDir
+			}
+			if path != rootDir && !isPathOnLocalFS(path) {
+				return filepath.SkipDir
+			}
+			return nil
 		}
-		if !d.IsDir() && filepath.Ext(d.Name()) == ".keytab" {
+		if filepath.Ext(d.Name()) == ".keytab" {
 			select {
 			case chKeytabs <- path:
 			case <-ctx.Done():
@@ -156,7 +167,7 @@ func emitTGTs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	for _, cacheFile := range findFileTicketCaches() {
+	for _, cacheFile := range findFileTicketCaches(ctx) {
 		fi, err := os.Stat(cacheFile)
 		if err != nil || fi.Size() == 0 {
 			continue
@@ -168,7 +179,9 @@ func emitTGTs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 			return err
 		}
 		if err != nil {
-			slog.Error("could not load Kerberos ticket cache", "cacheFile", cacheFile, "err", err)
+			if !errors.Is(err, errNonLocalFS) {
+				slog.Error("could not load Kerberos ticket cache", "cacheFile", cacheFile, "err", err)
+			}
 		}
 		for _, creds := range credsList {
 			// only true TGTs (krbtgt/...) become HasTGT edges
@@ -222,12 +235,12 @@ func emitHasTGTEdge(h *Host, b *opengraph.GraphBuilder, filePath string, creds c
 // findFileTicketCaches returns all on-disk Kerberos ticket caches.
 // TODO: add uid parsing.
 // TODO: add *.ccache files.
-func findFileTicketCaches() []string {
+func findFileTicketCaches(ctx context.Context) []string {
 	var caches []string
-	c1, _ := filepath.Glob("/tmp/krb5cc*")
-	caches = append(caches, c1...)
-	c2, _ := filepath.Glob("/run/user/*/krb5cc/*")
-	caches = append(caches, c2...)
+	for _, pattern := range []string{"/tmp/krb5cc*", "/run/user/*/krb5cc/*"} {
+		matches, _ := localGlob(ctx, pattern)
+		caches = append(caches, matches...)
+	}
 	return caches
 }
 
@@ -241,6 +254,9 @@ func findKeyringTicketCaches() []string { return nil }
 // TODO: not yet implemented.
 func findKCMTicketCaches() []string {
 	kerbCacheManagerDB := "/var/lib/sss/secrets/secrets.ldb"
+	if !isPathOnLocalFS(kerbCacheManagerDB) {
+		return nil
+	}
 	if _, err := os.Stat(kerbCacheManagerDB); err == nil {
 		slog.Debug("[NOT IMPLEMENTED] Kerberos tickets cannot be extracted: function not implemented", "path", kerbCacheManagerDB)
 	}

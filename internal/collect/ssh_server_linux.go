@@ -141,7 +141,9 @@ func emitAuthorizedKeys(ctx context.Context, h *Host, u *User, sshdConfig map[st
 			return err
 		}
 		if err != nil {
-			slog.Error("emitAuthorizedKeys: file could not be read", "userName", u.UserName, "file", file, "err", err)
+			if !errors.Is(err, errNonLocalFS) {
+				slog.Error("emitAuthorizedKeys: file could not be read", "userName", u.UserName, "file", file, "err", err)
+			}
 			continue
 		}
 		for len(data) > 0 {
@@ -188,6 +190,9 @@ func authorizedKeysFiles(sshdConfig map[string]string, userName, userDir string)
 		if !filepath.IsAbs(f) {
 			f = filepath.Join(userDir, f)
 		}
+		if !isPathOnLocalFS(f) {
+			continue
+		}
 		fi, err := os.Stat(f)
 		if err == nil && !fi.IsDir() && !slices.Contains(files, f) {
 			files = append(files, f)
@@ -227,10 +232,7 @@ func emitForwardedKeys(ctx context.Context, h *Host, duration int, b *opengraph.
 // into chSockets, returning early if ctx is canceled.
 func queryOpenSockets(ctx context.Context, chSockets chan<- string) {
 	slog.Debug("queryOpenSockets")
-	if err := ctx.Err(); err != nil {
-		return
-	}
-	sockets, _ := filepath.Glob("/tmp/ssh-*/agent.*")
+	sockets, _ := localGlob(ctx, "/tmp/ssh-*/agent.*")
 	for _, socket := range sockets {
 		select {
 		case chSockets <- socket:
@@ -247,6 +249,9 @@ func queryOpenSockets(ctx context.Context, chSockets chan<- string) {
 func watchNewSockets(ctx context.Context, chSockets chan<- string, duration int) {
 	slog.Debug("watchNewSockets", "duration", duration)
 	if err := ctx.Err(); err != nil {
+		return
+	}
+	if !isPathOnLocalFS("/tmp") {
 		return
 	}
 
@@ -275,10 +280,13 @@ func watchNewSockets(ctx context.Context, chSockets chan<- string, duration int)
 			if !event.Has(fsnotify.Create) || !strings.HasPrefix(event.Name, "/tmp/ssh-") {
 				continue
 			}
+			if !isPathOnLocalFS(event.Name) {
+				continue
+			}
 			// Wait up to 100ms for the sshd process to create agent.* sockets in the new directory
 			var sockets []string
 			for range 10 {
-				sockets, _ = filepath.Glob(filepath.Join(event.Name, "agent.*"))
+				sockets, _ = localGlobWalk(wctx, event.Name, []string{"agent.*"})
 				if len(sockets) > 0 {
 					break
 				}
@@ -317,6 +325,9 @@ func watchNewSockets(ctx context.Context, chSockets chan<- string, duration int)
 func emitForwardedKey(ctx context.Context, h *Host, socket string, b *opengraph.GraphBuilder) error {
 	if err := ctx.Err(); err != nil {
 		return err
+	}
+	if !isPathOnLocalFS(socket) {
+		return nil
 	}
 	fi, err := os.Stat(socket)
 	if err != nil {

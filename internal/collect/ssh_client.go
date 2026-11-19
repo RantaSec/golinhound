@@ -137,7 +137,11 @@ func emitPrivateKeys(ctx context.Context, h *Host, u *User, b *opengraph.GraphBu
 // Excludes anything ending in .pub, plus the well-known non-key files.
 func privateKeysFiles(userDir string) []string {
 	slog.Debug("privateKeysFiles", "userDir", userDir)
-	pattern := filepath.Join(userDir, ".ssh", "*")
+	sshDir := filepath.Join(userDir, ".ssh")
+	if !filepath.IsAbs(userDir) || !isPathOnLocalFS(sshDir) {
+		return nil
+	}
+	pattern := filepath.Join(sshDir, "*")
 	candidates, err := filepath.Glob(pattern)
 	if err != nil {
 		slog.Debug("privateKeysFiles: invalid glob pattern", "userDir", userDir)
@@ -355,7 +359,7 @@ func emitSSHCertificate(ctx context.Context, h *Host, u *User, pk *privateKey, b
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		if !errors.Is(err, os.ErrNotExist) {
+		if !errors.Is(err, os.ErrNotExist) && !errors.Is(err, errNonLocalFS) {
 			slog.Debug("emitSSHCertificate: could not parse sibling certificate", "certPath", certPath, "err", err)
 		}
 		return nil

@@ -30,6 +30,8 @@ const (
 	JournalctlTimeout = 30 * time.Second
 	// GetentTimeout limits the execution time of `getent passwd <user>`.
 	GetentTimeout = 3 * time.Second
+	// HomeDirFindTimeout bounds each sssd home-dir glob walk.
+	HomeDirFindTimeout = 5 * time.Second
 	// HostReadFileTimeout bounds per-file reads of host configuration files.
 	HostReadFileTimeout = 3 * time.Second
 	// MaxMachineIDSize caps /etc/machine-id reads (valid file is 33 bytes).
@@ -120,6 +122,9 @@ func (h *Host) ReferenceUser(uid string) string {
 // system doesn't know about. Callers treat nil as "skip — can't
 // attribute to any local user."
 func (h *Host) fileOwner(path string) *User {
+	if !isPathOnLocalFS(path) {
+		return nil
+	}
 	fi, err := os.Stat(path)
 	if err != nil {
 		slog.Debug("fileOwner: stat failed", "path", path, "err", err)
@@ -291,7 +296,19 @@ func enrichWithHomeDirs(ctx context.Context, users map[string]*User) {
 		claimed[filepath.Clean(u.HomeDir)] = struct{}{}
 	}
 	for pattern := range sssdHomeDirGlobs(ctx) {
-		for _, dir := range localGlobMatches(pattern) {
+		ctxFind, cancel := context.WithTimeout(ctx, HomeDirFindTimeout)
+		dirs, err := localGlob(ctxFind, pattern)
+		cancel()
+		if err != nil {
+			if ctx.Err() != nil {
+				return
+			}
+			slog.Warn("localGlob timed out", "pattern", pattern, "err", err)
+		}
+		for _, dir := range dirs {
+			if ctx.Err() != nil {
+				return
+			}
 			cleaned := filepath.Clean(dir)
 			if _, ok := claimed[cleaned]; ok {
 				continue
@@ -376,78 +393,89 @@ func sssdHomeDirGlobs(ctx context.Context) map[string]struct{} {
 	return globs
 }
 
-// localGlobMatches expands glob and returns every match whose full
-// path sits on a local filesystem in the allowlist. Statfs errors
-// count as remote.
-func localGlobMatches(glob string) []string {
-	parent := wildcardParentDir(glob)
-	if !isPathOnLocalFS(parent) {
-		slog.Error("localGlobMatches: skipping sssd.conf home-dir glob because its parent is remote or unavailable", "path", parent, "glob", glob)
-		return nil
+// localGlob expands an absolute glob pattern segment-by-segment, checking
+// isPathOnLocalFS before reading each directory and on every matched path.
+// Already-matched path prefixes are never re-parsed for glob metacharacters,
+// preventing infinite recursion on filenames containing `*`, `?`, or `[`.
+// Returns ctx.Err() if ctx cancels or times out.
+func localGlob(ctx context.Context, pattern string) ([]string, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
-	if parent == glob {
-		return []string{glob}
+	pattern = filepath.Clean(pattern)
+	if !filepath.IsAbs(pattern) {
+		return nil, nil
 	}
-	seg, tail := nextWildcardSegment(glob[len(parent):])
-	branches, _ := filepath.Glob(parent + seg)
+	if pattern == "/" {
+		if !isPathOnLocalFS("/") {
+			return nil, nil
+		}
+		return []string{"/"}, nil
+	}
+	return localGlobWalk(ctx, "/", strings.Split(strings.TrimPrefix(pattern, "/"), "/"))
+}
+
+func localGlobWalk(ctx context.Context, prefix string, segments []string) ([]string, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	i := 0
+	for i < len(segments) && !strings.ContainsAny(segments[i], "*?[") {
+		prefix = filepath.Join(prefix, segments[i])
+		i++
+	}
+	segments = segments[i:]
+
+	if !isPathOnLocalFS(prefix) {
+		return nil, nil
+	}
+	if len(segments) == 0 {
+		if _, err := os.Lstat(prefix); err != nil {
+			return nil, nil
+		}
+		return []string{prefix}, nil
+	}
+
+	entries, err := os.ReadDir(prefix)
+	if err != nil {
+		return nil, nil
+	}
+
+	seg, rest := segments[0], segments[1:]
 	var out []string
-	for _, b := range branches {
-		out = append(out, localGlobMatches(b+tail)...)
+	for _, e := range entries {
+		if err := ctx.Err(); err != nil {
+			return out, err
+		}
+		if len(rest) > 0 && !e.IsDir() && e.Type()&os.ModeSymlink == 0 {
+			continue
+		}
+		matched, err := filepath.Match(seg, e.Name())
+		if err != nil || !matched {
+			continue
+		}
+		child := filepath.Join(prefix, e.Name())
+		if len(rest) == 0 {
+			if isPathOnLocalFS(child) {
+				out = append(out, child)
+			}
+			continue
+		}
+		sub, err := localGlobWalk(ctx, child, rest)
+		out = append(out, sub...)
+		if err != nil {
+			return out, err
+		}
 	}
-	return out
+	return out, nil
 }
 
-// wildcardParentDir returns the directory containing the first
-// wildcard segment of glob.
-// `/nfs/*/*` -> `/nfs`
-// A glob with no wildcard passes through unchanged.
-func wildcardParentDir(glob string) string {
-	i := strings.IndexAny(glob, "*?[")
-	if i < 0 {
-		return glob
-	}
-	return filepath.Dir(glob[:i])
-}
+var errNonLocalFS = errors.New("path is on a non-local filesystem")
 
-// nextWildcardSegment consumes rest up to and including the
-// next path segment that contains a wildcard, returning that head
-// and the remainder. rest must begin with `/`.
-// "/domain_*/test/*/" -> ("/domain_*", "/test/*/").
-func nextWildcardSegment(rest string) (string, string) {
-	i := strings.IndexAny(rest, "*?[")
-	if i < 0 {
-		return rest, ""
-	}
-	end := strings.Index(rest[i:], "/")
-	if end < 0 {
-		return rest, ""
-	}
-	return rest[:i+end], rest[i+end:]
-}
-
-// isPathOnLocalFS reports whether p sits on a filesystem in the
-// persistent-local allowlist. Statfs errors count as remote. We'd
-// rather skip enumeration than walk into a broken mount.
-func isPathOnLocalFS(p string) bool {
-	var st syscall.Statfs_t
-	if err := syscall.Statfs(p, &st); err != nil {
-		slog.Error("isPathOnLocalFS: statfs failed, treating path as remote and skipping enumeration", "path", p, "err", err)
-		return false
-	}
-	switch uint32(st.Type) {
-	case 0xEF53, // ext2/3/4
-		0x9123683E, // btrfs
-		0x58465342, // xfs
-		0x2FC12FC1, // zfs
-		0xF2F52010, // f2fs
-		0x794C7630: // overlayfs (containerised/rootless /home)
-		return true
-	}
-	return false
-}
-
-// readFileWithCtx reads a regular file at filePath up to maxSize bytes while
-// respecting ctx cancellation/deadlines.
+// readFileWithCtx verifies filePath resides on a local filesystem via
+// isPathOnLocalFS and reads up to maxSize bytes while respecting ctx
+// cancellation/deadlines.
 //
 // Because Go's os file operations cannot be canceled by the runtime on regular
 // files (a stalled NFS/FUSE mount puts the OS thread in uninterruptible sleep),
@@ -455,10 +483,13 @@ func isPathOnLocalFS(p string) bool {
 // on ctx.Done(). Note that if a kernel syscall hangs permanently, that worker
 // goroutine stays blocked until the syscall finishes or the process exits.
 func readFileWithCtx(ctx context.Context, filePath string, maxSize int64) ([]byte, error) {
-	// Fail fast before spawning a goroutine; without this, a pre-canceled ctx
-	// and a fast local read are both ready in select and Go picks at random.
+	// Fail fast before checking mountinfo or spawning a goroutine; without this,
+	// a pre-canceled ctx and a fast local read are both ready in select.
 	if err := ctx.Err(); err != nil {
 		return nil, err
+	}
+	if !isPathOnLocalFS(filePath) {
+		return nil, fmt.Errorf("%w: %s", errNonLocalFS, filePath)
 	}
 
 	type result struct {
