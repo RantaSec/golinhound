@@ -59,7 +59,7 @@ func loadCCache(ctx context.Context, filePath string) ([]ccacheCredential, error
 func parseKeytab(b []byte) ([]keytabEntry, error) {
 	s := cryptobyte.String(b)
 	var version uint16
-	if !s.ReadUint16(&version) || version != 0x0502 || len(s) < 4 {
+	if !s.ReadUint16(&version) || version != 0x0502 {
 		return nil, errors.New("invalid keytab header")
 	}
 
@@ -176,9 +176,9 @@ func parseCCache(b []byte) ([]ccacheCredential, error) {
 			ClientPrincipal: clientPrincipal,
 			ClientRealm:     clientRealm,
 			ServerPrincipal: serverPrincipal,
-			StartTime:       time.Unix(int64(int32(startTime)), 0),
-			EndTime:         time.Unix(int64(int32(endTime)), 0),
-			RenewTill:       time.Unix(int64(int32(renewTill)), 0),
+			StartTime:       time.Unix(int64(startTime), 0),
+			EndTime:         time.Unix(int64(endTime), 0),
+			RenewTill:       time.Unix(int64(renewTill), 0),
 		})
 	}
 	return creds, nil
@@ -186,17 +186,17 @@ func parseCCache(b []byte) ([]ccacheCredential, error) {
 
 func readCCachePrincipal(s *cryptobyte.String) (string, string, bool) {
 	var rawComp uint32
-	if !s.Skip(4) || !s.ReadUint32(&rawComp) {
+	var realm string
+	if !s.Skip(4) || !s.ReadUint32(&rawComp) || !readUint32String(s, &realm) {
 		return "", "", false
 	}
 	numComponents := int(int32(rawComp))
-	var realm string
-	if numComponents < 1 || numComponents > len(*s)/4 || !readUint32String(s, &realm) || realm == "" {
+	if numComponents < 0 || numComponents > len(*s)/4 {
 		return "", "", false
 	}
 	components := make([]string, numComponents)
 	for i := range components {
-		if !readUint32String(s, &components[i]) || components[i] == "" {
+		if !readUint32String(s, &components[i]) {
 			return "", "", false
 		}
 	}

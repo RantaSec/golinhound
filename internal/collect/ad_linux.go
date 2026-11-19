@@ -267,6 +267,9 @@ func findKCMTicketCaches() []string {
 func PrincipalToBloodhoundName(principal string, realm string) (string, error) {
 	principal = strings.ToUpper(principal)
 	realm = strings.ToUpper(realm)
+	if principal == "" || realm == "" || strings.HasPrefix(principal, "@") {
+		return "", fmt.Errorf("skipping principal: %s@%s", principal, realm)
+	}
 
 	if !strings.Contains(principal, "@") {
 		principal += "@" + realm
