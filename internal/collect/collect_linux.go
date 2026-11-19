@@ -15,6 +15,7 @@ import (
 // not root, missing /etc/machine-id or /etc/passwd, hostname lookup);
 // once the Host is built, Run always returns (json, nil).
 func Run(ctx context.Context, opts Options) (string, error) {
+	configureFSGuard(opts.IncludeRemoteFS)
 	h, err := NewHost(ctx)
 	if err != nil {
 		return "", err

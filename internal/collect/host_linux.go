@@ -477,8 +477,8 @@ func localGlobWalk(ctx context.Context, prefix string, segments []string) ([]str
 var errNonLocalFS = errors.New("path is on a non-local filesystem")
 
 // readFileWithCtx verifies filePath resides on a local filesystem via
-// isPathOnLocalFS and reads up to maxSize bytes while respecting ctx
-// cancellation/deadlines.
+// isPathOnLocalFS (unless -include-remote-fs is set) and reads up to maxSize
+// bytes while respecting ctx cancellation/deadlines.
 //
 // Because Go's os file operations cannot be canceled by the runtime on regular
 // files (a stalled NFS/FUSE mount puts the OS thread in uninterruptible sleep),

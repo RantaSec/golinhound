@@ -78,11 +78,12 @@ func installTestLogger(t *testing.T) *testLogHandler {
 	return h
 }
 
-func setTestFSGuard(t *testing.T, mounts []mountEntry) {
+func setTestFSGuard(t *testing.T, includeRemoteFS bool, mounts []mountEntry) {
 	t.Helper()
 	prev := activeFSGuard.Load()
 	activeFSGuard.Store(&fsGuard{
-		mounts: mounts,
+		includeRemoteFS: includeRemoteFS,
+		mounts:          mounts,
 	})
 	t.Cleanup(func() { activeFSGuard.Store(prev) })
 }
@@ -205,7 +206,7 @@ func TestCheckPathOnLocalFS(t *testing.T) {
 	}
 }
 
-func TestReadFileWithCtx_RemoteFS(t *testing.T) {
+func TestReadFileWithCtx_RemoteFSAndIncludeFlag(t *testing.T) {
 	tmp := t.TempDir()
 	remoteDir := filepath.Join(tmp, "nfs")
 	if err := os.Mkdir(remoteDir, 0755); err != nil {
@@ -226,7 +227,7 @@ func TestReadFileWithCtx_RemoteFS(t *testing.T) {
 	}
 
 	logs := installTestLogger(t)
-	setTestFSGuard(t, mounts)
+	setTestFSGuard(t, false, mounts)
 
 	if _, err := readFileWithCtx(context.Background(), remoteFile, 1024); !errors.Is(err, errNonLocalFS) {
 		t.Fatalf("expected errNonLocalFS for remoteFile, got %v", err)
@@ -236,6 +237,22 @@ func TestReadFileWithCtx_RemoteFS(t *testing.T) {
 	}
 	if warns := logs.warnings(); len(warns) != 2 {
 		t.Fatalf("expected 2 warnings (one per skipped filepath), got %d: %+v", len(warns), warns)
+	}
+
+	// With -include-remote-fs enabled, both reads succeed with zero warnings.
+	logs2 := installTestLogger(t)
+	setTestFSGuard(t, true, mounts)
+
+	data, err := readFileWithCtx(context.Background(), remoteFile, 1024)
+	if err != nil || string(data) != "hello" {
+		t.Fatalf("expected remoteFile read to succeed with IncludeRemoteFS, got (%q, %v)", data, err)
+	}
+	data, err = readFileWithCtx(context.Background(), symlinkFile, 1024)
+	if err != nil || string(data) != "hello" {
+		t.Fatalf("expected symlinkFile read to succeed with IncludeRemoteFS, got (%q, %v)", data, err)
+	}
+	if warns := logs2.warnings(); len(warns) != 0 {
+		t.Fatalf("expected 0 warnings with IncludeRemoteFS=true, got %+v", warns)
 	}
 }
 
@@ -283,7 +300,7 @@ func TestCollectors_RemoteFSProtectionAndWarnings(t *testing.T) {
 	}
 
 	logs := installTestLogger(t)
-	setTestFSGuard(t, mounts)
+	setTestFSGuard(t, false, mounts)
 
 	h := &Host{
 		uniqueId: "host1",
@@ -305,7 +322,7 @@ func TestCollectors_RemoteFSProtectionAndWarnings(t *testing.T) {
 		t.Fatalf("emitAuthorizedKeys(localuser) failed: %v", err)
 	}
 	if _, ok := h.referencedUsers["1001"]; ok {
-		t.Fatalf("expected remoteuser authorized_keys to be skipped")
+		t.Fatalf("expected remoteuser authorized_keys to be skipped when IncludeRemoteFS=false")
 	}
 	if _, ok := h.referencedUsers["1002"]; !ok {
 		t.Fatalf("expected localuser authorized_keys to be collected")
@@ -361,7 +378,29 @@ func TestCollectors_RemoteFSProtectionAndWarnings(t *testing.T) {
 		t.Fatalf("expected warnings for every skipped remote path, got %d: %+v", len(warns), warns)
 	}
 
-	// 7. Symlinked private key inside local ~/.ssh pointing to remote FS is blocked with warning
+	// 7. Re-run with IncludeRemoteFS = true: remoteuser authorized_keys & keytabs are included
+	setTestFSGuard(t, true, mounts)
+	if err := emitAuthorizedKeys(context.Background(), h, h.Users["1001"], sshdCfg, b); err != nil {
+		t.Fatalf("emitAuthorizedKeys(remoteuser) with IncludeRemoteFS failed: %v", err)
+	}
+	if _, ok := h.referencedUsers["1001"]; !ok {
+		t.Fatalf("expected remoteuser authorized_keys to be collected when IncludeRemoteFS=true")
+	}
+	chKeytabs2 := make(chan string, 10)
+	if err := findKeytabFiles(context.Background(), chKeytabs2, keytabRoot, 2); err != nil {
+		t.Fatalf("findKeytabFiles with IncludeRemoteFS failed: %v", err)
+	}
+	close(chKeytabs2)
+	var keytabs2 []string
+	for kt := range chKeytabs2 {
+		keytabs2 = append(keytabs2, kt)
+	}
+	if len(keytabs2) != 2 {
+		t.Fatalf("expected 2 keytabs with IncludeRemoteFS=true, got %v", keytabs2)
+	}
+
+	// 8. Symlinked private key inside local ~/.ssh pointing to remote FS is blocked with warning
+	setTestFSGuard(t, false, mounts)
 	remoteKey := filepath.Join(remoteHome, "id_remote")
 	if err := os.WriteFile(remoteKey, []byte("dummy"), 0600); err != nil {
 		t.Fatal(err)
@@ -377,7 +416,7 @@ func TestCollectors_RemoteFSProtectionAndWarnings(t *testing.T) {
 		t.Fatalf("expected 1 warning for symlinked private key to remote FS, got %+v", logsKey.warnings())
 	}
 
-	// 8. emitForwardedKey skips remote socket path with warning
+	// 9. emitForwardedKey skips remote socket path with warning
 	logsSock := installTestLogger(t)
 	if err := emitForwardedKey(context.Background(), h, filepath.Join(remoteHome, "agent.123"), b); err != nil {
 		t.Fatalf("emitForwardedKey failed: %v", err)
@@ -415,7 +454,7 @@ func TestLocalGlob(t *testing.T) {
 		{mountPoint: remoteSub, fsType: "nfs4"},
 	}
 	logs := installTestLogger(t)
-	setTestFSGuard(t, mounts)
+	setTestFSGuard(t, false, mounts)
 
 	got, err := localGlob(context.Background(), filepath.Join(tmp, "ssh-*", "agent.*"))
 	if err != nil {

@@ -21,8 +21,9 @@ type mountEntry struct {
 }
 
 type fsGuard struct {
-	mounts    []mountEntry
-	mountsErr error
+	includeRemoteFS bool
+	mounts          []mountEntry
+	mountsErr       error
 }
 
 var activeFSGuard atomic.Pointer[fsGuard]
@@ -101,6 +102,15 @@ func newProcFSGuard() *fsGuard {
 		mounts:    mounts,
 		mountsErr: err,
 	}
+}
+
+// configureFSGuard initializes the package-wide filesystem guard for Run.
+func configureFSGuard(includeRemoteFS bool) {
+	if includeRemoteFS {
+		activeFSGuard.Store(&fsGuard{includeRemoteFS: true})
+		return
+	}
+	activeFSGuard.Store(newProcFSGuard())
 }
 
 func currentFSGuard() *fsGuard {
@@ -247,10 +257,14 @@ hops:
 	return false, cleaned, "too many symlinks"
 }
 
-// isPathOnLocalFS reports whether p sits on a local filesystem in localFSTypes.
-// Non-local paths are skipped with a warning without touching the underlying mount.
+// isPathOnLocalFS reports whether p sits on a local filesystem in localFSTypes
+// (or whether -include-remote-fs is enabled). Non-local paths are skipped with
+// a warning without touching the underlying mount.
 func isPathOnLocalFS(p string) bool {
 	g := currentFSGuard()
+	if g.includeRemoteFS {
+		return true
+	}
 	if g.mountsErr != nil {
 		slog.Warn("could not read /proc/self/mountinfo, skipping path", "path", p, "err", g.mountsErr)
 		return false

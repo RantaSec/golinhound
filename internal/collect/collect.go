@@ -22,4 +22,8 @@ type Options struct {
 	// emitted even when the cert's ValidBefore is in the past. When
 	// false (default) expired certs are silently skipped at emission.
 	CollectExpiredCertificates bool
+	// IncludeRemoteFS: when true, golinhound accesses files and
+	// directories regardless of whether they reside on remote or
+	// non-local filesystems.
+	IncludeRemoteFS bool
 }
