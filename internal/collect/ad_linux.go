@@ -29,7 +29,7 @@ type ADCollector struct{}
 
 // Collect walks well-known keytab and ccache locations, emitting HasKeytab
 // and HasTGT edges from the host's SSHComputer to each referenced AD
-// principal. Tickets that are expired and non-renewable are dropped.
+// principal. Expired tickets are dropped.
 func (c *ADCollector) Collect(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 	if err := emitKeytabs(ctx, h, b); err != nil {
 		return err
@@ -162,9 +162,9 @@ func findKeytabFiles(ctx context.Context, chKeytabs chan<- string, rootDir strin
 
 // emitTGTs iterates every on-disk ticket cache (findFileTicketCaches),
 // loads each, and emits one HasTGT edge per Ticket Granting Ticket that
-// has not yet expired beyond its renewal window. Each load has an
-// independent CredentialCacheLoadTimeout derived from ctx so a slow/stuck
-// file doesn't impact the rest, while ctx cancellation aborts promptly.
+// has not yet expired. Each load has an independent
+// CredentialCacheLoadTimeout derived from ctx so a slow/stuck file doesn't
+// impact the rest, while ctx cancellation aborts promptly.
 func emitTGTs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -201,8 +201,9 @@ func emitTicketCache(ctx context.Context, h *Host, b *opengraph.GraphBuilder, ca
 		if svc, rest, ok := strings.Cut(creds.ServerPrincipal, "/"); !ok || !strings.EqualFold(svc, "krbtgt") || rest == "" {
 			continue
 		}
-		// expired AND non-renewable: drop
-		if now.After(creds.EndTime) && now.After(creds.RenewTill) {
+		// expired: drop (RFC 4120 §2.3: expired tickets cannot be used or renewed;
+		// see also https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/klist#remarks)
+		if now.After(creds.EndTime) {
 			continue
 		}
 		emitHasTGTEdge(h, b, owner, cacheFile, creds)

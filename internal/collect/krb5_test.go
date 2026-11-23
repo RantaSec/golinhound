@@ -786,8 +786,8 @@ func TestParseCCacheMITMultiCredOrder(t *testing.T) {
 	t.Run("soft_removed_renewable_tgt_retained", func(t *testing.T) {
 		// cc_file.c:delete_cred overwrites endtime=0 and authtime=-1 (0xFFFFFFFF)
 		// in place while leaving the keyblock, ASN.1 ticket bytes, and renew_till
-		// untouched on disk. parseCCache intentionally retains the entry so a
-		// soft-removed TGT within its renewal window is still reported.
+		// untouched on disk. parseCCache returns raw on-disk entries without
+		// filtering delete_cred tombstones; expiration is enforced by emitTicketCache.
 		removedTGT := baseSpec
 		removedTGT.server = buildCCachePrinc(2, "REALM", "krbtgt", "REALM")
 		removedTGT.authTime = 0xFFFFFFFF
@@ -1337,6 +1337,67 @@ func TestEmitTicketCacheKRBTGTCaseInsensitive(t *testing.T) {
 		gotNames = append(gotNames, e.End.PropertyMatchers[0].Value)
 	}
 	wantNames := []string{"ALICE@KRBTEST.COM", "BOB@KRBTEST.COM", "CAROL@KRBTEST.COM"}
+	if !reflect.DeepEqual(gotNames, wantNames) {
+		t.Fatalf("emitted HasTGT targets = %v, want %v", gotNames, wantNames)
+	}
+}
+
+func TestEmitTicketCacheExpiration(t *testing.T) {
+	setTestFSGuard(t, false, []mountEntry{{mountPoint: "/", fsType: "ext4"}})
+	tmp := t.TempDir()
+	now := time.Unix(1700000000, 0)
+	tNow := uint32(now.Unix())
+
+	makeTGT := func(client string, endTime, renewTill uint32) []byte {
+		return buildCCacheCred(0x0504, testCCacheCredSpec{
+			client:    buildCCachePrinc(1, "KRBTEST.COM", client),
+			server:    buildCCachePrinc(2, "KRBTEST.COM", "krbtgt", "KRBTEST.COM"),
+			enctype:   18,
+			key:       []byte{1, 2, 3, 4},
+			authTime:  tNow - 3600,
+			startTime: tNow - 3600,
+			endTime:   endTime,
+			renewTill: renewTill,
+			ticket:    []byte("tkt"),
+		})
+	}
+
+	defaultPrinc := buildCCachePrinc(1, "KRBTEST.COM", "valid_nonrenew")
+	raw := bytes.Join([][]byte{
+		[]byte("\x05\x04\x00\x00"),
+		defaultPrinc,
+		makeTGT("valid_nonrenew", tNow+3600, 0),
+		makeTGT("valid_boundary", tNow, 0),
+		makeTGT("valid_renewable", tNow+3600, tNow+86400),
+		makeTGT("expired_future_renew", tNow-1, tNow+86400),
+		makeTGT("expired_nonrenew", tNow-3600, 0),
+		makeTGT("soft_removed_tombstone", 0, tNow+86400),
+	}, nil)
+
+	cachePath := filepath.Join(tmp, "krb5cc_exp")
+	if err := os.WriteFile(cachePath, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	h := newLocalTestHost(t, tmp)
+	b := opengraph.NewGraphBuilder()
+	if err := emitTicketCache(context.Background(), h, b, cachePath, now); err != nil {
+		t.Fatalf("emitTicketCache() unexpected error: %v", err)
+	}
+
+	edges := unmarshalTestEdges(t, b)
+	var gotNames []string
+	for _, e := range edges {
+		if e.Kind != "GLH_HasTGT" || len(e.End.PropertyMatchers) != 1 {
+			t.Fatalf("unexpected edge: %+v", e)
+		}
+		gotNames = append(gotNames, e.End.PropertyMatchers[0].Value)
+	}
+	wantNames := []string{
+		"VALID_NONRENEW@KRBTEST.COM",
+		"VALID_BOUNDARY@KRBTEST.COM",
+		"VALID_RENEWABLE@KRBTEST.COM",
+	}
 	if !reflect.DeepEqual(gotNames, wantNames) {
 		t.Fatalf("emitted HasTGT targets = %v, want %v", gotNames, wantNames)
 	}
