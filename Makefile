@@ -1,5 +1,5 @@
 # Makefile
-.PHONY: build build-linux-amd64 build-linux-arm64 extension clean
+.PHONY: build build-linux-amd64 build-linux-arm64 extension test clean
 
 # Pull schema.name and schema.version from the extension manifest so the ZIP
 # filename always tracks the JSON source of truth.
@@ -29,6 +29,9 @@ extension:
 	cd extension && zip -q -j $(EXTENSION_ZIP) schema.json saved_queries.json
 
 build: build-linux-amd64 build-linux-arm64 extension
+
+test:
+	go test -race ./...
 
 clean:
 	rm -rf bin/

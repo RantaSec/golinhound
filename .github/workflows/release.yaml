@@ -22,6 +22,10 @@ jobs:
         with:
           go-version: 'stable'
 
+      - name: Run Tests
+        run: |
+          make test
+
       - name: Build All
         run: |
           make build
