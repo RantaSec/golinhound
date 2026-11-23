@@ -170,37 +170,44 @@ func emitTGTs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 		return err
 	}
 	for _, cacheFile := range findFileTicketCaches(ctx) {
-		owner := h.fileOwner(cacheFile)
-		if owner == nil {
-			continue
-		}
-		ctxLoad, cancelLoad := context.WithTimeout(ctx, CredentialCacheLoadTimeout)
-		credsList, err := loadCCache(ctxLoad, cacheFile)
-		cancelLoad()
-		if err := ctx.Err(); err != nil {
+		if err := emitTicketCache(ctx, h, b, cacheFile, time.Now()); err != nil {
 			return err
-		}
-		if err != nil {
-			if !errors.Is(err, errNonLocalFS) {
-				slog.Error("could not load Kerberos ticket cache", "cacheFile", cacheFile, "err", err)
-			}
-		}
-		for _, creds := range credsList {
-			// only true TGTs (krbtgt/...) become HasTGT edges
-			if !strings.HasPrefix(creds.ServerPrincipal, "krbtgt/") {
-				continue
-			}
-			// expired AND non-renewable: drop
-			if now := time.Now(); now.After(creds.EndTime) && now.After(creds.RenewTill) {
-				continue
-			}
-			emitHasTGTEdge(h, b, owner, cacheFile, creds)
 		}
 	}
 	// Not yet implemented; left here for visibility.
 	findKCMTicketCaches()
 	findKeyringTicketCaches()
 	return ctx.Err()
+}
+
+func emitTicketCache(ctx context.Context, h *Host, b *opengraph.GraphBuilder, cacheFile string, now time.Time) error {
+	owner := h.fileOwner(cacheFile)
+	if owner == nil {
+		return nil
+	}
+	ctxLoad, cancelLoad := context.WithTimeout(ctx, CredentialCacheLoadTimeout)
+	credsList, err := loadCCache(ctxLoad, cacheFile)
+	cancelLoad()
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if err != nil {
+		if !errors.Is(err, errNonLocalFS) {
+			slog.Error("could not load Kerberos ticket cache", "cacheFile", cacheFile, "err", err)
+		}
+	}
+	for _, creds := range credsList {
+		// only true TGTs (krbtgt/...) become HasTGT edges
+		if svc, rest, ok := strings.Cut(creds.ServerPrincipal, "/"); !ok || !strings.EqualFold(svc, "krbtgt") || rest == "" {
+			continue
+		}
+		// expired AND non-renewable: drop
+		if now.After(creds.EndTime) && now.After(creds.RenewTill) {
+			continue
+		}
+		emitHasTGTEdge(h, b, owner, cacheFile, creds)
+	}
+	return nil
 }
 
 // emitHasTGTEdge emits one HasTGT edge from the SSHUser that owns

@@ -4,12 +4,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"encoding/json"
 	"math"
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
+
+	"github.com/RantaSec/golinhound/internal/opengraph"
 )
 
 // Tests in this file are ported from official MIT Kerberos (github.com/krb5/krb5,
@@ -1234,6 +1238,107 @@ func TestPrincipalToBloodhoundNameEmptyGuards(t *testing.T) {
 		if got, err := PrincipalToBloodhoundName(tc.principal, tc.realm); err == nil {
 			t.Fatalf("PrincipalToBloodhoundName(%q, %q) = %q, want error", tc.principal, tc.realm, got)
 		}
+	}
+}
+
+type marshaledEdge struct {
+	Kind string `json:"kind"`
+	End  struct {
+		Kind             string `json:"kind"`
+		PropertyMatchers []struct {
+			Key   string `json:"key"`
+			Value string `json:"value"`
+		} `json:"property_matchers"`
+	} `json:"end"`
+	Properties map[string]any `json:"properties"`
+}
+
+func unmarshalTestEdges(t *testing.T, b *opengraph.GraphBuilder) []marshaledEdge {
+	t.Helper()
+	var env struct {
+		Graph struct {
+			Edges []marshaledEdge `json:"edges"`
+		} `json:"graph"`
+	}
+	if err := json.Unmarshal([]byte(b.Marshal()), &env); err != nil {
+		t.Fatalf("json.Unmarshal(b.Marshal()): %v", err)
+	}
+	return env.Graph.Edges
+}
+
+func newLocalTestHost(t *testing.T, homeDir string) *Host {
+	t.Helper()
+	uid := strconv.Itoa(os.Getuid())
+	return &Host{
+		uniqueId: "host1",
+		FQDN:     "host1.local",
+		Users: map[string]*User{
+			uid: {UserName: "localuser", UID: uid, HomeDir: homeDir, Shell: "/bin/bash"},
+		},
+		referencedUsers: make(map[string]struct{}),
+	}
+}
+
+func TestEmitTicketCacheKRBTGTCaseInsensitive(t *testing.T) {
+	setTestFSGuard(t, false, []mountEntry{{mountPoint: "/", fsType: "ext4"}})
+	tmp := t.TempDir()
+	now := time.Unix(1700000000, 0)
+	validEnd := uint32(now.Add(time.Hour).Unix())
+
+	makeCred := func(client string, serverComps ...string) []byte {
+		return buildCCacheCred(0x0504, testCCacheCredSpec{
+			client:    buildCCachePrinc(1, "KRBTEST.COM", client),
+			server:    buildCCachePrinc(2, "KRBTEST.COM", serverComps...),
+			enctype:   18,
+			key:       []byte{1, 2, 3, 4},
+			authTime:  uint32(now.Unix()),
+			startTime: uint32(now.Unix()),
+			endTime:   validEnd,
+			ticket:    []byte("tkt"),
+		})
+	}
+
+	defaultPrinc := buildCCachePrinc(1, "KRBTEST.COM", "alice")
+	confEntry := buildCCacheCred(0x0504, testCCacheCredSpec{
+		client: defaultPrinc,
+		server: buildCCachePrinc(0, "X-CACHECONF:", "krb5_ccache_conf_data", "fast_avail"),
+		ticket: []byte("yes"),
+	})
+
+	raw := bytes.Join([][]byte{
+		[]byte("\x05\x04\x00\x00"),
+		defaultPrinc,
+		makeCred("alice", "krbtgt", "KRBTEST.COM"),
+		makeCred("bob", "KRBTGT", "KRBTEST.COM"),
+		makeCred("carol", "KrBtGt", "KRBTEST.COM"),
+		makeCred("dave", "cifs", "dc01.krbtest.com"),
+		makeCred("eve", "krbtgt"),
+		makeCred("frank", "krbtgt", ""),
+		confEntry,
+	}, nil)
+
+	cachePath := filepath.Join(tmp, "krb5cc_test")
+	if err := os.WriteFile(cachePath, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	h := newLocalTestHost(t, tmp)
+	b := opengraph.NewGraphBuilder()
+	if err := emitTicketCache(context.Background(), h, b, cachePath, now); err != nil {
+		t.Fatalf("emitTicketCache() unexpected error: %v", err)
+	}
+
+	edges := unmarshalTestEdges(t, b)
+	var gotNames []string
+	for _, e := range edges {
+		if e.Kind != "GLH_HasTGT" || len(e.End.PropertyMatchers) != 1 {
+			t.Fatalf("unexpected edge: %+v", e)
+		}
+		gotNames = append(gotNames, e.End.PropertyMatchers[0].Value)
+	}
+	wantNames := []string{"ALICE@KRBTEST.COM", "BOB@KRBTEST.COM", "CAROL@KRBTEST.COM"}
+	if !reflect.DeepEqual(gotNames, wantNames) {
+		t.Fatalf("emitted HasTGT targets = %v, want %v", gotNames, wantNames)
 	}
 }
 
