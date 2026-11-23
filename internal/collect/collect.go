@@ -22,6 +22,11 @@ type Options struct {
 	// emitted even when the cert's ValidBefore is in the past. When
 	// false (default) expired certs are silently skipped at emission.
 	CollectExpiredCertificates bool
+	// CollectExpiredTGTs: when true, HasTGT edges are emitted even
+	// when the ticket's EndTime is in the past (including soft-removed
+	// ccache entries with EndTime=0). When false (default) expired
+	// TGTs are skipped at emission.
+	CollectExpiredTGTs bool
 	// IncludeRemoteFS: when true, golinhound accesses files and
 	// directories regardless of whether they reside on remote or
 	// non-local filesystems.

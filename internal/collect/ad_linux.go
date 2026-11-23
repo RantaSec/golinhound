@@ -25,16 +25,19 @@ const (
 // (HasKeytab edges) and ticket caches with valid TGTs (HasTGT edges).
 // Endpoint nodes for AD principals dangle by design; downstream
 // BloodHound merge resolves them at ingest by `match_by: name`.
-type ADCollector struct{}
+type ADCollector struct {
+	// CollectExpiredTGTs: see Options.CollectExpiredTGTs.
+	CollectExpiredTGTs bool
+}
 
 // Collect walks well-known keytab and ccache locations, emitting HasKeytab
 // and HasTGT edges from the host's SSHComputer to each referenced AD
-// principal. Expired tickets are dropped.
+// principal. Expired tickets are dropped unless CollectExpiredTGTs is set.
 func (c *ADCollector) Collect(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 	if err := emitKeytabs(ctx, h, b); err != nil {
 		return err
 	}
-	if err := emitTGTs(ctx, h, b); err != nil {
+	if err := emitTGTs(ctx, h, b, c.CollectExpiredTGTs); err != nil {
 		return err
 	}
 	return nil
@@ -161,16 +164,17 @@ func findKeytabFiles(ctx context.Context, chKeytabs chan<- string, rootDir strin
 
 
 // emitTGTs iterates every on-disk ticket cache (findFileTicketCaches),
-// loads each, and emits one HasTGT edge per Ticket Granting Ticket that
-// has not yet expired. Each load has an independent
-// CredentialCacheLoadTimeout derived from ctx so a slow/stuck file doesn't
-// impact the rest, while ctx cancellation aborts promptly.
-func emitTGTs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
+// loads each, and emits one HasTGT edge per Ticket Granting Ticket
+// (skipping expired tickets unless collectExpiredTGTs is set). Each load
+// has an independent CredentialCacheLoadTimeout derived from ctx so a
+// slow/stuck file doesn't impact the rest, while ctx cancellation aborts
+// promptly.
+func emitTGTs(ctx context.Context, h *Host, b *opengraph.GraphBuilder, collectExpiredTGTs bool) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
 	for _, cacheFile := range findFileTicketCaches(ctx) {
-		if err := emitTicketCache(ctx, h, b, cacheFile, time.Now()); err != nil {
+		if err := emitTicketCache(ctx, h, b, cacheFile, time.Now(), collectExpiredTGTs); err != nil {
 			return err
 		}
 	}
@@ -180,7 +184,7 @@ func emitTGTs(ctx context.Context, h *Host, b *opengraph.GraphBuilder) error {
 	return ctx.Err()
 }
 
-func emitTicketCache(ctx context.Context, h *Host, b *opengraph.GraphBuilder, cacheFile string, now time.Time) error {
+func emitTicketCache(ctx context.Context, h *Host, b *opengraph.GraphBuilder, cacheFile string, now time.Time, collectExpiredTGTs bool) error {
 	owner := h.fileOwner(cacheFile)
 	if owner == nil {
 		return nil
@@ -201,9 +205,10 @@ func emitTicketCache(ctx context.Context, h *Host, b *opengraph.GraphBuilder, ca
 		if svc, rest, ok := strings.Cut(creds.ServerPrincipal, "/"); !ok || !strings.EqualFold(svc, "krbtgt") || rest == "" {
 			continue
 		}
-		// expired: drop (RFC 4120 §2.3: expired tickets cannot be used or renewed;
-		// see also https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/klist#remarks)
-		if now.After(creds.EndTime) {
+		// expired: drop unless -include-expired-tgts is set (RFC 4120 §2.3:
+		// expired tickets cannot be used or renewed; see also
+		// https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/klist#remarks)
+		if !collectExpiredTGTs && now.After(creds.EndTime) {
 			continue
 		}
 		emitHasTGTEdge(h, b, owner, cacheFile, creds)

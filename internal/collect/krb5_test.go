@@ -1324,7 +1324,7 @@ func TestEmitTicketCacheKRBTGTCaseInsensitive(t *testing.T) {
 
 	h := newLocalTestHost(t, tmp)
 	b := opengraph.NewGraphBuilder()
-	if err := emitTicketCache(context.Background(), h, b, cachePath, now); err != nil {
+	if err := emitTicketCache(context.Background(), h, b, cachePath, now, false); err != nil {
 		t.Fatalf("emitTicketCache() unexpected error: %v", err)
 	}
 
@@ -1361,6 +1361,16 @@ func TestEmitTicketCacheExpiration(t *testing.T) {
 			ticket:    []byte("tkt"),
 		})
 	}
+	expiredServiceTkt := buildCCacheCred(0x0504, testCCacheCredSpec{
+		client:    buildCCachePrinc(1, "KRBTEST.COM", "svc_only"),
+		server:    buildCCachePrinc(2, "KRBTEST.COM", "cifs", "dc01.krbtest.com"),
+		enctype:   18,
+		key:       []byte{1, 2, 3, 4},
+		authTime:  tNow - 7200,
+		startTime: tNow - 7200,
+		endTime:   tNow - 3600,
+		ticket:    []byte("tkt"),
+	})
 
 	defaultPrinc := buildCCachePrinc(1, "KRBTEST.COM", "valid_nonrenew")
 	raw := bytes.Join([][]byte{
@@ -1372,6 +1382,7 @@ func TestEmitTicketCacheExpiration(t *testing.T) {
 		makeTGT("expired_future_renew", tNow-1, tNow+86400),
 		makeTGT("expired_nonrenew", tNow-3600, 0),
 		makeTGT("soft_removed_tombstone", 0, tNow+86400),
+		expiredServiceTkt,
 	}, nil)
 
 	cachePath := filepath.Join(tmp, "krb5cc_exp")
@@ -1379,28 +1390,56 @@ func TestEmitTicketCacheExpiration(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	h := newLocalTestHost(t, tmp)
-	b := opengraph.NewGraphBuilder()
-	if err := emitTicketCache(context.Background(), h, b, cachePath, now); err != nil {
-		t.Fatalf("emitTicketCache() unexpected error: %v", err)
-	}
-
-	edges := unmarshalTestEdges(t, b)
-	var gotNames []string
-	for _, e := range edges {
-		if e.Kind != "GLH_HasTGT" || len(e.End.PropertyMatchers) != 1 {
-			t.Fatalf("unexpected edge: %+v", e)
+	t.Run("default_excludes_expired", func(t *testing.T) {
+		h := newLocalTestHost(t, tmp)
+		b := opengraph.NewGraphBuilder()
+		if err := emitTicketCache(context.Background(), h, b, cachePath, now, false); err != nil {
+			t.Fatalf("emitTicketCache(collectExpiredTGTs=false) unexpected error: %v", err)
 		}
-		gotNames = append(gotNames, e.End.PropertyMatchers[0].Value)
-	}
-	wantNames := []string{
-		"VALID_NONRENEW@KRBTEST.COM",
-		"VALID_BOUNDARY@KRBTEST.COM",
-		"VALID_RENEWABLE@KRBTEST.COM",
-	}
-	if !reflect.DeepEqual(gotNames, wantNames) {
-		t.Fatalf("emitted HasTGT targets = %v, want %v", gotNames, wantNames)
-	}
+
+		var gotNames []string
+		for _, e := range unmarshalTestEdges(t, b) {
+			if e.Kind != "GLH_HasTGT" || len(e.End.PropertyMatchers) != 1 {
+				t.Fatalf("unexpected edge: %+v", e)
+			}
+			gotNames = append(gotNames, e.End.PropertyMatchers[0].Value)
+		}
+		wantNames := []string{
+			"VALID_NONRENEW@KRBTEST.COM",
+			"VALID_BOUNDARY@KRBTEST.COM",
+			"VALID_RENEWABLE@KRBTEST.COM",
+		}
+		if !reflect.DeepEqual(gotNames, wantNames) {
+			t.Fatalf("emitted HasTGT targets = %v, want %v", gotNames, wantNames)
+		}
+	})
+
+	t.Run("include_expired_tgts", func(t *testing.T) {
+		h := newLocalTestHost(t, tmp)
+		b := opengraph.NewGraphBuilder()
+		if err := emitTicketCache(context.Background(), h, b, cachePath, now, true); err != nil {
+			t.Fatalf("emitTicketCache(collectExpiredTGTs=true) unexpected error: %v", err)
+		}
+
+		var gotNames []string
+		for _, e := range unmarshalTestEdges(t, b) {
+			if e.Kind != "GLH_HasTGT" || len(e.End.PropertyMatchers) != 1 {
+				t.Fatalf("unexpected edge: %+v", e)
+			}
+			gotNames = append(gotNames, e.End.PropertyMatchers[0].Value)
+		}
+		wantNames := []string{
+			"VALID_NONRENEW@KRBTEST.COM",
+			"VALID_BOUNDARY@KRBTEST.COM",
+			"VALID_RENEWABLE@KRBTEST.COM",
+			"EXPIRED_FUTURE_RENEW@KRBTEST.COM",
+			"EXPIRED_NONRENEW@KRBTEST.COM",
+			"SOFT_REMOVED_TOMBSTONE@KRBTEST.COM",
+		}
+		if !reflect.DeepEqual(gotNames, wantNames) {
+			t.Fatalf("emitted HasTGT targets = %v, want %v", gotNames, wantNames)
+		}
+	})
 }
 
 // FuzzParseKeytab ports MIT krb5 src/tests/fuzzing/fuzz_keytab.c along with all

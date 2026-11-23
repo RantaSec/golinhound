@@ -25,6 +25,7 @@ func main() {
 	collectCmd := flag.NewFlagSet("collect", flag.ExitOnError)
 	collectDuration := collectCmd.Int("wait-for-keys", 0, "Time in minutes to wait for new forwarded SSH keys (0 = no wait)")
 	collectExpiredCerts := collectCmd.Bool("include-expired-certs", false, "Also collect SSH certificates whose ValidBefore is in the past")
+	collectExpiredTGTs := collectCmd.Bool("include-expired-tgts", false, "Also collect Kerberos TGTs whose EndTime is in the past")
 	collectIncludeRemoteFS := collectCmd.Bool("include-remote-fs", false, "Also access files and directories on remote filesystems")
 	collectVerbose := collectCmd.Bool("verbose", false, "Enable verbose output")
 	mergeCmd := flag.NewFlagSet("merge", flag.ExitOnError)
@@ -41,6 +42,7 @@ func main() {
 		result, err := collect.Run(context.Background(), collect.Options{
 			WaitForKeysDuration:        *collectDuration,
 			CollectExpiredCertificates: *collectExpiredCerts,
+			CollectExpiredTGTs:         *collectExpiredTGTs,
 			IncludeRemoteFS:            *collectIncludeRemoteFS,
 		})
 		if err != nil {
