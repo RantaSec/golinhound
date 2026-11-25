@@ -787,7 +787,7 @@ func TestParseCCacheMITMultiCredOrder(t *testing.T) {
 		// cc_file.c:delete_cred overwrites endtime=0 and authtime=-1 (0xFFFFFFFF)
 		// in place while leaving the keyblock, ASN.1 ticket bytes, and renew_till
 		// untouched on disk. parseCCache returns raw on-disk entries without
-		// filtering delete_cred tombstones; expiration is enforced by emitTicketCache.
+		// filtering delete_cred tombstones; expiration is enforced by emitFileTicketCache.
 		removedTGT := baseSpec
 		removedTGT.server = buildCCachePrinc(2, "REALM", "krbtgt", "REALM")
 		removedTGT.authTime = 0xFFFFFFFF
@@ -1279,7 +1279,7 @@ func newLocalTestHost(t *testing.T, homeDir string) *Host {
 	}
 }
 
-func TestEmitTicketCacheKRBTGTCaseInsensitive(t *testing.T) {
+func TestEmitFileTicketCacheKRBTGTCaseInsensitive(t *testing.T) {
 	setTestFSGuard(t, false, []mountEntry{{mountPoint: "/", fsType: "ext4"}})
 	tmp := t.TempDir()
 	now := time.Unix(1700000000, 0)
@@ -1324,8 +1324,8 @@ func TestEmitTicketCacheKRBTGTCaseInsensitive(t *testing.T) {
 
 	h := newLocalTestHost(t, tmp)
 	b := opengraph.NewGraphBuilder()
-	if err := emitTicketCache(context.Background(), h, b, cachePath, now, false); err != nil {
-		t.Fatalf("emitTicketCache() unexpected error: %v", err)
+	if err := emitFileTicketCache(context.Background(), h, b, cachePath, now, false); err != nil {
+		t.Fatalf("emitFileTicketCache() unexpected error: %v", err)
 	}
 
 	edges := unmarshalTestEdges(t, b)
@@ -1342,7 +1342,7 @@ func TestEmitTicketCacheKRBTGTCaseInsensitive(t *testing.T) {
 	}
 }
 
-func TestEmitTicketCacheExpiration(t *testing.T) {
+func TestEmitFileTicketCacheExpiration(t *testing.T) {
 	setTestFSGuard(t, false, []mountEntry{{mountPoint: "/", fsType: "ext4"}})
 	tmp := t.TempDir()
 	now := time.Unix(1700000000, 0)
@@ -1393,8 +1393,8 @@ func TestEmitTicketCacheExpiration(t *testing.T) {
 	t.Run("default_excludes_expired", func(t *testing.T) {
 		h := newLocalTestHost(t, tmp)
 		b := opengraph.NewGraphBuilder()
-		if err := emitTicketCache(context.Background(), h, b, cachePath, now, false); err != nil {
-			t.Fatalf("emitTicketCache(collectExpiredTGTs=false) unexpected error: %v", err)
+		if err := emitFileTicketCache(context.Background(), h, b, cachePath, now, false); err != nil {
+			t.Fatalf("emitFileTicketCache(collectExpiredTGTs=false) unexpected error: %v", err)
 		}
 
 		var gotNames []string
@@ -1417,8 +1417,8 @@ func TestEmitTicketCacheExpiration(t *testing.T) {
 	t.Run("include_expired_tgts", func(t *testing.T) {
 		h := newLocalTestHost(t, tmp)
 		b := opengraph.NewGraphBuilder()
-		if err := emitTicketCache(context.Background(), h, b, cachePath, now, true); err != nil {
-			t.Fatalf("emitTicketCache(collectExpiredTGTs=true) unexpected error: %v", err)
+		if err := emitFileTicketCache(context.Background(), h, b, cachePath, now, true); err != nil {
+			t.Fatalf("emitFileTicketCache(collectExpiredTGTs=true) unexpected error: %v", err)
 		}
 
 		var gotNames []string

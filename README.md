@@ -209,11 +209,16 @@ klist -eKkt /home/alice/svc_custom.keytab
 ```
 
 #### HasTGT
-This edge indicates that an SSHUser holds cached Ticket Granting Tickets (TGTs) for an Active Directory user in a `/tmp/krb5cc_*` file owned by that SSHUser.
+This edge indicates that an SSHUser holds cached Ticket Granting Tickets (TGTs) for an Active Directory user in an on-disk credential cache (`/tmp/krb5cc*`, `/run/user/*/krb5cc/*`) or an SSSD (`>= 2.4.1`) KCM database (`/var/lib/sss/secrets/secrets.ldb`) owned by that SSHUser.
 
-Export and use the credential cache:
-``` bash
+Export and use the credential cache (FILE or KCM):
+```bash
+# FILE cache
 export KRB5CCNAME=/tmp/krb5cc_<uid>
+klist
+
+# SSSD KCM cache (as the owning user)
+export KRB5CCNAME=KCM:
 klist
 ```
 

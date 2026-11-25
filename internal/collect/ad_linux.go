@@ -162,29 +162,31 @@ func findKeytabFiles(ctx context.Context, chKeytabs chan<- string, rootDir strin
 	})
 }
 
-
-// emitTGTs iterates every on-disk ticket cache (findFileTicketCaches),
-// loads each, and emits one HasTGT edge per Ticket Granting Ticket
-// (skipping expired tickets unless collectExpiredTGTs is set). Each load
-// has an independent CredentialCacheLoadTimeout derived from ctx so a
-// slow/stuck file doesn't impact the rest, while ctx cancellation aborts
-// promptly.
+// emitTGTs iterates on-disk FILE ticket caches (findFileTicketCaches) and the
+// SSSD KCM secrets database (DefaultKCMSecretsDB), emitting one HasTGT edge
+// per Ticket Granting Ticket (skipping expired tickets unless
+// collectExpiredTGTs is set). Each load has an independent
+// CredentialCacheLoadTimeout derived from ctx so a slow/stuck file doesn't
+// impact the rest, while ctx cancellation aborts promptly.
 func emitTGTs(ctx context.Context, h *Host, b *opengraph.GraphBuilder, collectExpiredTGTs bool) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
+	now := time.Now()
 	for _, cacheFile := range findFileTicketCaches(ctx) {
-		if err := emitTicketCache(ctx, h, b, cacheFile, time.Now(), collectExpiredTGTs); err != nil {
+		if err := emitFileTicketCache(ctx, h, b, cacheFile, now, collectExpiredTGTs); err != nil {
 			return err
 		}
 	}
+	if err := emitKCMTicketCache(ctx, h, b, DefaultKCMSecretsDB, now, collectExpiredTGTs); err != nil {
+		return err
+	}
 	// Not yet implemented; left here for visibility.
-	findKCMTicketCaches()
 	findKeyringTicketCaches()
 	return ctx.Err()
 }
 
-func emitTicketCache(ctx context.Context, h *Host, b *opengraph.GraphBuilder, cacheFile string, now time.Time, collectExpiredTGTs bool) error {
+func emitFileTicketCache(ctx context.Context, h *Host, b *opengraph.GraphBuilder, cacheFile string, now time.Time, collectExpiredTGTs bool) error {
 	owner := h.fileOwner(cacheFile)
 	if owner == nil {
 		return nil
@@ -200,6 +202,39 @@ func emitTicketCache(ctx context.Context, h *Host, b *opengraph.GraphBuilder, ca
 			slog.Error("could not load Kerberos ticket cache", "cacheFile", cacheFile, "err", err)
 		}
 	}
+	emitCredsTGTs(h, b, owner, cacheFile, credsList, now, collectExpiredTGTs)
+	return nil
+}
+
+func emitKCMTicketCache(ctx context.Context, h *Host, b *opengraph.GraphBuilder, dbPath string, now time.Time, collectExpiredTGTs bool) error {
+	ctxLoad, cancelLoad := context.WithTimeout(ctx, CredentialCacheLoadTimeout)
+	caches, err := loadKCMSecretsDB(ctxLoad, dbPath)
+	cancelLoad()
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if err != nil {
+		switch {
+		case errors.Is(err, os.ErrNotExist), errors.Is(err, errNonLocalFS):
+			return nil
+		case errors.Is(err, errUnsupportedKCMFormat):
+			slog.Warn("skipping unsupported SSSD KCM ticket cache entries (requires SSSD >= 2.4.1)", "cacheFile", dbPath, "err", err)
+		default:
+			slog.Error("could not load SSSD KCM ticket cache", "cacheFile", dbPath, "err", err)
+		}
+	}
+	for _, cc := range caches {
+		owner, ok := h.Users[cc.UID]
+		if !ok {
+			slog.Debug("emitKCMTicketCache: uid not in Host.Users", "cacheFile", dbPath, "uid", cc.UID)
+			continue
+		}
+		emitCredsTGTs(h, b, owner, dbPath, cc.Creds, now, collectExpiredTGTs)
+	}
+	return nil
+}
+
+func emitCredsTGTs(h *Host, b *opengraph.GraphBuilder, owner *User, cachePath string, credsList []ccacheCredential, now time.Time, collectExpiredTGTs bool) {
 	for _, creds := range credsList {
 		// only true TGTs (krbtgt/...) become HasTGT edges
 		if svc, rest, ok := strings.Cut(creds.ServerPrincipal, "/"); !ok || !strings.EqualFold(svc, "krbtgt") || rest == "" {
@@ -211,13 +246,12 @@ func emitTicketCache(ctx context.Context, h *Host, b *opengraph.GraphBuilder, ca
 		if !collectExpiredTGTs && now.After(creds.EndTime) {
 			continue
 		}
-		emitHasTGTEdge(h, b, owner, cacheFile, creds)
+		emitHasTGTEdge(h, b, owner, cachePath, creds)
 	}
-	return nil
 }
 
 // emitHasTGTEdge emits one HasTGT edge from the SSHUser that owns
-// the ccache file to the client principal of creds (resolved via
+// the ccache to the client principal of creds (resolved via
 // PrincipalToBloodhoundName). Edge properties carry the ticket's
 // StartTime/EndTime/RenewTime in RFC3339.
 func emitHasTGTEdge(h *Host, b *opengraph.GraphBuilder, owner *User, filePath string, creds ccacheCredential) {
@@ -257,20 +291,6 @@ func findFileTicketCaches(ctx context.Context) []string {
 // https://github.com/TarlogicSecurity/tickey
 // TODO: not yet implemented.
 func findKeyringTicketCaches() []string { return nil }
-
-// findKCMTicketCaches finds paths of SSSD Kerberos Cache Manager caches.
-// https://github.com/mandiant/SSSDKCMExtractor
-// TODO: not yet implemented.
-func findKCMTicketCaches() []string {
-	kerbCacheManagerDB := "/var/lib/sss/secrets/secrets.ldb"
-	if !isPathOnLocalFS(kerbCacheManagerDB) {
-		return nil
-	}
-	if _, err := os.Stat(kerbCacheManagerDB); err == nil {
-		slog.Debug("[NOT IMPLEMENTED] Kerberos tickets cannot be extracted: function not implemented", "path", kerbCacheManagerDB)
-	}
-	return nil
-}
 
 // PrincipalToBloodhoundName converts a Kerberos principal + realm into the
 // node name expected by BloodHound ingest. It handles user UPNs

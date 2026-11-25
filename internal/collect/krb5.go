@@ -137,51 +137,62 @@ func parseCCache(b []byte) ([]ccacheCredential, error) {
 
 	var creds []ccacheCredential
 	for !s.Empty() {
-		clientPrincipal, clientRealm, ok := readCCachePrincipal(&s)
-		if !ok {
-			return creds, errors.New("invalid ccache client principal")
+		cred, err := parseCCacheCred(&s, version)
+		if err != nil {
+			return creds, err
 		}
-		serverPrincipal, _, ok := readCCachePrincipal(&s)
-		if !ok {
-			return creds, errors.New("invalid ccache server principal")
-		}
-		keyHdr := 2
-		if version == 0x0503 {
-			keyHdr = 4
-		}
-		var authTime, startTime, endTime, renewTill, numAddrs, numAuthData uint32
-		if !s.Skip(keyHdr) || !skipUint32Prefixed(&s) ||
-			!s.ReadUint32(&authTime) || !s.ReadUint32(&startTime) ||
-			!s.ReadUint32(&endTime) || !s.ReadUint32(&renewTill) ||
-			!s.Skip(5) || !s.ReadUint32(&numAddrs) {
-			return creds, errors.New("truncated ccache credential")
-		}
-		for range numAddrs {
-			if !s.Skip(2) || !skipUint32Prefixed(&s) {
-				return creds, errors.New("truncated ccache address")
-			}
-		}
-		if !s.ReadUint32(&numAuthData) {
-			return creds, errors.New("truncated ccache authdata count")
-		}
-		for range numAuthData {
-			if !s.Skip(2) || !skipUint32Prefixed(&s) {
-				return creds, errors.New("truncated ccache authdata")
-			}
-		}
-		if !skipUint32Prefixed(&s) || !skipUint32Prefixed(&s) {
-			return creds, errors.New("truncated ccache ticket")
-		}
-		creds = append(creds, ccacheCredential{
-			ClientPrincipal: clientPrincipal,
-			ClientRealm:     clientRealm,
-			ServerPrincipal: serverPrincipal,
-			StartTime:       time.Unix(int64(startTime), 0),
-			EndTime:         time.Unix(int64(endTime), 0),
-			RenewTill:       time.Unix(int64(renewTill), 0),
-		})
+		creds = append(creds, cred)
 	}
 	return creds, nil
+}
+
+// parseCCacheCred decodes a single MIT Kerberos v3 (0x0503) or v4 (0x0504)
+// marshaled credential from s. Used for both FILE credential caches and SSSD
+// KCM cred_blobs (which store MIT v4 marshaled credentials verbatim).
+func parseCCacheCred(s *cryptobyte.String, version uint16) (ccacheCredential, error) {
+	clientPrincipal, clientRealm, ok := readCCachePrincipal(s)
+	if !ok {
+		return ccacheCredential{}, errors.New("invalid ccache client principal")
+	}
+	serverPrincipal, _, ok := readCCachePrincipal(s)
+	if !ok {
+		return ccacheCredential{}, errors.New("invalid ccache server principal")
+	}
+	keyHdr := 2
+	if version == 0x0503 {
+		keyHdr = 4
+	}
+	var authTime, startTime, endTime, renewTill, numAddrs, numAuthData uint32
+	if !s.Skip(keyHdr) || !skipUint32Prefixed(s) ||
+		!s.ReadUint32(&authTime) || !s.ReadUint32(&startTime) ||
+		!s.ReadUint32(&endTime) || !s.ReadUint32(&renewTill) ||
+		!s.Skip(5) || !s.ReadUint32(&numAddrs) {
+		return ccacheCredential{}, errors.New("truncated ccache credential")
+	}
+	for range numAddrs {
+		if !s.Skip(2) || !skipUint32Prefixed(s) {
+			return ccacheCredential{}, errors.New("truncated ccache address")
+		}
+	}
+	if !s.ReadUint32(&numAuthData) {
+		return ccacheCredential{}, errors.New("truncated ccache authdata count")
+	}
+	for range numAuthData {
+		if !s.Skip(2) || !skipUint32Prefixed(s) {
+			return ccacheCredential{}, errors.New("truncated ccache authdata")
+		}
+	}
+	if !skipUint32Prefixed(s) || !skipUint32Prefixed(s) {
+		return ccacheCredential{}, errors.New("truncated ccache ticket")
+	}
+	return ccacheCredential{
+		ClientPrincipal: clientPrincipal,
+		ClientRealm:     clientRealm,
+		ServerPrincipal: serverPrincipal,
+		StartTime:       time.Unix(int64(startTime), 0),
+		EndTime:         time.Unix(int64(endTime), 0),
+		RenewTill:       time.Unix(int64(renewTill), 0),
+	}, nil
 }
 
 func readCCachePrincipal(s *cryptobyte.String) (string, string, bool) {
